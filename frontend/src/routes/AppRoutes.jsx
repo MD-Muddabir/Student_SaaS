@@ -1,44 +1,154 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
-import ProtectedRoute from "./ProtectedRoute";
+/**
+ * Application Routes
+ * Defines all routes with role-based access control
+ * Implements lazy loading for performance optimization
+ */
 
-const AppRoutes = () => {
+import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import ProtectedRoute from "./ProtectedRoute";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+
+// Lazy load pages for code splitting
+// Auth Pages
+const Login = lazy(() => import("../pages/auth/Login"));
+const Register = lazy(() => import("../pages/auth/Register"));
+const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
+
+// Super Admin Pages
+const SuperAdminDashboard = lazy(() => import("../pages/superadmin/Dashboard"));
+const Institutes = lazy(() => import("../pages/superadmin/Institutes"));
+const Plans = lazy(() => import("../pages/superadmin/Plans"));
+const Analytics = lazy(() => import("../pages/superadmin/Analytics"));
+
+// Admin Pages
+const AdminDashboard = lazy(() => import("../pages/admin/Dashboard"));
+const Students = lazy(() => import("../pages/admin/Students"));
+const Faculty = lazy(() => import("../pages/admin/Faculty"));
+const Classes = lazy(() => import("../pages/admin/Classes"));
+const Subjects = lazy(() => import("../pages/admin/Subjects"));
+const Fees = lazy(() => import("../pages/admin/Fees"));
+const Announcements = lazy(() => import("../pages/admin/Announcements"));
+const Settings = lazy(() => import("../pages/admin/Settings"));
+const Profile = lazy(() => import("../pages/admin/Profile"));
+
+// Faculty Pages
+const FacultyDashboard = lazy(() => import("../pages/faculty/Dashboard"));
+const MarkAttendance = lazy(() => import("../pages/faculty/MarkAttendance"));
+const EnterMarks = lazy(() => import("../pages/faculty/EnterMarks"));
+const ViewStudents = lazy(() => import("../pages/faculty/ViewStudents"));
+
+// Student Pages
+const StudentDashboard = lazy(() => import("../pages/student/Dashboard"));
+const ViewAttendance = lazy(() => import("../pages/student/ViewAttendance"));
+const ViewMarks = lazy(() => import("../pages/student/ViewMarks"));
+const ViewAnnouncements = lazy(() => import("../pages/student/ViewAnnouncements"));
+
+// Common Pages
+const NotFound = lazy(() => import("../pages/common/NotFound"));
+const Unauthorized = lazy(() => import("../pages/common/Unauthorized"));
+
+/**
+ * Loading fallback component
+ */
+const PageLoader = () => (
+  <div className="page-loader">
+    <LoadingSpinner />
+  </div>
+);
+
+/**
+ * Main routing configuration
+ */
+function AppRoutes() {
   return (
-    <BrowserRouter>
+    <Suspense fallback={<PageLoader />}>
       <Routes>
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
+        {/* Super Admin Routes */}
         <Route
-          path="/admin/dashboard"
+          path="/superadmin/*"
           element={
-            <ProtectedRoute role="admin">
-              <h1>Admin Dashboard</h1>
+            <ProtectedRoute allowedRoles={["super_admin"]}>
+              <Routes>
+                <Route path="dashboard" element={<SuperAdminDashboard />} />
+                <Route path="institutes" element={<Institutes />} />
+                <Route path="plans" element={<Plans />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="*" element={<Navigate to="/superadmin/dashboard" />} />
+              </Routes>
             </ProtectedRoute>
           }
         />
 
+        {/* Admin Routes */}
         <Route
-          path="/faculty/dashboard"
+          path="/admin/*"
           element={
-            <ProtectedRoute role="faculty">
-              <h1>Faculty Dashboard</h1>
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Routes>
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="students" element={<Students />} />
+                <Route path="faculty" element={<Faculty />} />
+                <Route path="classes" element={<Classes />} />
+                <Route path="subjects" element={<Subjects />} />
+                <Route path="fees" element={<Fees />} />
+                <Route path="announcements" element={<Announcements />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="*" element={<Navigate to="/admin/dashboard" />} />
+              </Routes>
             </ProtectedRoute>
           }
         />
 
+        {/* Faculty Routes */}
         <Route
-          path="/student/dashboard"
+          path="/faculty/*"
           element={
-            <ProtectedRoute role="student">
-              <h1>Student Dashboard</h1>
+            <ProtectedRoute allowedRoles={["faculty"]}>
+              <Routes>
+                <Route path="dashboard" element={<FacultyDashboard />} />
+                <Route path="attendance" element={<MarkAttendance />} />
+                <Route path="marks" element={<EnterMarks />} />
+                <Route path="students" element={<ViewStudents />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="*" element={<Navigate to="/faculty/dashboard" />} />
+              </Routes>
             </ProtectedRoute>
           }
         />
+
+        {/* Student Routes */}
+        <Route
+          path="/student/*"
+          element={
+            <ProtectedRoute allowedRoles={["student"]}>
+              <Routes>
+                <Route path="dashboard" element={<StudentDashboard />} />
+                <Route path="attendance" element={<ViewAttendance />} />
+                <Route path="marks" element={<ViewMarks />} />
+                <Route path="announcements" element={<ViewAnnouncements />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="*" element={<Navigate to="/student/dashboard" />} />
+              </Routes>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Default Route - Redirect based on role */}
+        <Route path="/" element={<Navigate to="/login" />} />
+
+        {/* Error Routes */}
+        <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
-    </BrowserRouter>
+    </Suspense>
   );
-};
+}
 
 export default AppRoutes;

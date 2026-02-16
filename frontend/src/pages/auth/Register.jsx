@@ -1,54 +1,190 @@
-import { useState } from "react";
-import { registerInstitute } from "../../services/auth.service";
+/**
+ * Register Page
+ * Institute registration form
+ */
 
-const Register = () => {
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../../services/api";
+import "./Auth.css";
+
+function Register() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     instituteName: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    // Validation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setLoading(false);
+      return;
+    }
+
     try {
-      await registerInstitute(formData);
-      alert("Institute Registered Successfully!");
+      await api.post("/auth/register", {
+        instituteName: formData.instituteName,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      setSuccess(true);
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (err) {
-      alert("Registration Failed");
+      setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (success) {
+    return (
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="alert alert-success">
+            <span>✅</span>
+            <div>
+              <strong>Registration Successful!</strong>
+              <p>Redirecting to login...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="auth-container">
-      <h2>Register Institute</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          name="instituteName"
-          placeholder="Institute Name"
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="email"
-          placeholder="Email"
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Register</button>
-      </form>
+      <div className="auth-card">
+        <div className="auth-header">
+          <h1 className="auth-title">🎓 Student SaaS</h1>
+          <p className="auth-subtitle">Create your institute account</p>
+        </div>
+
+        {error && (
+          <div className="alert alert-error">
+            <span>⚠️</span>
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label htmlFor="instituteName" className="form-label">
+              Institute Name
+            </label>
+            <input
+              type="text"
+              id="instituteName"
+              name="instituteName"
+              className="form-input"
+              placeholder="ABC Coaching Center"
+              value={formData.instituteName}
+              onChange={handleChange}
+              required
+              autoFocus
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email" className="form-label">
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              className="form-input"
+              placeholder="admin@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password" className="form-label">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              className="form-input"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              minLength={6}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="confirmPassword" className="form-label">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              className="form-input"
+              placeholder="••••••••"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              minLength={6}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="btn btn-primary btn-lg w-full"
+            disabled={loading}
+          >
+            {loading ? "Creating Account..." : "Create Account"}
+          </button>
+        </form>
+
+        <div className="auth-footer">
+          <p>
+            Already have an account?{" "}
+            <Link to="/login" className="font-semibold">
+              Sign in here
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
-};
+}
 
 export default Register;

@@ -3,8 +3,15 @@
 INSERT INTO users 
 (institute_id, role, name, email, password_hash, status)
 VALUES
-(NULL, 'super_admin', 'SaaS Owner', 'owner@saas.com', 'hashed_password', 'active');
+(NULL, 'super_admin', 'SaaS Owner', 'owner@saas.com', 'superadmin123', 'active');
 
+UPDATE users
+SET 
+    role = 'super_admin',
+    name = 'SaaS Owner',
+    password_hash = 'superadmin123',
+    status = 'active'
+WHERE email = 'owner@saas.com';
 
 
 INSERT INTO plans (id, name, price, student_limit, feature_attendance, feature_fees, feature_reports, feature_parent_portal)

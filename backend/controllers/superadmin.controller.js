@@ -1,6 +1,4 @@
 const { Institute, Subscription, Plan } = require("../models");
-const { Op } = require("sequelize");
-const { Subscription, Institute, Plan } = require("../models");
 const { Op, fn, col } = require("sequelize");
 
 exports.getDashboardStats = async (req, res) => {

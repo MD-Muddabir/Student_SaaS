@@ -1,111 +1,201 @@
+/**
+ * Webhook Controller
+ * Handles Razorpay webhook events for subscription management
+ */
+
 const crypto = require("crypto");
-const { Subscription, Institute } = require("../models");
+const { Subscription, Institute, Plan } = require("../models");
+const emailService = require("../services/email.service");
+const invoiceService = require("../services/invoice.service");
 
+/**
+ * Handle Razorpay webhook events
+ * @route POST /api/webhook
+ * @access Public (but verified with signature)
+ */
 exports.handleWebhook = async (req, res) => {
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    try {
+        const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+        const signature = req.headers["x-razorpay-signature"];
+        const body = JSON.stringify(req.body);
 
-    const signature = req.headers["x-razorpay-signature"];
+        // Verify webhook signature
+        const expectedSignature = crypto
+            .createHmac("sha256", secret)
+            .update(body)
+            .digest("hex");
 
-    const body = JSON.stringify(req.body);
+        if (signature !== expectedSignature) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid webhook signature",
+            });
+        }
 
-    const expectedSignature = crypto
-        .createHmac("sha256", secret)
-        .update(body)
-        .digest("hex");
+        const event = req.body.event;
+        const subscriptionData = req.body.payload?.subscription?.entity;
 
-    if (signature !== expectedSignature) {
-        return res.status(400).send("Invalid signature");
+        // Handle different webhook events
+        switch (event) {
+            case "subscription.charged":
+                await handleSubscriptionCharged(subscriptionData);
+                break;
+
+            case "subscription.halted":
+                await handleSubscriptionHalted(subscriptionData);
+                break;
+
+            case "subscription.cancelled":
+                await handleSubscriptionCancelled(subscriptionData);
+                break;
+
+            default:
+                console.log(`Unhandled webhook event: ${event}`);
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Webhook processed successfully",
+        });
+    } catch (error) {
+        console.error("Webhook error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Webhook processing failed",
+        });
     }
+};
 
-    const event = req.body.event;
+/**
+ * Handle subscription.charged event
+ * Creates subscription record and activates institute
+ */
+async function handleSubscriptionCharged(subscriptionData) {
+    try {
+        const instituteId = subscriptionData.notes?.institute_id;
+        const planId = subscriptionData.plan_id;
 
-    if (event === "subscription.charged") {
-        const subscriptionData = req.body.payload.subscription.entity;
+        if (!instituteId || !planId) {
+            console.error("Missing institute_id or plan_id in webhook data");
+            return;
+        }
 
-        const instituteId = subscriptionData.notes.institute_id;
+        // Fetch institute and plan details
+        const institute = await Institute.findByPk(instituteId);
+        const plan = await Plan.findByPk(planId);
 
-        await Subscription.create({
+        if (!institute || !plan) {
+            console.error("Institute or Plan not found");
+            return;
+        }
+
+        // Create subscription record
+        const newSubscription = await Subscription.create({
             institute_id: instituteId,
-            plan_id: subscriptionData.plan_id,
+            plan_id: planId,
             start_date: new Date(),
             end_date: new Date(subscriptionData.current_end * 1000),
             payment_status: "paid",
-            amount_paid: subscriptionData.plan_amount / 100,
+            transaction_reference: subscriptionData.id,
         });
 
+        // Update institute status
         await Institute.update(
             {
+                subscription_start: new Date(),
                 subscription_end: new Date(subscriptionData.current_end * 1000),
                 status: "active",
             },
             { where: { id: instituteId } }
         );
+
+        // Generate invoice
+        try {
+            const invoice = await invoiceService.generateInvoice({
+                institute,
+                plan,
+                subscription: newSubscription,
+            });
+
+            // Update subscription with invoice path
+            if (invoice && invoice.fileName) {
+                await newSubscription.update({
+                    invoice_path: invoice.fileName,
+                });
+            }
+
+            // Send payment confirmation email with invoice
+            await emailService.sendEmail(
+                institute.email,
+                "Payment Successful - Invoice Attached",
+                `
+                    <h2>Payment Received Successfully</h2>
+                    <p>Dear ${institute.name},</p>
+                    <p>Thank you for your payment. Your subscription has been activated.</p>
+                    <p><strong>Plan:</strong> ${plan.name}</p>
+                    <p><strong>Amount Paid:</strong> ₹${plan.price}</p>
+                    <p><strong>Valid Until:</strong> ${new Date(subscriptionData.current_end * 1000).toLocaleDateString()}</p>
+                    <p>Please find your invoice attached.</p>
+                    <br>
+                    <p>Best regards,<br>Student SaaS Team</p>
+                `
+            );
+        } catch (invoiceError) {
+            console.error("Invoice generation/email error:", invoiceError);
+            // Don't fail the whole webhook if invoice fails
+        }
+
+        console.log(`✅ Subscription activated for institute ${instituteId}`);
+    } catch (error) {
+        console.error("Error handling subscription.charged:", error);
+        throw error;
     }
+}
 
-    res.status(200).json({ status: "ok" });
-};
-
-// Handle other events like subscription.halted, subscription.cancelled, (Add Webhook Logic for Failed Payments)
-
-if (event === "subscription.charged") {
-    // already handled
-    const emailService = require("../services/email.service");
-    const invoiceService = require("../services/invoice.service");
-    const { Institute } = require("../models");
-    const { Plan } = require("../models");
-
-    if (event === "subscription.charged") {
-
-        const institute = await Institute.findByPk(instituteId);
-        const plan = await Plan.findByPk(planId);
-
-        const newSubscription = await Subscription.create({
-            institute_id: instituteId,
-            plan_id: plan.id,
-            start_date: new Date(),
-            end_date: new Date(subscriptionData.current_end * 1000),
-            payment_status: "paid",
-            amount_paid: plan.price,
-        });
-
-        // Save invoice path
-        await newSubscription.update({
-            invoice_path: invoice.fileName
-        });
-
-        // 🔥 Generate Invoice
-        const invoice = await invoiceService.generateInvoice({
-            institute,
-            plan,
-            subscription: newSubscription
-        });
-
-        // Send Email with Invoice
-        await emailService.sendEmail(
-            institute.email,
-            "Payment Successful - Invoice Attached",
-            `
-      <h3>Payment Received</h3>
-      <p>Please find your invoice attached.</p>
-    `
+/**
+ * Handle subscription.halted event
+ * Suspends subscription when payment fails
+ */
+async function handleSubscriptionHalted(subscriptionData) {
+    try {
+        await Subscription.update(
+            { payment_status: "failed" },
+            { where: { transaction_reference: subscriptionData.id } }
         );
+
+        await Institute.update(
+            { status: "suspended" },
+            { where: { id: subscriptionData.notes?.institute_id } }
+        );
+
+        console.log(`⚠️ Subscription halted: ${subscriptionData.id}`);
+    } catch (error) {
+        console.error("Error handling subscription.halted:", error);
+        throw error;
     }
 }
 
-if (event === "subscription.halted") {
-    const subscriptionData = req.body.payload.subscription.entity;
+/**
+ * Handle subscription.cancelled event
+ * Marks subscription as cancelled
+ */
+async function handleSubscriptionCancelled(subscriptionData) {
+    try {
+        await Subscription.update(
+            { payment_status: "unpaid" },
+            { where: { transaction_reference: subscriptionData.id } }
+        );
 
-    await Subscription.update(
-        { status: "suspended" },
-        { where: { razorpay_subscription_id: subscriptionData.id } }
-    );
+        await Institute.update(
+            { status: "expired" },
+            { where: { id: subscriptionData.notes?.institute_id } }
+        );
+
+        console.log(`❌ Subscription cancelled: ${subscriptionData.id}`);
+    } catch (error) {
+        console.error("Error handling subscription.cancelled:", error);
+        throw error;
+    }
 }
 
-if (event === "subscription.cancelled") {
-    const subscriptionData = req.body.payload.subscription.entity;
-
-    await Subscription.update(
-        { status: "cancelled" },
-        { where: { razorpay_subscription_id: subscriptionData.id } }
-    );
-}
+module.exports = exports;

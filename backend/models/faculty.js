@@ -1,12 +1,17 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../backend/config/database");
+const sequelize = require("../config/database");
 
 const Faculty = sequelize.define("Faculty", {
     institute_id: DataTypes.INTEGER,
     user_id: DataTypes.INTEGER,
     designation: DataTypes.STRING,
     salary: DataTypes.DECIMAL(10, 2),
-    join_date: DataTypes.DATEONLY,
+    join_date: DataTypes.DATEONLY
+}, {
+    tableName: 'faculty',  // Explicitly set table name (database uses singular, not plural)
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: false  // Database doesn't have updated_at column
 });
 
 module.exports = Faculty;

@@ -1,4 +1,4 @@
-const sequelize = require("../backend/config/database");
+const sequelize = require("../config/database");
 
 const Plan = require("./plan");
 const Institute = require("./institute");
