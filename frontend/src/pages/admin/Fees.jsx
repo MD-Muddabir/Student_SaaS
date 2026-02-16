@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import api from "../../services/api";
 import "./Dashboard.css";
 
@@ -138,12 +139,17 @@ function Fees() {
                     <h1>💰 Fee Management</h1>
                     <p>Manage fee structures and record payments</p>
                 </div>
-                <button
-                    className="btn btn-primary"
-                    onClick={() => setShowModal(true)}
-                >
-                    {activeTab === "structure" ? "+ Add Fee Structure" : "+ Record Payment"}
-                </button>
+                <div style={{ display: "flex", gap: "10px" }}>
+                    <Link to="/admin/dashboard" className="btn btn-secondary">
+                        ← Back
+                    </Link>
+                    <button
+                        className="btn btn-primary btn-animated"
+                        onClick={() => setShowModal(true)}
+                    >
+                        {activeTab === "structure" ? "+ Add Fee Structure" : "+ Record Payment"}
+                    </button>
+                </div>
             </div>
 
             {/* Tabs */}

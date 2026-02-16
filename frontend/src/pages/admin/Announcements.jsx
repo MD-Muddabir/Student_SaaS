@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
 import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
 import "./Dashboard.css";
@@ -74,14 +75,19 @@ function Announcements() {
                     <h1>📢 Announcements</h1>
                     <p>Manage institute-wide announcements</p>
                 </div>
-                {['admin', 'faculty'].includes(user?.role) && (
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => setShowModal(true)}
-                    >
-                        + New Announcement
-                    </button>
-                )}
+                <div style={{ display: "flex", gap: "10px" }}>
+                    <Link to="/admin/dashboard" className="btn btn-secondary">
+                        ← Back
+                    </Link>
+                    {['admin', 'faculty'].includes(user?.role) && (
+                        <button
+                            className="btn btn-primary btn-animated"
+                            onClick={() => setShowModal(true)}
+                        >
+                            + New Announcement
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="card-grid">

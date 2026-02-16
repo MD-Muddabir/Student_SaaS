@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
 import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
 import "./Dashboard.css";
@@ -137,15 +138,20 @@ function Subjects() {
                     <h1>📚 Subjects Management</h1>
                     <p>Manage subjects and assign faculty</p>
                 </div>
-                <button
-                    onClick={() => {
-                        resetForm();
-                        setShowModal(true);
-                    }}
-                    className="btn btn-primary"
-                >
-                    + Add Subject
-                </button>
+                <div style={{ display: "flex", gap: "10px" }}>
+                    <Link to="/admin/dashboard" className="btn btn-secondary">
+                        ← Back
+                    </Link>
+                    <button
+                        onClick={() => {
+                            resetForm();
+                            setShowModal(true);
+                        }}
+                        className="btn btn-primary btn-animated"
+                    >
+                        + Add Subject
+                    </button>
+                </div>
             </div>
 
             {/* Filters */}
