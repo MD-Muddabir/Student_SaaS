@@ -1,0 +1,15 @@
+✅ Database Connected
+✅ Institute Count: 1
+✅ Student Count: 3
+✅ Faculty Count: 2
+✅ Subscriptions Fetch Success. Found: 1
+❌ Institute List Fetch Failed: Unknown column 'Subscriptions.subscription_start' in 'field list'
+Error
+    at Query.run (D:\College\Simple Digital System for Coaching Centers\backend\node_modules\sequelize\lib\dialects\mysql\query.js:52:25)
+    at D:\College\Simple Digital System for Coaching Centers\backend\node_modules\sequelize\lib\sequelize.js:315:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async MySQLQueryInterface.select (D:\College\Simple Digital System for Coaching Centers\backend\node_modules\sequelize\lib\dialects\abstract\query-interface.js:407:12)
+    at async Institute.findAll (D:\College\Simple Digital System for Coaching Centers\backend\node_modules\sequelize\lib\model.js:1140:21)
+    at async Promise.all (index 1)
+    at async Institute.findAndCountAll (D:\College\Simple Digital System for Coaching Centers\backend\node_modules\sequelize\lib\model.js:1322:27)
+    at async diagnose (D:\College\Simple Digital System for Coaching Centers\backend\scripts\diagnose_v2.js:55:30)

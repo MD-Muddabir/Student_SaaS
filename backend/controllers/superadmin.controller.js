@@ -1,4 +1,4 @@
-const { Institute, Subscription, Plan } = require("../models");
+const { Institute, Subscription, Plan, Student, Faculty } = require("../models");
 const { Op, fn, col } = require("sequelize");
 
 exports.getDashboardStats = async (req, res) => {
@@ -13,16 +13,15 @@ exports.getDashboardStats = async (req, res) => {
             where: { status: "expired" },
         });
 
-        // 🔥 Proper Revenue Calculation
+        const totalStudents = await Student.count();
+        const totalFaculty = await Faculty.count();
+
+        // Total Revenue Calculation (Active Subscriptions)
         const paidSubscriptions = await Subscription.findAll({
             where: { payment_status: "paid" },
             include: [{ model: Plan }],
         });
 
-        // Extra: Total Revenue Calculation (All Time)
-        Subscription.sum("amount_paid", {
-            where: { payment_status: "paid" }
-        });
         let totalRevenue = 0;
 
         paidSubscriptions.forEach((sub) => {
@@ -36,33 +35,13 @@ exports.getDashboardStats = async (req, res) => {
             activeInstitutes,
             expiredInstitutes,
             totalRevenue,
+            totalStudents,
+            totalFaculty
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
-
-// // Add Monthly Revenue Calculation (Advanced)
-
-// const currentMonth = new Date().getMonth();
-// const currentYear = new Date().getFullYear();
-
-// const monthlySubscriptions = await Subscription.findAll({
-//     where: {
-//         payment_status: "paid",
-//         start_date: {
-//             [Op.gte]: new Date(currentYear, currentMonth, 1),
-//         },
-//     },
-//     include: [{ model: Plan }],
-// });
-
-// let monthlyRevenue = 0;
-
-// monthlySubscriptions.forEach((sub) => {
-//     monthlyRevenue += parseFloat(sub.Plan.price);
-// });
-
 
 exports.getAllInstitutes = async (req, res) => {
     try {

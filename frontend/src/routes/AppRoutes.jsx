@@ -19,7 +19,10 @@ const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
 const SuperAdminDashboard = lazy(() => import("../pages/superadmin/Dashboard"));
 const Institutes = lazy(() => import("../pages/superadmin/Institutes"));
 const Plans = lazy(() => import("../pages/superadmin/Plans"));
+const Subscriptions = lazy(() => import("../pages/superadmin/Subscriptions"));
 const Analytics = lazy(() => import("../pages/superadmin/Analytics"));
+const Revenue = lazy(() => import("../pages/superadmin/Revenue"));
+const SuperAdminSettings = lazy(() => import("../pages/superadmin/Settings"));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import("../pages/admin/Dashboard"));
@@ -78,7 +81,10 @@ function AppRoutes() {
                 <Route path="dashboard" element={<SuperAdminDashboard />} />
                 <Route path="institutes" element={<Institutes />} />
                 <Route path="plans" element={<Plans />} />
+                <Route path="subscriptions" element={<Subscriptions />} />
                 <Route path="analytics" element={<Analytics />} />
+                <Route path="revenue" element={<Revenue />} />
+                <Route path="settings" element={<SuperAdminSettings />} />
                 <Route path="*" element={<Navigate to="/superadmin/dashboard" />} />
               </Routes>
             </ProtectedRoute>

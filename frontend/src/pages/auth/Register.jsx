@@ -14,6 +14,7 @@ function Register() {
   const [formData, setFormData] = useState({
     instituteName: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
   });
@@ -52,6 +53,7 @@ function Register() {
       await api.post("/auth/register", {
         instituteName: formData.instituteName,
         email: formData.email,
+        phone: formData.phone,
         password: formData.password,
       });
 
@@ -128,6 +130,23 @@ function Register() {
               value={formData.email}
               onChange={handleChange}
               required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="phone" className="form-label">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              className="form-input"
+              placeholder="+91 9876543210"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+              minLength={10}
             />
           </div>
 

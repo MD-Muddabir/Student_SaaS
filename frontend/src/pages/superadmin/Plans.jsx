@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from "react";
 import api from "../../services/api";
+import BackButton from "../../components/common/BackButton";
 import "../admin/Dashboard.css";
 
 function Plans() {
@@ -13,6 +14,7 @@ function Plans() {
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [formData, setFormData] = useState({
+        id: null,
         name: "",
         price: "",
         student_limit: "",
@@ -45,7 +47,8 @@ function Plans() {
                 await api.put(`/plans/${formData.id}`, formData);
                 alert("Plan updated successfully");
             } else {
-                await api.post("/plans", formData);
+                const { id, ...data } = formData; // Remove null id
+                await api.post("/plans", data);
                 alert("Plan created successfully");
             }
             setShowModal(false);
@@ -76,6 +79,7 @@ function Plans() {
 
     const resetForm = () => {
         setFormData({
+            id: null,
             name: "",
             price: "",
             student_limit: "",
@@ -107,197 +111,178 @@ function Plans() {
                     <h1>📋 Plans Management</h1>
                     <p>Create and manage subscription plans</p>
                 </div>
-                <button
-                    onClick={() => {
-                        resetForm();
-                        setShowModal(true);
-                    }}
-                    className="btn btn-primary"
-                >
-                    + Create Plan
-                </button>
+                <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                    <BackButton />
+                    <button
+                        onClick={() => {
+                            resetForm();
+                            setShowModal(true);
+                        }}
+                        className="btn btn-primary"
+                    >
+                        + Create Plan
+                    </button>
+                </div>
             </div>
 
             {/* Plans Grid */}
             <div className="stats-grid">
-                {plans.map((plan) => (
-                    <div key={plan.id} className="card" style={{ padding: "1.5rem" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "1rem" }}>
-                            <h3 style={{ margin: 0, fontSize: "1.5rem", color: "#6366f1" }}>{plan.name}</h3>
-                            <div style={{ display: "flex", gap: "0.5rem" }}>
-                                <button
-                                    className="btn btn-sm btn-primary"
-                                    onClick={() => handleEdit(plan)}
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    className="btn btn-sm btn-danger"
-                                    onClick={() => handleDelete(plan.id)}
-                                >
-                                    Delete
-                                </button>
+                {plans.length === 0 ? (
+                    <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "2rem" }}>
+                        No plans found. Create one to get started.
+                    </div>
+                ) : (
+                    plans.map((plan) => (
+                        <div key={plan.id} className="card" style={{ padding: "1.5rem" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "1rem" }}>
+                                <h3 style={{ margin: 0, fontSize: "1.5rem", color: "#6366f1" }}>{plan.name}</h3>
+                                <div style={{ display: "flex", gap: "0.5rem" }}>
+                                    <button
+                                        className="btn btn-sm btn-primary"
+                                        onClick={() => handleEdit(plan)}
+                                        style={{ padding: "0.25rem 0.5rem" }}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="btn btn-sm btn-danger"
+                                        onClick={() => handleDelete(plan.id)}
+                                        style={{ padding: "0.25rem 0.5rem" }}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "1rem" }}>
-                            ₹{plan.price}
-                            <span style={{ fontSize: "1rem", fontWeight: "normal", color: "#6b7280" }}>/month</span>
-                        </div>
+                            <div style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "1rem" }}>
+                                ₹{plan.price}
+                                <span style={{ fontSize: "0.875rem", fontWeight: "normal", color: "#6b7280" }}> / month</span>
+                            </div>
 
-                        <div style={{ marginBottom: "1rem" }}>
-                            <strong>Student Limit:</strong>{" "}
-                            {plan.student_limit || "Unlimited"}
-                        </div>
+                            <div style={{ marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px solid #e5e7eb" }}>
+                                <strong>Student Limit:</strong> {plan.student_limit}
+                            </div>
 
-                        <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "1rem" }}>
-                            <strong style={{ display: "block", marginBottom: "0.5rem" }}>Features:</strong>
-                            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                                <li style={{ padding: "0.25rem 0" }}>
-                                    {plan.feature_attendance ? "✅" : "❌"} Attendance Management
+                            <ul style={{ listStyle: "none", padding: 0, margin: 0, fontSize: "0.875rem" }}>
+                                <li style={{ marginBottom: "0.5rem", display: "flex", justifyContent: "space-between" }}>
+                                    Attendance System: <span>{plan.feature_attendance ? "✅" : "❌"}</span>
                                 </li>
-                                <li style={{ padding: "0.25rem 0" }}>
-                                    {plan.feature_fees ? "✅" : "❌"} Fees Management
+                                <li style={{ marginBottom: "0.5rem", display: "flex", justifyContent: "space-between" }}>
+                                    Fees Management: <span>{plan.feature_fees ? "✅" : "❌"}</span>
                                 </li>
-                                <li style={{ padding: "0.25rem 0" }}>
-                                    {plan.feature_reports ? "✅" : "❌"} Reports & Analytics
+                                <li style={{ marginBottom: "0.5rem", display: "flex", justifyContent: "space-between" }}>
+                                    Reports & Analytics: <span>{plan.feature_reports ? "✅" : "❌"}</span>
                                 </li>
-                                <li style={{ padding: "0.25rem 0" }}>
-                                    {plan.feature_parent_portal ? "✅" : "❌"} Parent Portal
+                                <li style={{ marginBottom: "0.5rem", display: "flex", justifyContent: "space-between" }}>
+                                    Parent Portal: <span>{plan.feature_parent_portal ? "✅" : "❌"}</span>
                                 </li>
                             </ul>
                         </div>
-
-                        {plan.razorpay_plan_id && (
-                            <div style={{ marginTop: "1rem", fontSize: "0.875rem", color: "#6b7280" }}>
-                                <strong>Razorpay ID:</strong> {plan.razorpay_plan_id}
-                            </div>
-                        )}
-                    </div>
-                ))}
-
-                {plans.length === 0 && (
-                    <div className="card" style={{ padding: "2rem", textAlign: "center", gridColumn: "1 / -1" }}>
-                        <p>No plans created yet. Click "Create Plan" to add one.</p>
-                    </div>
+                    ))
                 )}
             </div>
 
-            {/* Create/Edit Plan Modal */}
+            {/* Modal */}
             {showModal && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "600px" }}>
-                        <div className="modal-header">
-                            <h3>{editMode ? "Edit Plan" : "Create New Plan"}</h3>
-                            <button onClick={() => setShowModal(false)} className="btn btn-sm">×</button>
-                        </div>
-                        <div className="modal-body">
-                            <form onSubmit={handleSubmit}>
-                                <div className="form-group">
-                                    <label className="form-label">Plan Name *</label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        className="form-input"
-                                        placeholder="e.g., Basic, Pro, Premium"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ maxWidth: "500px" }}>
+                        <h2>{editMode ? "Edit Plan" : "Create New Plan"}</h2>
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label>Plan Name</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    className="form-input"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
 
-                                <div className="form-group">
-                                    <label className="form-label">Price (₹) *</label>
-                                    <input
-                                        type="number"
-                                        name="price"
-                                        className="form-input"
-                                        placeholder="e.g., 999"
-                                        value={formData.price}
-                                        onChange={handleChange}
-                                        required
-                                        min="0"
-                                        step="0.01"
-                                    />
-                                </div>
+                            <div className="form-group">
+                                <label>Price (₹)</label>
+                                <input
+                                    type="number"
+                                    name="price"
+                                    className="form-input"
+                                    value={formData.price}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
 
-                                <div className="form-group">
-                                    <label className="form-label">Student Limit</label>
-                                    <input
-                                        type="number"
-                                        name="student_limit"
-                                        className="form-input"
-                                        placeholder="Leave empty for unlimited"
-                                        value={formData.student_limit}
-                                        onChange={handleChange}
-                                        min="0"
-                                    />
-                                </div>
+                            <div className="form-group">
+                                <label>Student Limit</label>
+                                <input
+                                    type="number"
+                                    name="student_limit"
+                                    className="form-input"
+                                    value={formData.student_limit}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
 
-                                <div className="form-group">
-                                    <label className="form-label">Razorpay Plan ID</label>
-                                    <input
-                                        type="text"
-                                        name="razorpay_plan_id"
-                                        className="form-input"
-                                        placeholder="plan_xxxxxxxxxxxxx"
-                                        value={formData.razorpay_plan_id}
-                                        onChange={handleChange}
-                                    />
-                                </div>
+                            <div className="form-group">
+                                <label>Razorpay Plan ID (Optional)</label>
+                                <input
+                                    type="text"
+                                    name="razorpay_plan_id"
+                                    className="form-input"
+                                    value={formData.razorpay_plan_id || ""}
+                                    onChange={handleChange}
+                                    placeholder="plan_123456"
+                                />
+                            </div>
 
-                                <div className="form-group">
-                                    <label className="form-label">Features</label>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                                        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                            <input
-                                                type="checkbox"
-                                                name="feature_attendance"
-                                                checked={formData.feature_attendance}
-                                                onChange={handleChange}
-                                            />
-                                            Attendance Management
-                                        </label>
-                                        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                            <input
-                                                type="checkbox"
-                                                name="feature_fees"
-                                                checked={formData.feature_fees}
-                                                onChange={handleChange}
-                                            />
-                                            Fees Management
-                                        </label>
-                                        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                            <input
-                                                type="checkbox"
-                                                name="feature_reports"
-                                                checked={formData.feature_reports}
-                                                onChange={handleChange}
-                                            />
-                                            Reports & Analytics
-                                        </label>
-                                        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                            <input
-                                                type="checkbox"
-                                                name="feature_parent_portal"
-                                                checked={formData.feature_parent_portal}
-                                                onChange={handleChange}
-                                            />
-                                            Parent Portal
-                                        </label>
-                                    </div>
+                            <div className="form-group">
+                                <label style={{ display: "block", marginBottom: "0.5rem" }}>Features</label>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                                    <label style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                                        <input
+                                            type="checkbox"
+                                            name="feature_attendance"
+                                            checked={formData.feature_attendance}
+                                            onChange={handleChange}
+                                        /> Attendance
+                                    </label>
+                                    <label style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                                        <input
+                                            type="checkbox"
+                                            name="feature_fees"
+                                            checked={formData.feature_fees}
+                                            onChange={handleChange}
+                                        /> Fees
+                                    </label>
+                                    <label style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                                        <input
+                                            type="checkbox"
+                                            name="feature_reports"
+                                            checked={formData.feature_reports}
+                                            onChange={handleChange}
+                                        /> Reports
+                                    </label>
+                                    <label style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                                        <input
+                                            type="checkbox"
+                                            name="feature_parent_portal"
+                                            checked={formData.feature_parent_portal}
+                                            onChange={handleChange}
+                                        /> Parent Portal
+                                    </label>
                                 </div>
+                            </div>
 
-                                <div className="modal-footer">
-                                    <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary">
-                                        Cancel
-                                    </button>
-                                    <button type="submit" className="btn btn-primary">
-                                        {editMode ? "Update Plan" : "Create Plan"}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                            <div className="modal-actions" style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1.5rem" }}>
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn btn-primary">
+                                    {editMode ? "Save Changes" : "Create Plan"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

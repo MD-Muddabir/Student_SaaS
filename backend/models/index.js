@@ -76,6 +76,10 @@ User.hasMany(Announcement, { foreignKey: "created_by" });
 Announcement.belongsTo(Institute, { foreignKey: "institute_id" });
 Institute.hasMany(Announcement, { foreignKey: "institute_id" });
 
+// Subscription Associations
+Institute.hasMany(Subscription, { foreignKey: "institute_id" });
+Subscription.belongsTo(Institute, { foreignKey: "institute_id" });
+
 module.exports = {
     sequelize,
     Plan,

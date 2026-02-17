@@ -1,0 +1,12 @@
+[
+  "id",
+  "institute_id",
+  "plan_id",
+  "start_date",
+  "end_date",
+  "payment_status",
+  "transaction_reference",
+  "created_at",
+  "updated_at",
+  "amount_paid"
+]

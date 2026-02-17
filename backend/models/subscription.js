@@ -8,6 +8,7 @@ const Subscription = sequelize.define("Subscription", {
     end_date: DataTypes.DATEONLY,
     payment_status: DataTypes.ENUM("paid", "unpaid", "failed"),
     transaction_reference: DataTypes.STRING,
+    amount_paid: DataTypes.DECIMAL(10, 2),
 });
 
 module.exports = Subscription;

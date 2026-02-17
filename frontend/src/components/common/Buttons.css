@@ -1,0 +1,55 @@
+.animated-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+    border: none;
+    border-radius: 9999px;
+    /* Pill shape */
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3), 0 2px 4px -1px rgba(79, 70, 229, 0.15);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.animated-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4), 0 4px 6px -2px rgba(79, 70, 229, 0.2);
+    /* Lighter gradient on hover */
+    background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+}
+
+.animated-btn:active {
+    transform: translateY(0);
+}
+
+.animated-btn .icon {
+    transition: transform 0.3s ease;
+}
+
+.animated-btn:hover .icon-back {
+    transform: translateX(-4px);
+    /* Valid for back button */
+}
+
+.animated-btn:hover .icon-logout {
+    transform: translateX(4px);
+    /* Valid for logout button */
+}
+
+/* Variant: Danger (for Logout) */
+.animated-btn.danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.3);
+}
+
+.animated-btn.danger:hover {
+    background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+    box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.4);
+}

@@ -4,7 +4,8 @@
  * Implements multi-tenant data isolation
  */
 
-const { Institute, User, Subscription } = require("../models");
+const { Institute, User, Subscription, Plan } = require("../models");
+const { Op } = require("sequelize");
 
 /**
  * Create a new institute
@@ -75,8 +76,12 @@ exports.getAllInstitutes = async (req, res) => {
             include: [
                 {
                     model: Subscription,
-                    attributes: ["plan_id", "subscription_start", "subscription_end", "payment_status"],
+                    attributes: ["plan_id", "start_date", "end_date", "payment_status"],
                 },
+                {
+                    model: Plan,
+                    attributes: ["name"]
+                }
             ],
         });
 
@@ -122,8 +127,12 @@ exports.getInstituteById = async (req, res) => {
             include: [
                 {
                     model: Subscription,
-                    attributes: ["plan_id", "subscription_start", "subscription_end", "payment_status"],
+                    attributes: ["plan_id", "start_date", "end_date", "payment_status"],
                 },
+                {
+                    model: Plan,
+                    attributes: ["name"]
+                }
             ],
         });
 

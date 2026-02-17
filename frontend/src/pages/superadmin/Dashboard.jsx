@@ -4,11 +4,13 @@
  */
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import "../admin/Dashboard.css";
+import "../../components/common/Buttons.css";
 
 function SuperAdminDashboard() {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         totalInstitutes: 0,
@@ -28,16 +30,25 @@ function SuperAdminDashboard() {
     const fetchDashboardData = async () => {
         try {
             // Fetch analytics
-            const analyticsRes = await api.get("/superadmin/analytics");
-            setStats(analyticsRes.data.data);
+            const analyticsRes = await api.get("/superadmin/dashboard");
+            setStats(analyticsRes.data);
 
             // Fetch recent institutes
             const institutesRes = await api.get("/institutes?limit=5");
-            setRecentInstitutes(institutesRes.data.data || []);
+            // API returns { success: true, data: { institutes: [], pagination: {} } }
+            setRecentInstitutes(institutesRes.data.data?.institutes || []);
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleLogout = () => {
+        if (window.confirm("Are you sure you want to logout?")) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate("/login");
         }
     };
 
@@ -52,6 +63,10 @@ function SuperAdminDashboard() {
                     <h1>👑 Super Admin Dashboard</h1>
                     <p>Platform-wide management and analytics</p>
                 </div>
+                <button className="animated-btn danger" onClick={handleLogout}>
+                    <span className="icon icon-logout">🔒</span>
+                    Logout
+                </button>
             </div>
 
             {/* Statistics Grid */}

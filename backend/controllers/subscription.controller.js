@@ -15,8 +15,8 @@ exports.createSubscription = async (req, res) => {
             amount_paid,
             discount_amount: discount_amount || 0,
             payment_status: "pending",
-            subscription_start,
-            subscription_end,
+            start_date: subscription_start,
+            end_date: subscription_end,
         });
 
         res.status(201).json({

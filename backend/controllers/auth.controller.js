@@ -88,3 +88,36 @@ exports.logout = (req, res) => {
         message: "Logged out successfully"
     });
 };
+
+exports.getProfile = async (req, res) => {
+    try {
+        const user = await authService.getProfile(req.user.id);
+        res.status(200).json({
+            success: true,
+            user
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+exports.updateProfile = async (req, res) => {
+    try {
+        const { name, email } = req.body;
+        const user = await authService.updateProfile(req.user.id, { name, email });
+
+        res.status(200).json({
+            success: true,
+            message: "Profile updated successfully",
+            user
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};

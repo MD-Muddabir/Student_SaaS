@@ -9,6 +9,7 @@ const Plan = sequelize.define("Plan", {
     feature_fees: DataTypes.BOOLEAN,
     feature_reports: DataTypes.BOOLEAN,
     feature_parent_portal: DataTypes.BOOLEAN,
+    razorpay_plan_id: DataTypes.STRING,
 });
 
 module.exports = Plan;

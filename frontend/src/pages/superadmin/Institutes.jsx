@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from "react";
 import api from "../../services/api";
+import BackButton from "../../components/common/BackButton";
 import "../admin/Dashboard.css";
 
 function Institutes() {
@@ -26,7 +27,7 @@ function Institutes() {
                 url += `&status=${statusFilter}`;
             }
             const response = await api.get(url);
-            setInstitutes(response.data.data || []);
+            setInstitutes(response.data.data?.institutes || []);
         } catch (error) {
             console.error("Error fetching institutes:", error);
         } finally {
@@ -38,7 +39,7 @@ function Institutes() {
         if (!window.confirm("Are you sure you want to suspend this institute?")) return;
 
         try {
-            await api.put(`/institutes/${id}`, { status: "suspended" });
+            await api.patch(`/institutes/${id}/status`, { status: "suspended" });
             alert("Institute suspended successfully");
             fetchInstitutes();
         } catch (error) {
@@ -48,7 +49,7 @@ function Institutes() {
 
     const handleActivate = async (id) => {
         try {
-            await api.put(`/institutes/${id}`, { status: "active" });
+            await api.patch(`/institutes/${id}/status`, { status: "active" });
             alert("Institute activated successfully");
             fetchInstitutes();
         } catch (error) {
@@ -74,8 +75,8 @@ function Institutes() {
     };
 
     const filteredInstitutes = institutes.filter(inst =>
-        inst.name.toLowerCase().includes(search.toLowerCase()) ||
-        inst.email.toLowerCase().includes(search.toLowerCase())
+        (inst.name && inst.name.toLowerCase().includes(search.toLowerCase())) ||
+        (inst.email && inst.email.toLowerCase().includes(search.toLowerCase()))
     );
 
     if (loading) {
@@ -89,6 +90,7 @@ function Institutes() {
                     <h1>🏢 Institutes Management</h1>
                     <p>Manage all registered institutes</p>
                 </div>
+                <BackButton />
             </div>
 
             {/* Filters */}
@@ -157,34 +159,32 @@ function Institutes() {
                     <table className="table">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
                                 <th>Plan</th>
                                 <th>Status</th>
-                                <th>Subscription End</th>
+                                <th>End Date</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredInstitutes.length === 0 ? (
                                 <tr>
-                                    <td colSpan="8" style={{ textAlign: "center", padding: "2rem" }}>
+                                    <td colSpan="7" style={{ textAlign: "center", padding: "2rem" }}>
                                         No institutes found
                                     </td>
                                 </tr>
                             ) : (
                                 filteredInstitutes.map((institute) => (
                                     <tr key={institute.id}>
-                                        <td>{institute.id}</td>
                                         <td>{institute.name}</td>
                                         <td>{institute.email}</td>
                                         <td>{institute.phone || "N/A"}</td>
                                         <td>{institute.Plan?.name || "No Plan"}</td>
                                         <td>
                                             <span className={`badge badge-${institute.status === 'active' ? 'success' :
-                                                    institute.status === 'suspended' ? 'warning' : 'danger'
+                                                institute.status === 'suspended' ? 'warning' : 'danger'
                                                 }`}>
                                                 {institute.status}
                                             </span>
@@ -236,53 +236,50 @@ function Institutes() {
             {/* Institute Details Modal */}
             {showModal && selectedInstitute && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "600px" }}>
-                        <div className="modal-header">
-                            <h3>Institute Details</h3>
-                            <button onClick={() => setShowModal(false)} className="btn btn-sm">×</button>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "600px", background: "white", padding: "2rem", borderRadius: "12px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+                            <h3 style={{ margin: 0, fontSize: "1.5rem" }}>Institute Details</h3>
+                            <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", fontSize: "1.5rem", cursor: "pointer" }}>×</button>
                         </div>
-                        <div className="modal-body">
-                            <div style={{ display: "grid", gap: "1rem" }}>
-                                <div>
-                                    <strong>ID:</strong> {selectedInstitute.id}
-                                </div>
-                                <div>
-                                    <strong>Name:</strong> {selectedInstitute.name}
-                                </div>
-                                <div>
-                                    <strong>Email:</strong> {selectedInstitute.email}
-                                </div>
-                                <div>
-                                    <strong>Phone:</strong> {selectedInstitute.phone || "Not provided"}
-                                </div>
-                                <div>
-                                    <strong>Address:</strong> {selectedInstitute.address || "Not provided"}
-                                </div>
-                                <div>
-                                    <strong>Plan:</strong> {selectedInstitute.Plan?.name || "No Plan"}
-                                </div>
-                                <div>
-                                    <strong>Status:</strong> {selectedInstitute.status}
-                                </div>
-                                <div>
-                                    <strong>Subscription Start:</strong>{" "}
-                                    {selectedInstitute.subscription_start
-                                        ? new Date(selectedInstitute.subscription_start).toLocaleDateString()
-                                        : "N/A"}
-                                </div>
-                                <div>
-                                    <strong>Subscription End:</strong>{" "}
-                                    {selectedInstitute.subscription_end
-                                        ? new Date(selectedInstitute.subscription_end).toLocaleDateString()
-                                        : "N/A"}
-                                </div>
-                                <div>
-                                    <strong>Created:</strong>{" "}
-                                    {new Date(selectedInstitute.created_at).toLocaleString()}
-                                </div>
+                        <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "1fr 1fr" }}>
+                            <div className="detail-item">
+                                <label style={{ fontWeight: "bold", display: "block" }}>ID</label>
+                                <span>{selectedInstitute.id}</span>
+                            </div>
+                            <div className="detail-item">
+                                <label style={{ fontWeight: "bold", display: "block" }}>Name</label>
+                                <span>{selectedInstitute.name}</span>
+                            </div>
+                            <div className="detail-item">
+                                <label style={{ fontWeight: "bold", display: "block" }}>Email</label>
+                                <span>{selectedInstitute.email}</span>
+                            </div>
+                            <div className="detail-item">
+                                <label style={{ fontWeight: "bold", display: "block" }}>Phone</label>
+                                <span>{selectedInstitute.phone || "Not provided"}</span>
+                            </div>
+                            <div className="detail-item" style={{ gridColumn: "1/-1" }}>
+                                <label style={{ fontWeight: "bold", display: "block" }}>Address</label>
+                                <span>{selectedInstitute.address || "Not provided"}</span>
+                            </div>
+                            <div className="detail-item">
+                                <label style={{ fontWeight: "bold", display: "block" }}>Plan</label>
+                                <span>{selectedInstitute.Plan?.name || "No Plan"}</span>
+                            </div>
+                            <div className="detail-item">
+                                <label style={{ fontWeight: "bold", display: "block" }}>Status</label>
+                                <span>{selectedInstitute.status}</span>
+                            </div>
+                            <div className="detail-item">
+                                <label style={{ fontWeight: "bold", display: "block" }}>Subscription Start</label>
+                                <span>{selectedInstitute.subscription_start ? new Date(selectedInstitute.subscription_start).toLocaleDateString() : "N/A"}</span>
+                            </div>
+                            <div className="detail-item">
+                                <label style={{ fontWeight: "bold", display: "block" }}>Subscription End</label>
+                                <span>{selectedInstitute.subscription_end ? new Date(selectedInstitute.subscription_end).toLocaleDateString() : "N/A"}</span>
                             </div>
                         </div>
-                        <div className="modal-footer">
+                        <div style={{ marginTop: "2rem", textAlign: "right" }}>
                             <button onClick={() => setShowModal(false)} className="btn btn-secondary">
                                 Close
                             </button>
