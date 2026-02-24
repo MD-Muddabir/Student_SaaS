@@ -8,9 +8,36 @@ import { Link } from "react-router-dom";
 import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
 import "./Dashboard.css";
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+} from 'chart.js';
+import { Line, Bar, Pie } from 'react-chartjs-2';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+);
 
 function Reports() {
     const { user } = useContext(AuthContext);
+    const isPro = user?.features?.reports === 'advanced';
+
     const [activeTab, setActiveTab] = useState("dashboard");
     const [dashboardData, setDashboardData] = useState(null);
     const [attendanceReport, setAttendanceReport] = useState(null);
@@ -100,7 +127,8 @@ function Reports() {
     const fetchMonthlyTrends = async () => {
         setLoading(true);
         try {
-            const response = await api.get("/reports/monthly-trends?months=6");
+            const monthsToFetch = isPro ? 6 : 3;
+            const response = await api.get(`/reports/monthly-trends?months=${monthsToFetch}`);
             setMonthlyTrends(response.data.data);
         } catch (error) {
             console.error("Error fetching trends:", error);
@@ -110,7 +138,28 @@ function Reports() {
     };
 
     const handleFilterChange = (key, value) => {
-        setFilters(prev => ({ ...prev, [key]: value }));
+        const newFilters = { ...filters, [key]: value };
+
+        if (!isPro && (key === 'start_date' || key === 'end_date')) {
+            const start = new Date(newFilters.start_date);
+            const end = new Date(newFilters.end_date);
+            const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 90) {
+                alert("✨ Upgrade to Pro plan to unlock unlimited date filters for analytics!");
+                return; // Prevent state update
+            }
+        }
+
+        setFilters(newFilters);
+    };
+
+    const handleExport = (type) => {
+        if (!isPro) {
+            alert(`✨ Upgrade to Pro plan to unlock Export to ${type} features!`);
+            return;
+        }
+        alert(`Downloading ${type}...`); // Mock download
     };
 
     return (
@@ -118,11 +167,15 @@ function Reports() {
             <div className="dashboard-header">
                 <div>
                     <h1>📊 Reports & Analytics</h1>
-                    <p>Comprehensive insights and performance metrics</p>
+                    <p>Comprehensive insights and performance metrics {isPro ? <span className="badge badge-success">PRO</span> : <span className="badge badge-secondary">BASIC</span>}</p>
                 </div>
-                <Link to="/admin/dashboard" className="btn btn-secondary">
-                    ← Back
-                </Link>
+                <div style={{ display: "flex", gap: "10px" }}>
+                    <button onClick={() => handleExport("PDF")} className="btn btn-primary" style={{ backgroundColor: isPro ? "#ef4444" : "#ccc", borderColor: isPro ? "#ef4444" : "#ccc" }}>📄 PDF {isPro ? "" : "🔒"}</button>
+                    <button onClick={() => handleExport("Excel")} className="btn btn-primary" style={{ backgroundColor: isPro ? "#10b981" : "#ccc", borderColor: isPro ? "#10b981" : "#ccc" }}>📊 Excel {isPro ? "" : "🔒"}</button>
+                    <Link to="/admin/dashboard" className="btn btn-secondary">
+                        ← Back
+                    </Link>
+                </div>
             </div>
 
             {/* Tab Navigation */}
@@ -492,9 +545,65 @@ function Reports() {
             {/* Monthly Trends Tab */}
             {activeTab === "trends" && monthlyTrends && (
                 <div>
+                    {isPro ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+                            <div className="card" style={{ padding: '1rem' }}>
+                                <h3>Revenue Growth</h3>
+                                <div style={{ height: '300px' }}>
+                                    <Bar
+                                        data={{
+                                            labels: monthlyTrends.map(t => t.month),
+                                            datasets: [{
+                                                label: 'Fees Collected (₹)',
+                                                data: monthlyTrends.map(t => t.fees_collected),
+                                                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                                            }]
+                                        }}
+                                        options={{ maintainAspectRatio: false }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="card" style={{ padding: '1rem' }}>
+                                <h3>Attendance Trend vs Goal</h3>
+                                <div style={{ height: '300px' }}>
+                                    <Line
+                                        data={{
+                                            labels: monthlyTrends.map(t => t.month),
+                                            datasets: [
+                                                {
+                                                    label: 'Attendance %',
+                                                    data: monthlyTrends.map(t => t.attendance_percentage),
+                                                    borderColor: 'rgba(16, 185, 129, 1)',
+                                                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                                                    fill: true,
+                                                },
+                                                {
+                                                    label: 'Target (75%)',
+                                                    data: monthlyTrends.map(() => 75),
+                                                    borderColor: 'rgba(239, 68, 68, 0.5)',
+                                                    borderDash: [5, 5],
+                                                    fill: false,
+                                                }
+                                            ]
+                                        }}
+                                        options={{ maintainAspectRatio: false }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div style={{ marginBottom: '1.5rem', padding: '1.5rem', backgroundColor: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <h3 style={{ color: '#0369a1', marginBottom: '0.2rem' }}>Unlock Pro Analytics 📈</h3>
+                                <p style={{ color: '#0284c7', fontSize: '0.9rem', margin: 0 }}>Upgrade to access smart interactive charts, revenue forecasting, 1-year history maps, and automated insights!</p>
+                            </div>
+                            <Link to="/pricing" className="btn btn-primary" style={{ backgroundColor: '#0284c7', borderColor: '#0284c7' }}>Upgrade to Pro ⭐</Link>
+                        </div>
+                    )}
+
                     <div className="card">
                         <div className="card-header">
-                            <h3 className="card-title">6-Month Trends</h3>
+                            <h3 className="card-title">{isPro ? "6-Month Core Trends" : "3-Month Summary"}</h3>
                         </div>
                         <div className="table-container">
                             <table className="table">

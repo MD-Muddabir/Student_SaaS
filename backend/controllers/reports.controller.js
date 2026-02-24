@@ -85,12 +85,30 @@ exports.getAttendanceReport = async (req, res) => {
         const { start_date, end_date, class_id, student_id } = req.query;
         const institute_id = req.user.institute_id;
 
-        // Validate date range
-        if (start_date && end_date && new Date(start_date) > new Date(end_date)) {
-            return res.status(400).json({
-                success: false,
-                message: "Start date must be before end date"
-            });
+        // Validate date range and plan limits
+        if (start_date && end_date) {
+            const startDateObj = new Date(start_date);
+            const endDateObj = new Date(end_date);
+            if (startDateObj > endDateObj) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Start date must be before end date"
+                });
+            }
+
+            // Verify plan limits
+            const institute = await Institute.findByPk(institute_id, { include: [{ model: Plan }] });
+            const reportsLevel = institute.current_feature_reports !== 'none' ? institute.current_feature_reports : (institute.Plan ? institute.Plan.feature_reports : 'none');
+
+            if (reportsLevel !== 'advanced') {
+                const diffDays = Math.ceil(Math.abs(endDateObj - startDateObj) / (1000 * 60 * 60 * 24));
+                if (diffDays > 90) {
+                    return res.status(403).json({
+                        success: false,
+                        message: "Your current plan limits report history to 90 days. Please upgrade to Pro for unlimited dates."
+                    });
+                }
+            }
         }
 
         // Build where clause
@@ -158,12 +176,30 @@ exports.getFeesReport = async (req, res) => {
         const { start_date, end_date, class_id } = req.query;
         const institute_id = req.user.institute_id;
 
-        // Validate date range
-        if (start_date && end_date && new Date(start_date) > new Date(end_date)) {
-            return res.status(400).json({
-                success: false,
-                message: "Start date must be before end date"
-            });
+        // Validate date range and plan limits
+        if (start_date && end_date) {
+            const startDateObj = new Date(start_date);
+            const endDateObj = new Date(end_date);
+            if (startDateObj > endDateObj) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Start date must be before end date"
+                });
+            }
+
+            // Verify plan limits
+            const institute = await Institute.findByPk(institute_id, { include: [{ model: Plan }] });
+            const reportsLevel = institute.current_feature_reports !== 'none' ? institute.current_feature_reports : (institute.Plan ? institute.Plan.feature_reports : 'none');
+
+            if (reportsLevel !== 'advanced') {
+                const diffDays = Math.ceil(Math.abs(endDateObj - startDateObj) / (1000 * 60 * 60 * 24));
+                if (diffDays > 90) {
+                    return res.status(403).json({
+                        success: false,
+                        message: "Your current plan limits report history to 90 days. Please upgrade to Pro for unlimited dates."
+                    });
+                }
+            }
         }
 
         // Build where clause for payments
