@@ -1,0 +1,667 @@
+/**
+ * Institute Public Page — Public-facing component
+ * Route: /i/:slug
+ * Fetches data from /api/public/:slug and renders the full page
+ */
+import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import "./InstitutePage.css";
+
+const API_BASE = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:5000/api`;
+const resolveImg = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
+  return API_BASE.replace('/api', '') + url;
+};
+const CLASS_OPTIONS = ["8th", "9th", "10th", "11th", "12th", "Dropper", "Other"];
+
+// ── Scroll Reveal Hook ────────────────────────────────────────────
+function useScrollReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll('.pub-reveal');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            observer.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    els.forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+}
+
+// ── Loading Skeleton ──────────────────────────────────────────────
+function Skeleton() {
+  return (
+    <div style={{ minHeight: "100vh", background: "#f8faff" }}>
+      <div style={{ height: 60, background: "rgba(255,255,255,0.96)" }} />
+      <div style={{ height: 520, background: "linear-gradient(135deg,#0f2340,#1e3a5f)" }} />
+    </div>
+  );
+}
+
+// ── Star Rating ───────────────────────────────────────────────────
+function Stars({ rating }) {
+  return (
+    <span className="pub-stars">
+      {"★".repeat(rating)}{"☆".repeat(5 - rating)}
+    </span>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────
+export default function InstitutePage() {
+  const { slug } = useParams();
+  const navigate = useNavigate();
+
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Enquiry form state
+  const [form, setForm] = useState({ first_name: "", last_name: "", mobile: "", email: "", course_interest: "", current_class: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState("");
+
+  const enqRef = useRef(null);
+  const contentRef = useRef(null);
+
+  useScrollReveal();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/public/${slug}`);
+        const json = await res.json();
+        if (!res.ok || json.error === "NOT_FOUND" || !json.data?.is_published) {
+          navigate("/404", { replace: true });
+          return;
+        }
+        setData(json.data);
+        // Update document head for SEO
+        document.title = json.data.seo_title || `${json.data.name} — Institute`;
+        const metaDesc = document.querySelector("meta[name='description']");
+        if (metaDesc) metaDesc.setAttribute("content", json.data.seo_description || json.data.description || "");
+      } catch (e) {
+        setError("Failed to load page");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [slug, navigate]);
+
+  // Active Link on Scroll
+  useEffect(() => {
+    if (!data) return;
+    const handleScroll = () => {
+      const sections = document.querySelectorAll('section[id], div[id]');
+      const navLinks = document.querySelectorAll('.pub-nav-links a');
+      let cur = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 100) cur = s.id;
+      });
+      navLinks.forEach(a => {
+        const isActive = a.getAttribute('href') === '#' + cur;
+        a.style.color = isActive ? 'var(--pub-primary)' : '';
+        a.style.fontWeight = isActive ? '700' : '';
+      });
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [data]);
+
+  // Re-run scroll pub-reveal after data load
+  useEffect(() => {
+    if (data) {
+      setTimeout(() => {
+        const els = document.querySelectorAll('.pub-reveal');
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach(e => {
+              if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                observer.unobserve(e.target);
+              }
+            });
+          },
+          { threshold: 0.12 }
+        );
+        els.forEach(el => observer.observe(el));
+      }, 100);
+    }
+  }, [data]);
+
+
+  const scrollToEnq = () => enqRef.current?.scrollIntoView({ behavior: "smooth" });
+
+  const handleEnqSubmit = async (e) => {
+    e.preventDefault();
+    setFormError("");
+    if (!form.first_name.trim()) return setFormError("Name is required");
+    if (!/^[6-9]\d{9}$/.test(form.mobile)) return setFormError("Enter valid 10-digit mobile number");
+
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_BASE}/public/${slug}/enquiry`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setSubmitted(true);
+      } else {
+        setFormError(json.message || "Submission failed");
+      }
+    } catch (e) {
+      setFormError("Network error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) return <Skeleton />;
+  if (error) return <div style={{ textAlign: "center", padding: "4rem", color: "#ef4444" }}>{error}</div>;
+  if (!data) return null;
+
+  const logoInitial = (data.name || "I").split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+  return (
+    <div className="ipage-root" ref={contentRef}>
+      {/* ── Navbar ── */}
+      <nav className="pub-nav">
+        <div className="pub-nav-brand">
+          <div className="pub-nav-logo">
+            {data.logo_url ? <img src={resolveImg(data.logo_url)} alt="logo" /> : logoInitial}
+          </div>
+          <div>
+            <div className="pub-nav-name">{data.name}</div>
+            {data.tagline && <div className="pub-nav-tagline">{data.tagline}</div>}
+          </div>
+        </div>
+
+        <ul className="pub-nav-links">
+          <li><a href="#about">About</a></li>
+          {data.courses?.length > 0 && <li><a href="#courses">Courses</a></li>}
+          {data.faculty?.length > 0 && <li><a href="#faculty">Faculty</a></li>}
+          {data.gallery?.length > 0 && <li><a href="#gallery">Gallery</a></li>}
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+
+        <div className="pub-nav-cta">
+          <a href="/login" className="pub-btn-outline">Login</a>
+          <button className="pub-btn-primary" onClick={scrollToEnq}>Enroll Now</button>
+        </div>
+      </nav>
+
+      {/* ── Hero ── */}
+      <section className="pub-hero" id="home">
+        <div className="pub-hero-bg" style={{
+          background: `linear-gradient(125deg, #${data.theme_color || '1a3c5e'} 0%, #0f2640 55%, #${data.theme_color || '1a3c5e'} 100%)`
+        }}></div>
+        <div className="pub-hero-blob"></div>
+
+        <div className="pub-hero-left">
+          {data.admission_status && (
+            <div className="pub-hero-badge">
+              <div className="pub-badge-dot"></div>
+              {data.admission_status}
+            </div>
+          )}
+          <h1 className="pub-hero-title">{data.name}</h1>
+          {data.description && <p className="pub-hero-desc">{data.description}</p>}
+
+          {(data.stats?.students || data.stats?.pass_rate || data.stats?.selections || data.stats?.years) && (
+            <div className="pub-hero-stats">
+              {data.stats.students && <div><div className="pub-stat-num">{data.stats.students}</div><div className="pub-stat-label">Students</div></div>}
+              {data.stats.pass_rate && <div><div className="pub-stat-num">{data.stats.pass_rate}</div><div className="pub-stat-label">Pass Rate</div></div>}
+              {data.stats.selections && <div><div className="pub-stat-num">{data.stats.selections}</div><div className="pub-stat-label">Selections</div></div>}
+              {data.stats.years && <div><div className="pub-stat-num">{data.stats.years}</div><div className="pub-stat-label">Years</div></div>}
+            </div>
+          )}
+
+          <div className="pub-hero-actions">
+            <button className="pub-btn-primary" style={{ padding: '15px 36px', fontSize: '16px' }} onClick={scrollToEnq}>Enquire Now</button>
+            {data.contact?.whatsapp && (
+              <a href={`https://wa.me/91${data.contact.whatsapp}`} target="_blank" rel="noopener noreferrer" className="pub-btn-outline" style={{ padding: '15px 36px', fontSize: '16px', color: 'white', borderColor: 'rgba(255,255,255,.4)' }}>
+                💬 WhatsApp
+              </a>
+            )}
+          </div>
+        </div>
+
+        <div className="pub-hero-card">
+          {data.cover_photo_url ? (
+            <div className="pub-hero-img-wrap">
+              <img src={resolveImg(data.cover_photo_url)} alt="cover" />
+            </div>
+          ) : (
+            <div className="pub-hero-img-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', color: 'white' }}>
+              🏫
+            </div>
+          )}
+          {data.contact?.address && (
+            <div className="pub-quick-info-row">
+              <div className="pub-quick-icon">📍</div>
+              <div>
+                <div className="pub-quick-text-title">Location</div>
+                <div className="pub-quick-text-val">{data.contact.address}</div>
+              </div>
+            </div>
+          )}
+          {data.contact?.phone && (
+            <div className="pub-quick-info-row">
+              <div className="pub-quick-icon">📞</div>
+              <div>
+                <div className="pub-quick-text-title">Call Us</div>
+                <div className="pub-quick-text-val">{data.contact.phone}</div>
+              </div>
+            </div>
+          )}
+          {data.affiliation && (
+            <div className="pub-quick-info-row">
+              <div className="pub-quick-icon">🎓</div>
+              <div>
+                <div className="pub-quick-text-title">Affiliation</div>
+                <div className="pub-quick-text-val">{data.affiliation}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── About ── */}
+      <section className="pub-section" id="about">
+        <div className="pub-section-label pub-reveal">ABOUT US</div>
+        <h2 className="pub-section-title pub-reveal" style={{ transitionDelay: '0.1s' }}>Why we are the best choice.</h2>
+        <div className="pub-about-grid">
+          <div className="pub-about-images pub-reveal" style={{ transitionDelay: '0.2s' }}>
+            <div className="pub-about-img tall">
+              {data.gallery?.[0] ? <img src={resolveImg(data.gallery[0].photo_url)} alt="campus" /> : <div style={{ fontSize: '30px' }}>🏫</div>}
+              {data.gallery?.[0]?.label && <div className="pub-about-img-label">{data.gallery[0].label}</div>}
+            </div>
+            <div className="pub-about-img">
+              {data.gallery?.[1] ? <img src={resolveImg(data.gallery[1].photo_url)} alt="campus" /> : <div style={{ fontSize: '30px' }}>📚</div>}
+              {data.gallery?.[1]?.label && <div className="pub-about-img-label">{data.gallery[1].label}</div>}
+            </div>
+            <div className="pub-about-img">
+              {data.gallery?.[2] ? <img src={resolveImg(data.gallery[2].photo_url)} alt="campus" /> : <div style={{ fontSize: '30px' }}>👩‍🏫</div>}
+              {data.gallery?.[2]?.label && <div className="pub-about-img-label">{data.gallery[2].label}</div>}
+            </div>
+          </div>
+          <div className="pub-reveal" style={{ transitionDelay: '0.3s' }}>
+            <p style={{ fontSize: '17px', color: 'var(--muted)', lineHeight: '1.7', marginBottom: '16px' }}>{data.description}</p>
+            {data.usp_points?.filter(Boolean).length > 0 && (
+              <ul className="pub-value-list">
+                {data.usp_points.filter(Boolean).map((usp, i) => {
+                  let parsed = String(usp);
+                  let icon = "✨";
+                  if (parsed.includes("||")) {
+                    const parts = parsed.split("||");
+                    icon = parts[0] || "✨";
+                    parsed = parts.slice(1).join("||");
+                  } else if (parsed.includes(":")) {
+                    // Try to guess an icon if they didn't use || format but used Title: Description format
+                  }
+
+                  let title = parsed;
+                  let desc = "";
+                  if (parsed.includes(":")) {
+                    [title, desc] = parsed.split(":");
+                  }
+
+                  return (
+                    <li key={i} className="pub-value-item pub-reveal" style={{ transitionDelay: `${0.4 + i * 0.1}s` }}>
+                      <div className="pub-value-icon">{icon}</div>
+                      <div className="pub-value-text">
+                        <strong>{title.trim()}</strong>
+                        {desc && <p>{desc.trim()}</p>}
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Courses ── */}
+      {data.courses?.length > 0 && (
+        <section className="pub-courses-section pub-reveal" id="courses">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '48px' }}>
+            <div>
+              <div className="pub-section-label" style={{ textAlign: 'left' }}>OUR PROGRAMS</div>
+              <h2 className="pub-section-title" style={{ textAlign: 'left', marginBottom: 0 }}>Courses Offered</h2>
+            </div>
+            <button className="pub-btn-outline" onClick={scrollToEnq}>Enroll Now</button>
+          </div>
+          <div className="pub-courses-grid">
+            {data.courses.map((c, i) => {
+              let bg = "linear-gradient(135deg,#1f4b7a,#2c659e)";
+              let iconSymbol = "🏛️";
+              let badgeText = c.class_name || "Popular";
+              
+              const nameLower = c.name.toLowerCase();
+              if (nameLower.includes("science") || nameLower.includes("pcm") || nameLower.includes("pcb")) {
+                bg = "linear-gradient(135deg,#23608f,#1a4e7a)";
+                iconSymbol = "🔬";
+                badgeText = "Popular";
+              }
+              else if (nameLower.includes("jee") || nameLower.includes("neet")) {
+                bg = "linear-gradient(135deg,#8b5cf6,#a855f7)";
+                iconSymbol = "📐";
+                badgeText = "JEE/NEET";
+              }
+              else if (nameLower.includes("commerce")) {
+                bg = "linear-gradient(135deg,#059669,#10b981)";
+                iconSymbol = "💼";
+                badgeText = "New";
+              }
+              else if (nameLower.includes("mpsc") || nameLower.includes("bank")) {
+                bg = "linear-gradient(135deg,#ea580c,#f97316)";
+                iconSymbol = "🏛️";
+              }
+
+              return (
+                <div className="pub-course-card pub-reveal" key={c.id || i} style={{ transitionDelay: `${i * 0.1}s` }} onClick={scrollToEnq}>
+                  <div className="pub-course-thumb" style={{ background: bg }}>
+                    <div className="pub-course-badge">{badgeText}</div>
+                    <div className="pub-course-icon">{iconSymbol}</div>
+                  </div>
+                  <div className="pub-course-content">
+                    <div className="pub-course-name">{c.name}</div>
+                    <div className="pub-course-desc">
+                      {c.description || "Comprehensive coverage of all essential topics designed to build strong foundations and achieve excellent results."}
+                    </div>
+                    <div className="pub-course-meta">
+                      <span>📅 {c.duration_months ? `${Math.ceil(c.duration_months/12)} Year` : "1 Year"}</span>
+                      <span>👥 {c.max_students || "30"} Seats</span>
+                      <span>⏰ 4 hrs/day</span>
+                    </div>
+                  </div>
+                  <div className="pub-course-footer">
+                    <div className="pub-course-price">
+                      <div className="pub-course-price-val">₹{c.price ? parseInt(c.price).toLocaleString() : "18,000"}</div>
+                      <div className="pub-course-price-lbl">per year</div>
+                    </div>
+                    <button className="pub-course-enquire-btn">Enquire</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ── Achievements Strip ── */}
+      {(data.stats?.students || data.stats?.pass_rate || data.stats?.selections || data.stats?.years) && (
+        <div className="pub-achievements-strip pub-reveal">
+          {data.stats.students && <div><div className="pub-ach-num">{data.stats.students}</div><div className="pub-ach-label">Students Mentored</div></div>}
+          {data.stats.pass_rate && <div><div className="pub-ach-num">{data.stats.pass_rate}</div><div className="pub-ach-label">Board Pass Rate</div></div>}
+          {data.stats.selections && <div><div className="pub-ach-num">{data.stats.selections}</div><div className="pub-ach-label">Top Selections</div></div>}
+          {data.stats.years && <div><div className="pub-ach-num">{data.stats.years}</div><div className="pub-ach-label">Years of Excellence</div></div>}
+        </div>
+      )}
+
+      {/* ── Faculty ── */}
+      {data.faculty?.length > 0 && (
+        <section className="pub-section" id="faculty" style={{ paddingTop: 0 }}>
+          <div className="pub-section-label pub-reveal">MENTORS</div>
+          <h2 className="pub-section-title pub-reveal">Our Expert Faculty</h2>
+          <div className="pub-faculty-grid">
+            {data.faculty.map((f, i) => {
+              const facInitials = f.name?.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || 'F';
+              return (
+                <div className="pub-faculty-card pub-reveal" key={f.id || i} style={{ transitionDelay: `${i * 0.1}s` }}>
+                  <div className="pub-faculty-avatar">
+                    {facInitials}
+                  </div>
+                  <div className="pub-fac-name">{f.name}</div>
+                  {f.subject && <div className="pub-fac-sub">{f.subject}</div>}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ── Gallery ── */}
+      {data.gallery?.length > 0 && (
+        <section className="pub-section" id="gallery" style={{ background: 'white' }}>
+          <div className="pub-section-label pub-reveal">CAMPUS</div>
+          <h2 className="pub-section-title pub-reveal">Life at {data.name}</h2>
+          <div className="pub-gallery-grid">
+            {data.gallery.slice(0, 6).map((g, i) => (
+              <div key={g.id || i} className="pub-gallery-item pub-reveal" style={{ transitionDelay: `${i * 0.1}s` }}>
+                <img src={resolveImg(g.photo_url)} alt={g.label || "campus"} loading="lazy" />
+                {g.label && <div className="pub-gallery-overlay">{g.label}</div>}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Reviews ── */}
+      {data.reviews?.length > 0 && (
+        <section className="pub-section" id="reviews">
+          <div className="pub-section-label pub-reveal">TESTIMONIALS</div>
+          <h2 className="pub-section-title pub-reveal">What Students Say</h2>
+          <div className="pub-reviews-grid">
+            {data.reviews.map((r, i) => (
+              <div className="pub-review-card pub-reveal" key={r.id || i} style={{ transitionDelay: `${i * 0.1}s` }}>
+                <Stars rating={r.rating} />
+                <p className="pub-review-text">"{r.review_text}"</p>
+                <div className="pub-reviewer-line">
+                  <div className="pub-reviewer-avatar">
+                    {(r.student_name || "S")[0]}
+                  </div>
+                  <div className="pub-reviewer-info">
+                    <strong>{r.student_name}</strong>
+                    {r.achievement && <span>{r.achievement}</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Enroll CTA + Form ── */}
+      <section className="pub-enroll-cta" ref={enqRef} id="enquiry">
+        <div className="pub-enroll-left pub-reveal">
+          <h2>Ready to Join? <br />Enquire Today!</h2>
+          {data.enrollment_benefits?.filter(Boolean).length > 0 && (
+            <ul className="pub-enroll-features">
+              {data.enrollment_benefits.filter(Boolean).map((b, i) => <li key={i}>{b}</li>)}
+            </ul>
+          )}
+          {data.contact?.whatsapp && (
+            <a href={`https://wa.me/91${data.contact.whatsapp}`} target="_blank" rel="noopener noreferrer"
+              className="pub-btn-primary" style={{ marginTop: '24px' }}>
+              💬 Direct WhatsApp
+            </a>
+          )}
+        </div>
+        <div className="pub-form-card pub-reveal" style={{ transitionDelay: '0.2s' }}>
+          <h3>📋 Send Enquiry</h3>
+          {submitted ? (
+            <div style={{ textAlign: "center", padding: "2rem 0" }}>
+              <div style={{ fontSize: "3rem" }}>🎉</div>
+              <h4 style={{ color: "var(--success)", marginBottom: "8px", fontSize: '20px' }}>Enquiry Submitted!</h4>
+              <p style={{ color: "var(--muted)", fontSize: "14px", marginBottom: "24px" }}>We'll contact you soon. Check your WhatsApp!</p>
+              <button className="pub-submit-btn" onClick={() => setSubmitted(false)}>Submit Another</button>
+            </div>
+          ) : (
+            <form onSubmit={handleEnqSubmit}>
+              <div className="pub-form-row">
+                <div className="pub-form-group">
+                  <label className="pub-form-label">First Name *</label>
+                  <input className="pub-form-input" value={form.first_name} onChange={e => setForm(p => ({ ...p, first_name: e.target.value }))} placeholder="Rahul" required />
+                </div>
+                <div className="pub-form-group">
+                  <label className="pub-form-label">Last Name</label>
+                  <input className="pub-form-input" value={form.last_name} onChange={e => setForm(p => ({ ...p, last_name: e.target.value }))} placeholder="Sharma" />
+                </div>
+              </div>
+              <div className="pub-form-group">
+                <label className="pub-form-label">Mobile Number *</label>
+                <input className="pub-form-input" value={form.mobile} onChange={e => setForm(p => ({ ...p, mobile: e.target.value }))} placeholder="9876543210" maxLength={10} required />
+              </div>
+              <div className="pub-form-group">
+                <label className="pub-form-label">Email</label>
+                <input className="pub-form-input" type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="rahul@email.com" />
+              </div>
+              <div className="pub-form-row">
+                {data.courses?.length > 0 && (
+                  <div className="pub-form-group">
+                    <label className="pub-form-label">Course</label>
+                    <select className="pub-form-select" value={form.course_interest} onChange={e => setForm(p => ({ ...p, course_interest: e.target.value }))}>
+                      <option value="">Select...</option>
+                      {data.courses.map((c, i) => <option key={i} value={c.name}>{c.name}</option>)}
+                    </select>
+                  </div>
+                )}
+                <div className="pub-form-group">
+                  <label className="pub-form-label">Class</label>
+                  <select className="pub-form-select" value={form.current_class} onChange={e => setForm(p => ({ ...p, current_class: e.target.value }))}>
+                    <option value="">Select...</option>
+                    {CLASS_OPTIONS.map(c => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+              {formError && <div style={{ color: "var(--accent)", fontSize: "13px", marginBottom: "12px", fontWeight: 700 }}>⚠️ {formError}</div>}
+              <button type="submit" className="pub-submit-btn" disabled={submitting}>
+                {submitting ? "Sending..." : "🚀 Submit Enquiry →"}
+              </button>
+              <p style={{ fontSize: "12px", color: "var(--muted)", textAlign: "center", marginTop: "12px", margin: 0 }}>
+                We'll contact you within 24 hours. No spam.
+              </p>
+            </form>
+          )}
+        </div>
+      </section>
+
+      {/* ── Contact ── */}
+      <section className="pub-section" id="contact">
+        <div className="pub-section-label pub-reveal">LOCATION</div>
+        <h2 className="pub-section-title pub-reveal">Find Us</h2>
+        <div className="pub-contact-grid">
+          <div className="pub-contact-info pub-reveal">
+            {data.contact?.address && (
+              <div className="pub-contact-item">
+                <div className="pub-contact-icon">📍</div>
+                <div className="pub-contact-text">
+                  <strong>Visit Us</strong>
+                  <p>{data.contact.address}</p>
+                </div>
+              </div>
+            )}
+            {data.contact?.phone && (
+              <div className="pub-contact-item">
+                <div className="pub-contact-icon">📞</div>
+                <div className="pub-contact-text">
+                  <strong>Call Us</strong>
+                  <a href={`tel:${data.contact.phone}`}>{data.contact.phone}</a>
+                </div>
+              </div>
+            )}
+            {data.contact?.email && (
+              <div className="pub-contact-item">
+                <div className="pub-contact-icon">✉️</div>
+                <div className="pub-contact-text">
+                  <strong>Email Us</strong>
+                  <a href={`mailto:${data.contact.email}`}>{data.contact.email}</a>
+                </div>
+              </div>
+            )}
+            {data.contact?.working_hours && (
+              <div className="pub-contact-item">
+                <div className="pub-contact-icon">🕐</div>
+                <div className="pub-contact-text">
+                  <strong>Working Hours</strong>
+                  <p>{data.contact.working_hours}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="pub-reveal" style={{ transitionDelay: '0.2s', width: '100%', height: '100%', minHeight: '340px' }}>
+            {data.contact?.map_embed_url ? (
+              <iframe src={data.contact.map_embed_url} title="Map" allowFullScreen loading="lazy" style={{ width: '100%', height: '100%', border: 0, borderRadius: '16px' }} />
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', flexDirection: 'column', gap: '16px', background: 'var(--border)', borderRadius: '16px', height: '100%' }}>
+                <span style={{ fontSize: '48px' }}>🗺️</span>
+                <p style={{ margin: 0, fontWeight: 600 }}>Map not provided</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer>
+        <div className="pub-footer-grid">
+          <div>
+            <div className="pub-footer-brand">
+              <div className="pub-footer-brand-logo">{(data.name || "I")[0]}</div>
+              {data.name}
+            </div>
+            <p>{data.footer_description || data.description || "Empowering students to achieve their dreams with expert guidance."}</p>
+            {(data.social?.facebook || data.social?.instagram || data.social?.youtube) && (
+              <div className="pub-social-links">
+                {data.social.facebook && <a href={data.social.facebook} target="_blank" rel="noopener noreferrer" className="pub-social-btn">f</a>}
+                {data.social.instagram && <a href={data.social.instagram} target="_blank" rel="noopener noreferrer" className="pub-social-btn">📸</a>}
+                {data.social.youtube && <a href={data.social.youtube} target="_blank" rel="noopener noreferrer" className="pub-social-btn">▶</a>}
+              </div>
+            )}
+          </div>
+          {data.courses?.length > 0 && (
+            <div className="pub-footer-col">
+              <h4>Our Courses</h4>
+              <ul className="pub-footer-links">
+                {data.courses.slice(0, 5).map((c, i) => <li key={i}><a href="#courses">{c.name}</a></li>)}
+              </ul>
+            </div>
+          )}
+          <div className="pub-footer-col">
+            <h4>Quick Links</h4>
+            <ul className="pub-footer-links">
+              <li><a href="#home">Home</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#courses">Courses</a></li>
+              <li><a href="#faculty">Faculty</a></li>
+              <li><a href="#gallery">Gallery</a></li>
+            </ul>
+          </div>
+          <div className="pub-footer-col" id="contact">
+            <h4>Contact Details</h4>
+            <ul className="pub-footer-links" style={{ color: 'rgba(255,255,255,.7)' }}>
+              {data.contact?.phone && <li style={{ marginBottom: '8px' }}>{data.contact.phone}</li>}
+              {data.contact?.email && <li style={{ marginBottom: '8px' }}>{data.contact.email}</li>}
+              {data.contact?.address && <li style={{ lineHeight: 1.5 }}>{data.contact.address}</li>}
+            </ul>
+          </div>
+        </div>
+        <div className="pub-footer-bottom">
+          <span>© {new Date().getFullYear()} {data.name}. All rights reserved.</span>
+          <span className="pub-powered-badge">Powered by Student SaaS</span>
+        </div>
+      </footer>
+
+      {/* ── WhatsApp Float ── */}
+      {data.contact?.whatsapp && (
+        <a href={`https://wa.me/91${data.contact.whatsapp}?text=Hi! I want to know more about the courses.`}
+          target="_blank" rel="noopener noreferrer" className="pub-whatsapp-fab" title="Chat on WhatsApp">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12.031 21.144c-1.637 0-3.238-.431-4.639-1.25l-.333-.196-3.447.904.922-3.361-.215-.342c-.895-1.425-1.368-3.076-1.368-4.786 0-4.99 4.062-9.053 9.051-9.053 2.422 0 4.698.943 6.41 2.656 1.711 1.71 2.654 3.987 2.654 6.402 0 4.99-4.062 9.051-9.05 9.051h.015zm0-16.536c-4.129 0-7.489 3.361-7.489 7.49 0 1.319.344 2.607 1 3.738l.107.17-.615 2.247 2.301-.603.164.098c1.096.634 2.348.968 3.633.968 4.129 0 7.49-3.36 7.49-7.489 0-1.999-.778-3.879-2.192-5.293s-3.292-2.193-5.292-2.193zm4.113 10.218c-.226-.113-1.339-.661-1.547-.737-.206-.075-.357-.112-.507.113-.151.226-.583.737-.714.888-.131.15-.262.17-.488.056-.226-.113-.956-.353-1.821-1.127-.674-.602-1.128-1.345-1.26-1.571-.132-.227-.014-.35.099-.463.102-.102.226-.264.339-.396.113-.131.151-.226.226-.376.075-.15.038-.282-.019-.396-.056-.113-.507-1.223-.695-1.674-.183-.439-.37-.379-.508-.386-.131-.007-.282-.007-.433-.007s-.395.056-.603.282c-.207.226-.79.771-.79 1.881 0 1.111.809 2.185.922 2.336s1.594 2.433 3.863 3.414c.54.232.962.37 1.291.474.542.171 1.036.147 1.425.089.436-.065 1.339-.547 1.527-1.074.188-.528.188-.981.132-1.074-.056-.094-.207-.151-.433-.264z"/></svg>
+        </a>
+      )}
+    </div>
+  );
+}
