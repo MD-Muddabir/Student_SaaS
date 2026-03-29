@@ -8,11 +8,19 @@ import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { ThemeContext } from "../../context/ThemeContext";
 import ThemeSelector from "../../components/ThemeSelector";
+import { isMobileApp, MOBILE_ALLOWED_ROLE } from "../../config/appVariant";
 import "./Auth.css";
+
+function mobileAppLabel() {
+  if (!isMobileApp || !MOBILE_ALLOWED_ROLE) return null;
+  if (MOBILE_ALLOWED_ROLE === "student") return "Student app";
+  if (MOBILE_ALLOWED_ROLE === "parent") return "Parent app";
+  return "Faculty app";
+}
 
 function Login() {
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+  const { login, logout } = useContext(AuthContext);
   const { setTheme, isDark } = useContext(ThemeContext);
 
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -28,7 +36,18 @@ function Login() {
 
   // Redirect if already logged in
   useEffect(() => {
-    const userObj = JSON.parse(localStorage.getItem("user"));
+    const raw = localStorage.getItem("user");
+    if (!raw) return;
+    let userObj;
+    try {
+      userObj = JSON.parse(raw);
+    } catch {
+      return;
+    }
+    if (isMobileApp && MOBILE_ALLOWED_ROLE && userObj.role !== MOBILE_ALLOWED_ROLE) {
+      logout();
+      return;
+    }
     if (userObj) {
       switch (userObj.role) {
         case "super_admin": navigate("/superadmin/dashboard"); break;
@@ -40,6 +59,7 @@ function Login() {
         default: navigate("/");
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- logout is stable enough; avoid re-running on every auth tick
   }, [navigate]);
 
   const handleChange = (e) => {
@@ -54,6 +74,13 @@ function Login() {
     try {
       await login(formData);
       const user = JSON.parse(localStorage.getItem("user"));
+      if (isMobileApp && MOBILE_ALLOWED_ROLE && user.role !== MOBILE_ALLOWED_ROLE) {
+        logout();
+        setError(
+          `This app is for ${MOBILE_ALLOWED_ROLE === "faculty" ? "faculty" : MOBILE_ALLOWED_ROLE} accounts only.`
+        );
+        return;
+      }
       switch (user.role) {
         case "super_admin": navigate("/superadmin/dashboard"); break;
         case "admin": navigate("/admin/dashboard"); break;
@@ -88,7 +115,10 @@ function Login() {
           <div className="auth-header">
             <div className="auth-logo">🎓</div>
             <h1 className="auth-title">Student SaaS</h1>
-            <p className="auth-subtitle">Sign in to your account</p>
+            <p className="auth-subtitle">
+              {mobileAppLabel() ? `${mobileAppLabel()} — ` : ""}
+              Sign in to your account
+            </p>
           </div>
 
           {/* Error Alert */}
@@ -167,15 +197,17 @@ function Login() {
             </button>
           </form>
 
-          {/* Footer */}
-          <div className="auth-footer">
-            <div className="auth-divider"><span>OR</span></div>
-            <p className="auth-footer__text">
-              Don't have an account?{" "}
-              <Link to="/register" className="auth-link">Register your institute</Link>
-            </p>
-            <Link to="/" className="auth-back-home">← Back to Home</Link>
-          </div>
+          {/* Footer — web only for institute registration / marketing home */}
+          {!isMobileApp && (
+            <div className="auth-footer">
+              <div className="auth-divider"><span>OR</span></div>
+              <p className="auth-footer__text">
+                Don&apos;t have an account?{" "}
+                <Link to="/register" className="auth-link">Register your institute</Link>
+              </p>
+              <Link to="/" className="auth-back-home">← Back to Home</Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

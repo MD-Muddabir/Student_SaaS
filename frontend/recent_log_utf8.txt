@@ -1,0 +1,588 @@
+﻿--------- beginning of system
+03-28 22:39:59.466   723  2188 W ActivityTaskManager: callingPackage for (uid=2000, pid=12837) has no WPC
+03-28 22:39:59.468   723  2188 D CompatChangeReporter: Compat change id reported: 151861875; UID 10217; state: ENABLED
+--------- beginning of main
+03-28 22:39:59.469   723  2188 V GrammaticalInflectionUtils: AttributionSource: android.content.AttributionSource@a20cadf8 does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
+03-28 22:39:59.469   723  2188 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_OVERRIDE
+03-28 22:39:59.469   723  2188 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_FULLSCREEN_OVERRIDE
+03-28 22:39:59.469   723  2188 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES
+03-28 22:39:59.470   723  2188 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE
+03-28 22:39:59.474   723  2188 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE
+03-28 22:39:59.477   569   582 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+03-28 22:39:59.480  1214  1333 I ndroid.systemui: AssetManager2(0x79408d851438) locale list changing from [] to [en-US]
+03-28 22:39:59.481   723  2188 I ActivityTaskManager: START u0 {flg=0x10000000 xflg=0x5 cmp=com.studentsaas.student/.MainActivity} with LAUNCH_SINGLE_TASK from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+03-28 22:39:59.486  1214  1283 V WindowManagerShell: Transition requested (#39): android.os.BinderProxy@b4b9565 TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=17 effectiveUid=10217 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.studentsaas.student/.MainActivity } baseActivity=ComponentInfo{com.studentsaas.student/com.studentsaas.student.MainActivity} topActivity=ComponentInfo{com.studentsaas.student/com.studentsaas.student.MainActivity} origActivity=null realActivity=ComponentInfo{com.studentsaas.student/com.studentsaas.student.MainActivity} numActivities=1 lastActiveTime=3638939 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@7d1923a} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 132 - 0, 0) topActivityInfo=ActivityInfo{1a51eeb com.studentsaas.student.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isTopActivityNoDisplay=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false isActivityStackTransparent=false lastNonFullscreenBounds=Rect(276, 694 - 804, 1774) capturedLink=null capturedLinkTimestamp=0 requestedVisibleTypes=-9 topActivityRequestOpenInBrowserEducationTimestamp=0 appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false eligibleForLetterboxEducation= false isLetterboxEducationEnabled= true isLetterboxDoubleTapEnabled= false eligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 topActivityAppBounds=Rect(0, 0 - 1080, 2400) isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false hasMinAspectRatioOverride=false topActivityLetterboxBounds=null cameraCompatTaskInfo=CameraCompatTaskInfo { freeformCameraCompatMode=inactive}} topActivityMainWindowFrame=null}, pipChange = null, remoteTransition = null, displayChange = null, flags = 0, debugId = 39 }
+03-28 22:39:59.486  1214  1283 D ShellSplitScreen: logExit: no-op, mLoggerSessionId is null
+03-28 22:39:59.486   723   755 V GrammaticalInflectionUtils: AttributionSource: android.content.AttributionSource@a20cadf8 does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
+03-28 22:39:59.487   723   743 D CompatChangeReporter: Compat change id reported: 309578419; UID 10217; state: ENABLED
+03-28 22:39:59.493  1493  1493 W SplitSelectStateCtor: Missing session instanceIds
+03-28 22:39:59.493  1493  1493 D StatsLog: LAUNCHER_SPLIT_SELECTION_EXIT_INTERRUPTED
+03-28 22:39:59.496   569   569 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+03-28 22:39:59.496  1214  1334 W HWUI    : Image decoding logging dropped!
+03-28 22:39:59.500  1214  1283 D WindowManagerShell: setLauncherKeepClearAreaHeight: visible=false, height=527
+03-28 22:39:59.500   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.501   615  7283 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.508   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.512   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.511   493   493 D Zygote  : Forked child process 12840
+03-28 22:39:59.514   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.514   723   776 W ProcessCpuTracker: Failed to stat(/proc/12835): android.system.ErrnoException: stat failed: ENOENT (No such file or directory)
+03-28 22:39:59.514   723   776 W ProcessCpuTracker: Skipping unknown process pid 12835
+03-28 22:39:59.515   723   776 W ProcessCpuTracker: Failed to stat(/proc/12837): android.system.ErrnoException: stat failed: ENOENT (No such file or directory)
+03-28 22:39:59.515   723   776 W ProcessCpuTracker: Skipping unknown process pid 12837
+03-28 22:39:59.517   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.517   723  2188 D CoreBackPreview: Window{a3a0419 u0 Splash Screen com.studentsaas.student}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@5f0cebf, mPriority=0, mIsAnimationCallback=false, mOverrideBehavior=0}
+03-28 22:39:59.517   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.518   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.519   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.519   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.520   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.520   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.520   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.520   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.523   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.525   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.526   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.526   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.526   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.526   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.526   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.527   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.528   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.528   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.529   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.529   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.530   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.532   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.532   723   755 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:39:59.533 12840 12840 I entsaas.student: Late-enabling -Xcheck:jni
+03-28 22:39:59.554   723   762 W ActivityManager: Slow operation: 68ms so far, now at startProcess: done updating battery stats
+03-28 22:39:59.554   723   762 W ActivityManager: Slow operation: 68ms so far, now at startProcess: building log message
+03-28 22:39:59.554   723   762 I ActivityManager: Start proc 12840:com.studentsaas.student/u0a217 for next-top-activity {com.studentsaas.student/com.studentsaas.student.MainActivity}
+03-28 22:39:59.554   723   762 W ActivityManager: Slow operation: 68ms so far, now at startProcess: starting to update pids map
+03-28 22:39:59.555   723   762 I ActivityManager: ProcessObserver broadcast disabled
+03-28 22:39:59.555   723   762 W ActivityManager: Slow operation: 68ms so far, now at startProcess: done updating pids map
+03-28 22:39:59.557   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.557   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.557   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.557   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.557   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.557   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.557   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.557   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.558   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.558   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.559   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.559   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.559   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.559   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.559   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.569 12840 12840 I entsaas.student: Using CollectorTypeCMC GC.
+03-28 22:39:59.571 12840 12840 W entsaas.student: Unexpected CPU variant for x86: x86_64.
+03-28 22:39:59.571 12840 12840 W entsaas.student: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, goldmont-without-sha-xsaves, tremont, kabylake, alderlake, default
+03-28 22:39:59.587  1537  1551 I adbd    : jdwp connection from 12840
+03-28 22:39:59.609 12840 12840 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+03-28 22:39:59.654   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:39:59.700   723   752 V WindowManager: Sent Transition (#39) createdAt=03-28 22:39:59.471 via request=TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=17 effectiveUid=10217 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.studentsaas.student/.MainActivity } baseActivity=ComponentInfo{com.studentsaas.student/com.studentsaas.student.MainActivity} topActivity=ComponentInfo{com.studentsaas.student/com.studentsaas.student.MainActivity} origActivity=null realActivity=ComponentInfo{com.studentsaas.student/com.studentsaas.student.MainActivity} numActivities=1 lastActiveTime=3638939 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{385e24 Task{fa9edc7 #17 type=standard A=10217:com.studentsaas.student}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 132 - 0, 0) topActivityInfo=ActivityInfo{8873d8d com.studentsaas.student.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isTopActivityNoDisplay=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false isActivityStackTransparent=false lastNonFullscreenBounds=Rect(276, 694 - 804, 1774) capturedLink=null capturedLinkTimestamp=0 requestedVisibleTypes=-9 topActivityRequestOpenInBrowserEducationTimestamp=0 appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false eligibleForLetterboxEducation= false isLetterboxEducationEnabled= true isLetterboxDoubleTapEnabled= false eligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 topActivityAppBounds=Rect(0, 0 - 1080, 2400) isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false hasMinAspectRatioOverride=false topActivityLetterboxBounds=null cameraCompatTaskInfo=CameraCompatTaskInfo { freeformCameraCompatMode=inactive}} topActivityMainWindowFrame=null}, pipChange = null, remoteTransition = null, displayChange = null, flags = 0, debugId = 39 }
+03-28 22:39:59.700   723   752 V WindowManager:     startWCT=WindowContainerTransaction { changes= {} hops= [] errorCallbackToken=null taskFragmentOrganizer=null }
+03-28 22:39:59.700   723   752 V WindowManager:     info={id=39 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[
+03-28 22:39:59.700   723   752 V WindowManager:         {WCT{RemoteToken{385e24 Task{fa9edc7 #17 type=standard A=10217:com.studentsaas.student}}} m=OPEN f=NONE leash=Surface(name=Task=17)/@0xd509278 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},
+03-28 22:39:59.700   723   752 V WindowManager:         {WCT{RemoteToken{3ddd7d7 Task{b13e422 #1 type=home}}} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0xf62a667 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},
+03-28 22:39:59.700   723   752 V WindowManager:         {m=TO_BACK f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{fd65578 showWhenLocked=false})/@0x91e9981 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}
+03-28 22:39:59.700   723   752 V WindowManager:     ]}
+03-28 22:39:59.703  1214  1238 V WindowManagerShell: onTransitionReady(transaction=3105261356724)
+03-28 22:39:59.703  1214  1283 V WindowManagerShell: onTransitionReady (#39) android.os.BinderProxy@b4b9565: {id=39 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[
+03-28 22:39:59.703  1214  1283 V WindowManagerShell:         {m=OPEN f=NONE leash=Surface(name=Task=17)/@0x2eb8651 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},
+03-28 22:39:59.703  1214  1283 V WindowManagerShell:         {m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x4db0eb6 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},
+03-28 22:39:59.703  1214  1283 V WindowManagerShell:         {m=TO_BACK f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{fd65578 showWhenLocked=false})/@0x684e7b7 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}
+03-28 22:39:59.703  1214  1283 V WindowManagerShell:     ]}
+03-28 22:39:59.704  1214  1283 V WindowManagerShell: Playing animation for (#39) android.os.BinderProxy@b4b9565@0
+03-28 22:39:59.704  1214  1283 V ShellRecents: RecentsTransitionHandler.startAnimation: no controller found
+03-28 22:39:59.704  1214  1283 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=39 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{m=OPEN f=NONE leash=Surface(name=Task=17)/@0x2eb8651 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},{m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x4db0eb6 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},{m=TO_BACK f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{fd65578 showWhenLocked=false})/@0x684e7b7 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}]}
+03-28 22:39:59.704  1214  1283 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x0 checks=[{atype=undefined independent=true modes=[CLOSE,TO_BACK] flags=IN_TASK_WITH_EMBEDDED_ACTIVITY mustBeTask=false order=ANY topActivity=null launchCookie=null taskFragmentToken=android.os.BinderProxy@d2b0204 windowingMode=undefined}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@90543ed, appThread = android.app.IApplicationThread$Stub$Proxy@83e5222, debugName = overlayBackTransition }}
+03-28 22:39:59.704  1214  1283 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x0 checks=[{atype=dream independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined},{atype=home independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@7db84b3, appThread = android.app.IApplicationThread$Stub$Proxy@583a70, debugName = LauncherToDream }}
+03-28 22:39:59.705  1214  1283 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity} launchCookie=null windowingMode=undefined},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined},{NOT atype=undefined independent=true modes=[] flags=NONE mustBeTask=true order=ANY topActivity=null launchCookie=null customAnim=true windowingMode=undefined}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@9ff31e9, appThread = android.app.IApplicationThread$Stub$Proxy@6136e6e, debugName = QuickstepLaunchHome }}
+03-28 22:39:59.705  1214  1283 V WindowManagerShell:  Delegate animation for (#39) to null
+03-28 22:39:59.705  1214  1283 V WindowManagerShell: start default transition animation, info = {id=39 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{m=OPEN f=NONE leash=Surface(name=Task=17)/@0x2eb8651 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},{m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x4db0eb6 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},{m=TO_BACK f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{fd65578 showWhenLocked=false})/@0x684e7b7 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}]}
+03-28 22:39:59.705  1214  1283 V WindowManagerShell: loadAnimation: anim=android.view.animation.AnimationSet@391368d animAttr=0x13 type=OPEN isEntrance=false
+03-28 22:39:59.706  1214  1283 V WindowManagerShell: loadAnimation: anim=android.view.animation.AnimationSet@1816042 animAttr=0x12 type=OPEN isEntrance=true
+03-28 22:39:59.697 12840 12840 W re-initialized>: type=1400 audit(0.0:155): avc:  granted  { execute } for  path="/data/data/com.studentsaas.student/code_cache/startup_agents/a82ed9e3-agent.so" dev="dm-55" ino=66245 scontext=u:r:untrusted_app:s0:c217,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c217,c256,c512,c768 tclass=file app=com.studentsaas.student
+03-28 22:39:59.708 12840 12840 D nativeloader: Load /data/user/0/com.studentsaas.student/code_cache/startup_agents/a82ed9e3-agent.so using system ns (caller=<unknown>): ok
+03-28 22:39:59.709 12840 12840 V studio.deploy: Startup agent attached to VM
+03-28 22:39:59.710 12840 12840 V studio.deploy: No existing instrumentation found. Loading instrumentation from instruments-2fd5708c.jar
+03-28 22:39:59.712  1214  1283 V WindowManagerShell:  animated by com.android.wm.shell.transition.DefaultTransitionHandler@102c88c
+03-28 22:39:59.721 12840 12840 W entsaas.student: hiddenapi: DexFile /data/data/com.studentsaas.student/code_cache/.studio/instruments-2fd5708c.jar is in boot class path but is not in a known location
+03-28 22:39:59.725 12840 12840 V studio.deploy: Applying transforms with cached classes
+03-28 22:39:59.937 12840 12840 W entsaas.student: Redefining intrinsic method java.lang.Thread java.lang.Thread.currentThread(). This may cause the unexpected use of the original definition of java.lang.Thread java.lang.Thread.currentThread()in methods that have already been compiled.
+03-28 22:39:59.937 12840 12840 W entsaas.student: Redefining intrinsic method boolean java.lang.Thread.interrupted(). This may cause the unexpected use of the original definition of boolean java.lang.Thread.interrupted()in methods that have already been compiled.
+03-28 22:39:59.939 12840 12840 I studio.deploy: Registering DispatchJNI
+03-28 22:39:59.939 12840 12840 I studio.deploy: Found com/android/tools/deploy/interpreter/JNI
+03-28 22:40:00.016  1214  1283 V WindowManagerShell: Transition animation finished (aborted=false), notifying core (#39) android.os.BinderProxy@b4b9565@0
+03-28 22:40:00.017   723   752 V WindowManager: Finish Transition (#39): created at 03-28 22:39:59.471 collect-started=0.114ms request-sent=9.725ms started=19.99ms ready=227.128ms sent=228.85ms commit=14.289ms finished=546.568ms
+03-28 22:40:00.022  1214  1283 V WindowManagerShell: Track 0 became idle
+03-28 22:40:00.022  1493  1493 D VRI[NexusLauncherActivity]: visibilityChanged oldVisibility=true newVisibility=false
+03-28 22:40:00.022  1214  1283 V WindowManagerShell: All active transition animations finished
+03-28 22:40:00.030  1493  1493 D NexusLauncherModelDelegate: notifySmartspaceEvent: SmartspaceTargetEvent{mSmartspaceTarget=null, mSmartspaceActionId='null', mEventType=7}
+03-28 22:40:00.092 12840 12840 D nativeloader: Configuring clns-9 for other apk /data/app/~~TO96PDsU7GUkkhGSWSzTIg==/com.studentsaas.student-CDP-LXAJ19H-oks3wqwd5A==/base.apk. target_sdk_version=35, uses_libraries=, library_path=/data/app/~~TO96PDsU7GUkkhGSWSzTIg==/com.studentsaas.student-CDP-LXAJ19H-oks3wqwd5A==/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.studentsaas.student
+03-28 22:40:00.097 12840 12840 D CompatChangeReporter: Compat change id reported: 202956589; UID 10217; state: ENABLED
+03-28 22:40:00.102 12840 12840 I entsaas.student: AssetManager2(0x79408d83c8f8) locale list changing from [] to [en-US]
+03-28 22:40:00.105 12840 12840 I entsaas.student: AssetManager2(0x79408d835878) locale list changing from [] to [en-US]
+03-28 22:40:00.113 12840 12840 V GraphicsEnvironment: Currently set values for:
+03-28 22:40:00.113 12840 12840 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+03-28 22:40:00.113 12840 12840 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+03-28 22:40:00.113 12840 12840 V GraphicsEnvironment: com.studentsaas.student is not listed in per-application setting
+03-28 22:40:00.113 12840 12840 V GraphicsEnvironment: ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+03-28 22:40:00.113 12840 12840 V GraphicsEnvironment: com.studentsaas.student is not listed in ANGLE allowlist or settings, returning default
+03-28 22:40:00.113 12840 12840 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+03-28 22:40:00.143 12840 12840 W FirebaseApp: Default FirebaseApp failed to initialize because no default options were found. This usually means that com.google.gms:google-services was not applied to your gradle project.
+03-28 22:40:00.143 12840 12840 I FirebaseInitProvider: FirebaseApp initialization unsuccessful
+03-28 22:40:00.193 12840 12840 D CompatChangeReporter: Compat change id reported: 279646685; UID 10217; state: ENABLED
+03-28 22:40:00.211   723   743 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ENABLE_FAKE_FOCUS
+03-28 22:40:00.211   723   743 D CompatChangeReporter: Compat change id reported: 324203798; UID 10217; state: ENABLED
+03-28 22:40:00.217   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:40:00.217   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:40:00.222 12840 12857 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+03-28 22:40:00.225 12840 12840 I entsaas.student: AssetManager2(0x79408d832cb8) locale list changing from [] to [en-US]
+03-28 22:40:00.282 12840 12857 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+03-28 22:40:00.283 12840 12857 I EGL_emulation: Opening libGLESv2_emulation.so
+03-28 22:40:00.303 12840 12857 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+03-28 22:40:00.303 12840 12857 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+03-28 22:40:00.332 12840 12840 D AppCompatDelegate: Checking for metadata for AppLocalesMetadataHolderService : Service not found
+03-28 22:40:00.332 12840 12840 I entsaas.student: AssetManager2(0x79408d83f4b8) locale list changing from [] to [en-US]
+03-28 22:40:00.343 12840 12840 E ashmem  : Pinning is deprecated since Android Q. Please use trim or other methods.
+03-28 22:40:00.417 12840 12840 D CompatChangeReporter: Compat change id reported: 309578419; UID 10217; state: ENABLED
+03-28 22:40:00.418 12840 12840 D DesktopModeFlags: Toggle override initialized to: OVERRIDE_UNSET
+03-28 22:40:00.449 12840 12840 I entsaas.student: hiddenapi: Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (runtime_flags=0, domain=platform, api=unsupported) from Landroidx/appcompat/widget/ViewUtils; (domain=app) using reflection: allowed
+03-28 22:40:00.465 12840 12840 I entsaas.student: AssetManager2(0x79408d83aff8) locale list changing from [] to [en-US]
+03-28 22:40:00.465 12840 12840 I WebViewFactory: Loading com.google.android.webview version 133.0.6943.137 (code 694313738)
+03-28 22:40:00.466 12840 12840 I entsaas.student: AssetManager2(0x79408d83ded8) locale list changing from [] to [en-US]
+03-28 22:40:00.467 12840 12840 I entsaas.student: AssetManager2(0x79408d841718) locale list changing from [] to [en-US]
+03-28 22:40:00.467 12840 12840 I entsaas.student: AssetManager2(0x79408d83faf8) locale list changing from [] to [en-US]
+03-28 22:40:00.468 12840 12840 I entsaas.student: AssetManager2(0x79408d8413f8) locale list changing from [] to [en-US]
+03-28 22:40:00.468 12840 12840 I entsaas.student: AssetManager2(0x79408d83fe18) locale list changing from [] to [en-US]
+03-28 22:40:00.468 12840 12840 V ResourcesManager: The following library key has been added: ResourcesKey{ mHash=2a26539c mResDir=null mSplitDirs=[] mOverlayDirs=[] mLibDirs=[/data/app/~~BgmYaz3I1ptxt-Dt4q_t5g==/com.google.android.webview-r_Q9ng9CxdX9MEam4JkPiQ==/WebViewGoogle.apk,/data/app/~~-vJY1pGKLCEQUlSKwotz_w==/com.google.android.trichromelibrary_694313738-IyllXZu8_86GWO4JBpahYA==/TrichromeLibrary.apk,/system_ext/framework/androidx.window.extensions.jar] mDisplayId=0 mOverrideConfig=v36 mCompatInfo={420dpi always-compat} mLoaders=[]}
+03-28 22:40:00.472 12840 12840 W entsaas.student: Failed to find entry 'classes.dex': Entry not found
+03-28 22:40:00.472 12840 12840 D nativeloader: Configuring clns-10 for other apk /data/app/~~-vJY1pGKLCEQUlSKwotz_w==/com.google.android.trichromelibrary_694313738-IyllXZu8_86GWO4JBpahYA==/TrichromeLibrary.apk. target_sdk_version=34, uses_libraries=ALL, library_path=/data/app/~~BgmYaz3I1ptxt-Dt4q_t5g==/com.google.android.webview-r_Q9ng9CxdX9MEam4JkPiQ==/lib/x86_64:/data/app/~~BgmYaz3I1ptxt-Dt4q_t5g==/com.google.android.webview-r_Q9ng9CxdX9MEam4JkPiQ==/WebViewGoogle.apk!/lib/x86_64:/data/app/~~-vJY1pGKLCEQUlSKwotz_w==/com.google.android.trichromelibrary_694313738-IyllXZu8_86GWO4JBpahYA==/TrichromeLibrary.apk!/lib/x86_64, permitted_path=/data:/mnt/expand
+03-28 22:40:00.474 12840 12840 D ApplicationLoaders: Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+03-28 22:40:00.477 12840 12840 D nativeloader: Configuring clns-11 for other apk /data/app/~~BgmYaz3I1ptxt-Dt4q_t5g==/com.google.android.webview-r_Q9ng9CxdX9MEam4JkPiQ==/WebViewGoogle.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~BgmYaz3I1ptxt-Dt4q_t5g==/com.google.android.webview-r_Q9ng9CxdX9MEam4JkPiQ==/lib/x86_64:/data/app/~~BgmYaz3I1ptxt-Dt4q_t5g==/com.google.android.webview-r_Q9ng9CxdX9MEam4JkPiQ==/WebViewGoogle.apk!/lib/x86_64:/data/app/~~-vJY1pGKLCEQUlSKwotz_w==/com.google.android.trichromelibrary_694313738-IyllXZu8_86GWO4JBpahYA==/TrichromeLibrary.apk!/lib/x86_64, permitted_path=/data:/mnt/expand
+03-28 22:40:00.592 12840 12840 I cr_WVCFactoryProvider: version=133.0.6943.137 (694313738) minSdkVersion=29 isBundle=false multiprocess=true packageId=2
+03-28 22:40:00.594 12840 12840 I entsaas.student: AssetManager2(0x79408d839d38) locale list changing from [] to [en-US]
+03-28 22:40:00.615 12840 12840 D nativeloader: Load /data/app/~~-vJY1pGKLCEQUlSKwotz_w==/com.google.android.trichromelibrary_694313738-IyllXZu8_86GWO4JBpahYA==/TrichromeLibrary.apk!/lib/x86_64/libmonochrome_64.so using class loader ns clns-11 (caller=/data/app/~~BgmYaz3I1ptxt-Dt4q_t5g==/com.google.android.webview-r_Q9ng9CxdX9MEam4JkPiQ==/WebViewGoogle.apk): ok
+03-28 22:40:00.620 12840 12840 D nativeloader: Load /system/lib64/libwebviewchromium_plat_support.so using class loader ns clns-11 (caller=/data/app/~~BgmYaz3I1ptxt-Dt4q_t5g==/com.google.android.webview-r_Q9ng9CxdX9MEam4JkPiQ==/WebViewGoogle.apk): ok
+03-28 22:40:00.626 12840 12862 E chromium: [0328/224000.626450:ERROR:variations_seed_loader.cc(39)] Seed missing signature.
+03-28 22:40:00.629 12840 12862 I chromium: [0328/224000.628874:INFO:variations_seed_loader.cc(67)] Failed to open file for reading.: No such file or directory (2)
+03-28 22:40:00.689 12840 12840 I cr_LibraryLoader: Successfully loaded native library
+03-28 22:40:00.691 12840 12840 I cr_CachingUmaRecorder: Flushed 6 samples from 6 histograms, 0 samples were dropped.
+03-28 22:40:00.700 12840 12840 I cr_CombinedPProvider: #registerProvider() provider:WV.C8@adaa1c2 isPolicyCacheEnabled:false policyProvidersSize:0
+03-28 22:40:00.702 12840 12840 I cr_PolicyProvider: #setManagerAndSource() 0
+03-28 22:40:00.723   723   743 V GrammaticalInflectionUtils: AttributionSource: android.content.AttributionSource@7f6a5a20 does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
+03-28 22:40:00.739  1303  1303 D Zygote  : Forked child process 12866
+03-28 22:40:00.754 12866 12866 I ocessService0:0: Using CollectorTypeCMC GC.
+03-28 22:40:00.758 12866 12866 W ocessService0:0: Unexpected CPU variant for x86: x86_64.
+03-28 22:40:00.758 12866 12866 W ocessService0:0: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, goldmont-without-sha-xsaves, tremont, kabylake, alderlake, default
+03-28 22:40:00.764 12866 12866 E ocessService0:0: Not starting debugger since process cannot load the jdwp agent.
+03-28 22:40:00.765 12840 12840 I cr_CombinedPProvider: #linkNativeInternal() 1
+03-28 22:40:00.770 12840 12840 I cr_AppResProvider: #getApplicationRestrictionsFromUserManager() Bundle[EMPTY_PARCEL]
+03-28 22:40:00.770 12840 12840 I cr_PolicyProvider: #notifySettingsAvailable() 0
+03-28 22:40:00.770 12840 12840 I cr_CombinedPProvider: #onSettingsAvailable() 0
+03-28 22:40:00.770 12840 12840 I cr_CombinedPProvider: #flushPolicies()
+03-28 22:40:00.776 12866 12866 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+03-28 22:40:00.795   723   762 W ActivityManager: Slow operation: 71ms so far, now at startProcess: returned from zygote!
+03-28 22:40:00.802   723  2192 D ActivityManager: sync unfroze 10972 com.google.android.gms for 4
+03-28 22:40:00.807   723  2361 W ActivityManager: Slow operation: 83ms so far, now at startProcess: done updating battery stats
+03-28 22:40:00.807   723  2361 W ActivityManager: Slow operation: 84ms so far, now at startProcess: building log message
+03-28 22:40:00.807   723  2361 I ActivityManager: Start proc 12866:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0i9 for  {com.studentsaas.student/org.chromium.content.app.SandboxedProcessService0:0}
+03-28 22:40:00.807   723  2361 W ActivityManager: Slow operation: 84ms so far, now at startProcess: starting to update pids map
+03-28 22:40:00.810   723  2361 I ActivityManager: ProcessObserver broadcast disabled
+03-28 22:40:00.810   723  2361 W ActivityManager: Slow operation: 86ms so far, now at startProcess: done updating pids map
+03-28 22:40:00.818   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:40:00.824 12866 12866 D CompatChangeReporter: Compat change id reported: 242716250; UID 99009; state: ENABLED
+03-28 22:40:00.847 10972 10972 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.safetynet.service.START xflg=0x4 pkg=com.google.android.gms }
+03-28 22:40:00.847 10972 10972 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.safetynet.service.START xflg=0x4 pkg=com.google.android.gms }
+03-28 22:40:00.855 12866 12866 D ApplicationLoaders: Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+03-28 22:40:00.858   723  2192 W ProcessStats: Tracking association SourceState{cd26aa6 com.studentsaas.student/10217 BTop #12152} whose proc state 2 is better than process ProcessState{9d435c8 com.google.android.gms/10147 pkg=com.google.android.gms (sub)} proc state 14 (21 skipped)
+03-28 22:40:00.860 12866 12866 I ocessService0:0: AssetManager2(0x79408d83c8f8) locale list changing from [] to [en-US]
+03-28 22:40:00.864 10972 10972 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS xflg=0x4 pkg=com.google.android.gms }
+03-28 22:40:00.865 12866 12866 I LoadedApk: No resource references to update in package com.google.android.trichromelibrary
+03-28 22:40:00.866 12866 12866 I cr_WebViewApkApp: version=133.0.6943.137 (694313738) minSdkVersion=29 isBundle=false processName=com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0
+03-28 22:40:00.872   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:40:00.875 12866 12866 I cr_ChildProcessService: Creating new ChildProcessService pid=12866
+03-28 22:40:00.882 12840 12840 I entsaas.student: AssetManager2(0x79408d837ad8) locale list changing from [] to [en-US]
+03-28 22:40:00.886 12840 12840 I entsaas.student: AssetManager2(0x79408d83b318) locale list changing from [] to [en-US]
+03-28 22:40:00.964   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:40:00.990   723   743 D ActivityManager: sync unfroze 10172 com.google.android.webview:webview_service for 6
+03-28 22:40:00.994   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:40:01.014 12840 12840 D CompatChangeReporter: Compat change id reported: 352594277; UID 10217; state: ENABLED
+03-28 22:40:01.069   723   743 D ConnectivityService: requestNetwork for uid/pid:10217/12840 activeRequest: null callbackRequest: 412 [NetworkRequest [ REQUEST id=413, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10217 RequestorUid: 10217 RequestorPkg: com.studentsaas.student UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647 isUidTracked: false declaredMethods: AVAIL|LOST|NC|LP
+03-28 22:40:01.074   723   743 D CompatChangeReporter: Compat change id reported: 319212206; UID 10217; state: ENABLED
+03-28 22:40:01.076   723  1115 D OemPaidWifiNetworkFactory: got request NetworkRequest [ REQUEST id=413, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10217 RequestorUid: 10217 RequestorPkg: com.studentsaas.student UnderlyingNetworks: Null] ]
+03-28 22:40:01.076   723  1115 D MultiInternetWifiNetworkFactory: got request NetworkRequest [ REQUEST id=413, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10217 RequestorUid: 10217 RequestorPkg: com.studentsaas.student UnderlyingNetworks: Null] ]
+03-28 22:40:01.077   723  1115 D WifiNetworkFactory: got request NetworkRequest [ REQUEST id=413, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10217 RequestorUid: 10217 RequestorPkg: com.studentsaas.student UnderlyingNetworks: Null] ]
+03-28 22:40:01.078   723  1115 D UntrustedWifiNetworkFactory: got request NetworkRequest [ REQUEST id=413, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10217 RequestorUid: 10217 RequestorPkg: com.studentsaas.student UnderlyingNetworks: Null] ]
+03-28 22:40:01.078   723  1125 D ConnectivityService: NetReassign [413 : null ΓåÆ 100] [c 1] [a 4] [i 2]
+03-28 22:40:01.080   723  1125 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 0]
+03-28 22:40:01.133 12840 12840 D Capacitor: Starting BridgeActivity
+03-28 22:40:01.183 12840 12840 D Capacitor: Registering plugin instance: CapacitorCookies
+03-28 22:40:01.188 12840 12840 D Capacitor: Registering plugin instance: WebView
+03-28 22:40:01.191 12840 12840 D Capacitor: Registering plugin instance: CapacitorHttp
+03-28 22:40:01.193 12840 12840 D Capacitor: Registering plugin instance: App
+03-28 22:40:01.196 12840 12840 D Capacitor: Registering plugin instance: Preferences
+03-28 22:40:01.198 12840 12840 D Capacitor: Registering plugin instance: PushNotifications
+03-28 22:40:01.216 12840 12840 W Capacitor: Unable to read file at path public/plugins
+03-28 22:40:01.225 12840 12840 D Capacitor: Loading app at http://localhost
+03-28 22:40:01.251 12840 12885 W cr_media: BLUETOOTH_CONNECT permission is missing.
+03-28 22:40:01.251 12840 12885 W cr_media: getBluetoothAdapter() requires BLUETOOTH permission
+03-28 22:40:01.251 12840 12885 W cr_media: registerBluetoothIntentsIfNeeded: Requires BLUETOOTH permission
+03-28 22:40:01.254 12866 12889 I cr_LibraryLoader: Successfully loaded native library
+03-28 22:40:01.255 12866 12889 I cr_CachingUmaRecorder: Flushed 2 samples from 2 histograms, 0 samples were dropped.
+03-28 22:40:01.261 12866 12889 W SystemServiceRegistry: No service published for: uimode
+03-28 22:40:01.279 12866 12889 W chromium: [WARNING:runtime_features.cc(560)] Fenced frames cannot be enabled in this configuration. Use --enable-features=FencedFrames instead.
+03-28 22:40:01.279 12866 12889 W chromium: [WARNING:runtime_features.cc(585)] Topics cannot be enabled in this configuration. Use --enable-features=BrowsingTopics in addition.
+03-28 22:40:01.279 12866 12889 W chromium: [WARNING:runtime_features.cc(606)] SharedStorage cannot be enabled in this configuration. Use --enable-features=SharedStorageAPI in addition.
+03-28 22:40:01.292 12840 12903 W libc    : Access denied finding property "vendor.mesa.log"
+03-28 22:40:01.292 12840 12903 W libc    : Access denied finding property "vendor.mesa.log.file"
+03-28 22:40:01.293 12840 12903 E MESA    : Failed to open rendernode: No such file or directory
+03-28 22:40:01.307  7251  7645 I FontLog : (REDACTED) Received query %s, URI %s
+03-28 22:40:01.307  7251  7645 I FontLog : (REDACTED) Query [%s] resolved to %s
+03-28 22:40:01.311  7251  7645 I FontLog : (REDACTED) Font PFD returned from cache for %s
+03-28 22:40:01.311  7251  7645 I FontLog : (REDACTED) Fetch %s end status %s
+03-28 22:40:01.314 12840 12903 W libc    : Access denied finding property "vendor.mesa.vk.trace.per.submit"
+03-28 22:40:01.315 12840 12903 W libc    : Access denied finding property "vendor.mesa.gallium.print.optio"
+03-28 22:40:01.315 12840 12903 W libc    : Access denied finding property "vendor.mesa.vk.trace.frame"
+03-28 22:40:01.317  7251  7444 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+03-28 22:40:01.323 12840 12903 W libc    : Access denied finding property "vendor.mesa.vk.wsi.headless.swa"
+03-28 22:40:01.323  7251  7444 I FontLog : (REDACTED) Received query %s, URI %s
+03-28 22:40:01.324  7251  7444 I FontLog : (REDACTED) Query [%s] resolved to %s
+03-28 22:40:01.325 12840 12840 D Capacitor: App started
+03-28 22:40:01.325  7251  7444 I FontLog : (REDACTED) Fetch %s end status %s
+03-28 22:40:01.326 12840 12840 W WindowOnBackDispatcher: OnBackInvokedCallback is not enabled for the application.
+03-28 22:40:01.326 12840 12840 W WindowOnBackDispatcher: Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
+03-28 22:40:01.330  7251  7444 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+03-28 22:40:01.330 12840 12840 D Capacitor/AppPlugin: Firing change: true
+03-28 22:40:01.332 12840 12840 V Capacitor/AppPlugin: Notifying listeners for event appStateChange
+03-28 22:40:01.332 12840 12840 D Capacitor/AppPlugin: No listeners found for event appStateChange
+03-28 22:40:01.332 12840 12840 D Capacitor: App resumed
+03-28 22:40:01.335  7251  7444 I FontLog : (REDACTED) Received query %s, URI %s
+03-28 22:40:01.335  7251  7444 I FontLog : (REDACTED) Query [%s] resolved to %s
+03-28 22:40:01.336  7251  7444 I FontLog : (REDACTED) Font PFD returned from cache for %s
+03-28 22:40:01.337  7251  7444 I FontLog : (REDACTED) Fetch %s end status %s
+03-28 22:40:01.340  7251  7444 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+03-28 22:40:01.345  7251  7444 I FontLog : (REDACTED) Received query %s, URI %s
+03-28 22:40:01.346  7251  7444 I FontLog : (REDACTED) Query [%s] resolved to %s
+03-28 22:40:01.346  7251  7444 I FontLog : (REDACTED) Font PFD returned from cache for %s
+03-28 22:40:01.347  7251  7444 I FontLog : (REDACTED) Fetch %s end status %s
+03-28 22:40:01.353  7251  7645 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+03-28 22:40:01.356  7251  7645 I FontLog : (REDACTED) Received query %s, URI %s
+03-28 22:40:01.356  7251  7645 I FontLog : (REDACTED) Query [%s] resolved to %s
+03-28 22:40:01.357  7251  7645 I FontLog : (REDACTED) Font PFD returned from cache for %s
+03-28 22:40:01.357  7251  7645 I FontLog : (REDACTED) Fetch %s end status %s
+03-28 22:40:01.360  7251  7645 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+03-28 22:40:01.397 12840 12840 D CompatChangeReporter: Compat change id reported: 349153669; UID 10217; state: ENABLED
+03-28 22:40:01.406 12840 12840 W HWUI    : Unknown dataspace 0
+03-28 22:40:01.408 12840 12903 W chromium: [WARNING:viz_main_impl.cc(85)] VizNullHypothesis is disabled (not a warning)
+03-28 22:40:01.480 12840 12879 D Capacitor: Handling local request: http://localhost/
+03-28 22:40:01.682 12840 12918 I CameraManagerGlobal: Connecting to camera service
+03-28 22:40:01.697   615   709 I AttributionAndPermissionUtils: checkPermission (forDataDelivery 0 startDataDelivery 0): Permission hard denied for client attribution [uid 10217, pid 12840, packageName "<unknown>"]
+03-28 22:40:01.702   723  2192 D CoreBackPreview: Window{31b914 u0 com.studentsaas.student/com.studentsaas.student.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@60316ac, mPriority=0, mIsAnimationCallback=false, mOverrideBehavior=0}
+03-28 22:40:02.015   723   752 I ActivityTaskManager: Displayed com.studentsaas.student/.MainActivity for user 0: +2s546ms
+03-28 22:40:02.019 12840 12890 I HWUI    : Davey! duration=737ms; Flags=1, FrameTimelineVsyncId=47203, IntendedVsync=3640720358996, Vsync=3641120358980, InputEventId=0, HandleInputStart=3641122189000, AnimationStart=3641122212200, PerformTraversalsStart=3641138357100, DrawStart=3641317554500, FrameDeadline=3640737025662, FrameStartTime=3641120610600, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=3641417744900, SyncStart=3641431679400, IssueDrawCommandsStart=3641431789700, SwapBuffers=3641464824100, FrameCompleted=3641471963200, DequeueBufferDuration=25300, QueueBufferDuration=628000, GpuCompleted=3641471963200, SwapBuffersCompleted=3641466502800, DisplayPresentTime=0, CommandSubmissionCompleted=3641464824100, 
+03-28 22:40:02.126  7251  7645 I FontLog : (REDACTED) Received query %s, URI %s
+03-28 22:40:02.126  7251  7645 I FontLog : (REDACTED) Query [%s] resolved to %s
+03-28 22:40:02.135  7251  7645 I FontLog : (REDACTED) Fetch %s end status %s
+03-28 22:40:02.135   723   888 I ImeTracker: com.studentsaas.student:ac21e7d9: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
+03-28 22:40:02.149  7251  7645 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+03-28 22:40:02.155 12840 12840 D InsetsController: hide(ime(), fromIme=false)
+03-28 22:40:02.155 12840 12840 I ImeTracker: com.studentsaas.student:ac21e7d9: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+03-28 22:40:02.169   723  2192 I ImeTracker: system_server:4332e808: onRequestHide at ORIGIN_SERVER reason IME_REQUESTED_CHANGED_LISTENER fromUser false
+03-28 22:40:02.169  7541  7541 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():2043 
+03-28 22:40:02.173  7541  7541 I Module  : DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatus():100 repeatCheckTimes = 0, locked = false
+03-28 22:40:02.173   723   755 I ImeTracker: system_server:4332e808: onCancelled at PHASE_SERVER_SHOULD_HIDE
+03-28 22:40:02.176  7541  7541 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1293 onStartInput(EditorInfo{EditorInfo{packageName=com.studentsaas.student, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=12000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+03-28 22:40:02.177  7541  7541 I Module  : DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatus():100 repeatCheckTimes = 1, locked = false
+03-28 22:40:02.180  1493  1493 D BaseDepthController: setSurface:
+03-28 22:40:02.180  1493  1493 D BaseDepthController: 	mWaitingOnSurfaceValidity: false
+03-28 22:40:02.180  1493  1493 D BaseDepthController: 	mBaseSurface: null
+03-28 22:40:02.180  1493  1493 D BaseDepthController: mSurface is null and mCurrentBlur is: 0
+03-28 22:40:02.181  1493  1493 D StateManager: goToState - fromState: Normal, toState: Normal, partial trace:
+03-28 22:40:02.181  1493  1493 D StateManager: 	at com.android.launcher3.statemanager.StateManager.moveToRestState(go/retraceme 72a59688580715d19f0e415c69e80376c2f062d1648c80db6730905005a27c20:4)
+03-28 22:40:02.181  1493  1493 D StateManager: 	at com.android.launcher3.statemanager.StateManager.moveToRestState(go/retraceme 72a59688580715d19f0e415c69e80376c2f062d1648c80db6730905005a27c20:1)
+03-28 22:40:02.181  1493  1493 D StateManager: 	at com.android.launcher3.statemanager.StatefulActivity.onStop(go/retraceme 72a59688580715d19f0e415c69e80376c2f062d1648c80db6730905005a27c20:34)
+03-28 22:40:02.182  1493  1493 D StatsLog: LAUNCHER_ONSTOP
+03-28 22:40:02.187  1493  1493 D StatsLog: LAUNCHER_GOOGLE_SEARCH_RESTORE_LIST_SIZE_AFTER_ACTIVITY_RESTART
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: EmojiCompatManager.getEmojiCompatIfLoaded():343 EmojiCompat.init() was never called.
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: java.lang.IllegalStateException: EmojiCompat is not initialized. Please call EmojiCompat.init() first
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at asx.p(PG:6)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at axb.b(PG:13)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at jnr.b(PG:2)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at jnr.c(PG:4)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at jnr.f(PG:3)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at jnx.c(PG:3)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at kif.cz(PG:47)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at lhl.run(PG:1025)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at jaf.execute(PG:12)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at nco.v(PG:13)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at lhn.m(PG:96)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at lhn.k(PG:25)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at kgn.onStartInput(PG:250)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at android.inputmethodservice.InputMethodService.doStartInput(InputMethodService.java:3521)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at android.inputmethodservice.InputMethodService$InputMethodImpl.startInput(InputMethodService.java:879)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at android.inputmethodservice.InputMethodService$InputMethodImpl.dispatchStartInput(InputMethodService.java:908)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at android.inputmethodservice.IInputMethodWrapper.executeMessage(IInputMethodWrapper.java:201)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at com.android.internal.os.HandlerCaller$MyHandler.handleMessage(HandlerCaller.java:44)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at android.os.Handler.dispatchMessage(Handler.java:110)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at android.os.Looper.loopOnce(Looper.java:248)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at android.os.Looper.loop(Looper.java:338)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at android.app.ActivityThread.main(ActivityThread.java:9067)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at java.lang.reflect.Method.invoke(Native Method)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:593)
+03-28 22:40:02.196  7541  7541 I EmojiCompatManager: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:932)
+03-28 22:40:02.196   723   723 I ResourceTimer: GetResourceValue count=22466 pvalues=14000,32000,39000,170000
+03-28 22:40:02.196   723   723 I ResourceTimer: RetrieveAttributes count=6096 pvalues=13000,21000,37000,380000
+03-28 22:40:02.198   723   743 W PackageConfigPersister: App-specific configuration not found for packageName: com.studentsaas.student and userId: 0
+03-28 22:40:02.204   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:40:02.238  7251  7645 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+03-28 22:40:02.394   615   709 W IPCThreadState: Sending oneway calls to frozen process.
+03-28 22:40:02.419  1214  1333 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=false callback=android.view.ViewRootImpl$$ExternalSyntheticLambda13@5c2a1de
+03-28 22:40:02.420   723  2192 D CoreBackPreview: Window{a3a0419 u0 Splash Screen com.studentsaas.student EXITING}: Setting back callback null
+03-28 22:40:02.507 12840 12874 D Capacitor: Handling local request: http://localhost/assets/index-ByjzEesw.js
+03-28 22:40:02.510 12840 12876 D Capacitor: Handling local request: http://localhost/assets/index-18-l-p2w.css
+03-28 22:40:02.651 12840 12846 I entsaas.student: Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+03-28 22:40:02.806  1397  1722 D SatelliteController: iisInCarrierRoamingNbIotNtn: satellite is disabled
+03-28 22:40:02.925  1214  1227 W System  : A resource failed to call release. 
+03-28 22:40:02.925  1214  1227 W System  : A resource failed to call release. 
+03-28 22:40:02.925  1214  1227 W System  : A resource failed to call release. 
+03-28 22:40:02.925  1214  1227 W System  : A resource failed to call release. 
+03-28 22:40:02.925  1214  1227 W System  : A resource failed to call release. 
+03-28 22:40:02.925  1214  1227 W System  : A resource failed to call release. 
+03-28 22:40:02.925  1214  1227 W System  : A resource failed to call release. 
+03-28 22:40:02.992   723  3595 E TaskPersister: File error accessing recents directory (directory doesn't exist?).
+03-28 22:40:03.161 12840 12874 D Capacitor: Handling local request: http://localhost/assets/index-ovVujv-_.js
+03-28 22:40:03.162 12840 12874 D Capacitor: Handling local request: http://localhost/favicon.ico
+03-28 22:40:03.163 12840 12874 D Capacitor: Handling local request: http://localhost/assets/Login-nCDo6rFi.js
+03-28 22:40:03.164 12840 12876 D Capacitor: Handling local request: http://localhost/assets/ThemeSelector-DMxRpyPC.js
+03-28 22:40:03.164 12840 12878 D Capacitor: Handling local request: http://localhost/assets/ThemeSelector-XSxbycEM.css
+03-28 22:40:03.165 12840 12874 D Capacitor: Handling local request: http://localhost/assets/Auth-vKnLDGms.css
+03-28 22:40:03.166 12840 12876 D Capacitor: Handling local request: http://localhost/favicon.ico
+03-28 22:40:03.166 12840 12874 D Capacitor: Handling local request: http://localhost/favicon.ico
+03-28 22:40:03.201 12840 12840 V Capacitor/Plugin: To native (Capacitor plugin): callbackId: 60666381, pluginId: App, methodName: addListener
+03-28 22:40:03.203 12840 12840 V Capacitor: callback: 60666381, pluginId: App, methodName: addListener, methodData: {"eventName":"appUrlOpen"}
+03-28 22:40:03.206 12840 12874 D Capacitor: Handling local request: http://localhost/assets/index-HHHTmMQH.js
+03-28 22:40:03.219 12840 12878 D Capacitor: Handling local request: http://localhost/assets/index-DaZ6eiU_.js
+03-28 22:40:03.610  7541  7541 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1293 onStartInput(EditorInfo{EditorInfo{packageName=com.studentsaas.student, inputType=d1, inputTypeString=WebEmailAddress[], enableLearning=true, autoCorrection=false, autoComplete=true, imeOptions=12000005, privateImeOptions=null, actionName=NEXT, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=2131230918, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, true)
+03-28 22:40:03.611  7541  7541 W SessionManager: SessionManager.beginSession():53 Try to begin an already begun session [INPUT_SESSION], end it first
+03-28 22:40:03.622  7541  7541 I Module  : DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatus():100 repeatCheckTimes = 1, locked = false
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: EmojiCompatManager.getEmojiCompatIfLoaded():343 EmojiCompat.init() was never called.
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: java.lang.IllegalStateException: EmojiCompat is not initialized. Please call EmojiCompat.init() first
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at asx.p(PG:6)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at axb.b(PG:13)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at jnr.b(PG:2)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at jnr.c(PG:4)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at jnr.f(PG:3)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at jnx.c(PG:3)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at kif.cz(PG:47)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at lhl.run(PG:1025)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at jaf.execute(PG:12)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at nco.v(PG:13)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at lhn.m(PG:96)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at lhn.k(PG:25)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at kgn.onStartInput(PG:250)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at android.inputmethodservice.InputMethodService.doStartInput(InputMethodService.java:3521)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at android.inputmethodservice.InputMethodService$InputMethodImpl.restartInput(InputMethodService.java:891)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at android.inputmethodservice.InputMethodService$InputMethodImpl.dispatchStartInput(InputMethodService.java:906)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at android.inputmethodservice.IInputMethodWrapper.executeMessage(IInputMethodWrapper.java:201)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at com.android.internal.os.HandlerCaller$MyHandler.handleMessage(HandlerCaller.java:44)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at android.os.Handler.dispatchMessage(Handler.java:110)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at android.os.Looper.loopOnce(Looper.java:248)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at android.os.Looper.loop(Looper.java:338)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at android.app.ActivityThread.main(ActivityThread.java:9067)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at java.lang.reflect.Method.invoke(Native Method)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:593)
+03-28 22:40:03.625  7541  7541 I EmojiCompatManager: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:932)
+03-28 22:40:03.627   723  2361 W PackageConfigPersister: App-specific configuration not found for packageName: com.studentsaas.student and userId: 0
+03-28 22:40:03.664 12840 12840 V Capacitor/Plugin: To native (Capacitor plugin): callbackId: 60666382, pluginId: PushNotifications, methodName: checkPermissions
+03-28 22:40:03.664 12840 12840 V Capacitor: callback: 60666382, pluginId: PushNotifications, methodName: checkPermissions, methodData: {}
+03-28 22:40:03.712 12840 12840 V Capacitor/Plugin: To native (Capacitor plugin): callbackId: 60666383, pluginId: PushNotifications, methodName: register
+03-28 22:40:03.712 12840 12840 V Capacitor: callback: 60666383, pluginId: PushNotifications, methodName: register, methodData: {}
+03-28 22:40:03.719 12840 12902 E Capacitor: Serious error executing plugin
+03-28 22:40:03.719 12840 12902 E Capacitor: java.lang.reflect.InvocationTargetException
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at java.lang.reflect.Method.invoke(Native Method)
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at com.getcapacitor.PluginHandle.invoke(PluginHandle.java:138)
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at com.getcapacitor.Bridge.lambda$callPluginMethod$0(Bridge.java:844)
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at com.getcapacitor.Bridge.$r8$lambda$FNYM7cvgeBk0k8YXQH7M96Mrf-c(Unknown Source:0)
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at com.getcapacitor.Bridge$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at android.os.Handler.handleCallback(Handler.java:995)
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at android.os.Handler.dispatchMessage(Handler.java:103)
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at android.os.Looper.loopOnce(Looper.java:248)
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at android.os.Looper.loop(Looper.java:338)
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at android.os.HandlerThread.run(HandlerThread.java:85)
+03-28 22:40:03.719 12840 12902 E Capacitor: Caused by: java.lang.IllegalStateException: Default FirebaseApp is not initialized in this process com.studentsaas.student. Make sure to call FirebaseApp.initializeApp(Context) first.
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at com.google.firebase.FirebaseApp.getInstance(FirebaseApp.java:179)
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at com.google.firebase.messaging.FirebaseMessaging.getInstance(FirebaseMessaging.java:120)
+03-28 22:40:03.719 12840 12902 E Capacitor: 	at com.capacitorjs.plugins.pushnotifications.PushNotificationsPlugin.register(PushNotificationsPlugin.java:102)
+03-28 22:40:03.719 12840 12902 E Capacitor: 	... 10 more
+--------- beginning of crash
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: FATAL EXCEPTION: CapacitorPlugins
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: Process: com.studentsaas.student, PID: 12840
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: java.lang.RuntimeException: java.lang.reflect.InvocationTargetException
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at com.getcapacitor.Bridge.lambda$callPluginMethod$0(Bridge.java:853)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at com.getcapacitor.Bridge.$r8$lambda$FNYM7cvgeBk0k8YXQH7M96Mrf-c(Unknown Source:0)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at com.getcapacitor.Bridge$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:995)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:103)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:248)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:338)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at android.os.HandlerThread.run(HandlerThread.java:85)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: Caused by: java.lang.reflect.InvocationTargetException
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at com.getcapacitor.PluginHandle.invoke(PluginHandle.java:138)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at com.getcapacitor.Bridge.lambda$callPluginMethod$0(Bridge.java:844)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	... 7 more
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: Caused by: java.lang.IllegalStateException: Default FirebaseApp is not initialized in this process com.studentsaas.student. Make sure to call FirebaseApp.initializeApp(Context) first.
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at com.google.firebase.FirebaseApp.getInstance(FirebaseApp.java:179)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at com.google.firebase.messaging.FirebaseMessaging.getInstance(FirebaseMessaging.java:120)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	at com.capacitorjs.plugins.pushnotifications.PushNotificationsPlugin.register(PushNotificationsPlugin.java:102)
+03-28 22:40:03.725 12840 12902 E AndroidRuntime: 	... 10 more
+03-28 22:40:03.755   723  2361 W ActivityTaskManager:   Force finishing activity com.studentsaas.student/.MainActivity
+03-28 22:40:03.756   723 12935 I DropBoxManagerService: add tag=data_app_crash isTagEnabled=true flags=0x2
+03-28 22:40:03.759   569   672 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+03-28 22:40:03.761  1214  1283 V WindowManagerShell: Transition requested (#40): android.os.BinderProxy@312c823 TransitionRequestInfo { type = CLOSE, triggerTask = TaskInfo{userId=0 taskId=17 effectiveUid=10217 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.studentsaas.student/.MainActivity } baseActivity=ComponentInfo{com.studentsaas.student/com.studentsaas.student.MainActivity} topActivity=ComponentInfo{com.studentsaas.student/com.studentsaas.student.MainActivity} origActivity=null realActivity=ComponentInfo{com.studentsaas.student/com.studentsaas.student.MainActivity} numActivities=1 lastActiveTime=3639670 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@60c1120} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 0 - 0, 0) topActivityInfo=ActivityInfo{f1b3ad9 com.studentsaas.student.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=true isVisible=true isVisibleRequested=true isTopActivityNoDisplay=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false isActivityStackTransparent=false lastNonFullscreenBounds=Rect(276, 694 - 804, 1774) capturedLink=null capturedLinkTimestamp=0 requestedVisibleTypes=-9 topActivityRequestOpenInBrowserEducationTimestamp=0 appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false eligibleForLetterboxEducation= false isLetterboxEducationEnabled= true isLetterboxDoubleTapEnabled= false eligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 topActivityAppBounds=Rect(0, 0 - 1080, 2400) isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false hasMinAspectRatioOverride=false topActivityLetterboxBounds=null cameraCompatTaskInfo=CameraCompatTaskInfo { freeformCameraCompatMode=inactive}} topActivityMainWindowFrame=null}, pipChange = null, remoteTransition = null, displayChange = null, flags = 16, debugId = 40 }
+03-28 22:40:03.771 12840 12902 I Process : Sending signal. PID: 12840 SIG: 9
+03-28 22:40:03.779   569   569 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+03-28 22:40:03.787   723   877 W InputDispatcher: channel '31b914 com.studentsaas.student/com.studentsaas.student.MainActivity' ~ Consumer closed input channel or an error occurred.  events=0x9
+03-28 22:40:03.787   723   877 E InputDispatcher: channel '31b914 com.studentsaas.student/com.studentsaas.student.MainActivity' ~ Channel is unrecoverably broken and will be disposed!
+03-28 22:40:03.788   723   877 I WindowManager: WINDOW DIED Window{31b914 u0 com.studentsaas.student/com.studentsaas.student.MainActivity}
+03-28 22:40:03.789   723  2192 I ActivityManager: Process com.studentsaas.student (pid 12840) has died: fg  TOP 
+03-28 22:40:03.791   723  2000 I WindowManager: WIN DEATH: Window{31b914 u0 com.studentsaas.student/com.studentsaas.student.MainActivity EXITING}
+03-28 22:40:03.792   723  1125 D ConnectivityService: releasing NetworkRequest [ REQUEST id=413, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10217 RequestorUid: 10217 RequestorPkg: com.studentsaas.student UnderlyingNetworks: Null] ] (release request)
+03-28 22:40:03.793   723  1352 I ImeTracker: com.studentsaas.student:26c52aa6: onRequestHide at ORIGIN_SERVER reason HIDE_REMOVE_CLIENT fromUser false
+03-28 22:40:03.796   723  1352 I ImeTracker: com.studentsaas.student:26c52aa6: onCancelled at PHASE_SERVER_SHOULD_HIDE
+03-28 22:40:03.796   493   493 I Zygote  : Process 12840 exited due to signal 9 (Killed)
+03-28 22:40:03.798  1537  1537 I adbd    : Remote process closed the socket (on MSG_PEEK)
+03-28 22:40:03.799   723   763 I libprocessgroup: Removed cgroup /sys/fs/cgroup/apps/uid_10217/pid_12840
+03-28 22:40:03.809  1303  1303 I Zygote  : Process 12866 exited cleanly (0)
+03-28 22:40:03.811   723  2192 W ActivityManager: pid 723 system sent binder code 12 with flags 1 to frozen apps and got error -32
+03-28 22:40:03.813   723  2192 W ActivityManager: Exception when unbinding service com.studentsaas.student/org.chromium.content.app.SandboxedProcessService0:0
+03-28 22:40:03.813   723  2192 W ActivityManager: android.os.DeadObjectException
+03-28 22:40:03.813   723  2192 W ActivityManager: 	at android.os.BinderProxy.transactNative(Native Method)
+03-28 22:40:03.813   723  2192 W ActivityManager: 	at android.os.BinderProxy.transact(BinderProxy.java:592)
+03-28 22:40:03.813   723  2192 W ActivityManager: 	at android.app.IApplicationThread$Stub$Proxy.scheduleUnbindService(IApplicationThread.java:1751)
+03-28 22:40:03.813   723  2192 W ActivityManager: 	at android.app.IApplicationThread$Delegator.scheduleUnbindService(IApplicationThread.java:271)
+03-28 22:40:03.813   723  2192 W ActivityManager: 	at com.android.server.am.ActiveServices.removeConnectionLocked(ActiveServices.java:6673)
+03-28 22:40:03.813   723  2192 W ActivityManager: 	at com.android.server.am.ActiveServices.killServicesLocked(ActiveServices.java:7234)
+03-28 22:40:03.813   723  2192 W ActivityManager: 	at com.android.server.am.ActivityManagerService.cleanUpApplicationRecordLocked(ActivityManagerService.java:13544)
+03-28 22:40:03.813   723  2192 W ActivityManager: 	at com.android.server.am.ActivityManagerService.handleAppDiedLocked(ActivityManagerService.java:3349)
+03-28 22:40:03.813   723  2192 W ActivityManager: 	at com.android.server.am.ActivityManagerService.appDiedLocked(ActivityManagerService.java:3470)
+03-28 22:40:03.813   723  2192 W ActivityManager: 	at com.android.server.am.ActivityManagerService$AppDeathRecipient.binderDied(ActivityManagerService.java:1526)
+03-28 22:40:03.813   723  2192 W ActivityManager: 	at android.os.IBinder$DeathRecipient.binderDied(IBinder.java:340)
+03-28 22:40:03.813   723  2192 W ActivityManager: 	at android.os.BinderProxy.sendDeathNotice(BinderProxy.java:780)
+03-28 22:40:03.814   723  2192 D CompatChangeReporter: Compat change id reported: 311208629; UID 10217; state: ENABLED
+03-28 22:40:03.815 10972 10972 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.safetynet.service.START xflg=0x4 pkg=com.google.android.gms }
+03-28 22:40:03.817   723  2192 W ActivityManager: pid 723 system sent binder code 31 with flags 1 to frozen apps and got error -32
+03-28 22:40:03.817   723  2192 D ActivityManager: Too many transaction errors, throttling freezer binder callback.
+03-28 22:40:03.818   723  2192 W ActivityManager: pid 723 system sent binder code 41 with flags 1 to frozen apps and got error -32
+03-28 22:40:03.818   723  2192 D ActivityManager: Too many transaction errors, throttling freezer binder callback.
+03-28 22:40:03.818   723  2192 I ActivityManager: Killing 12866:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0a217i9 (adj 900): isolated not needed
+03-28 22:40:03.819   246   246 W lowmemorykiller: Failed to open /proc/12866/oom_score_adj; errno=2: process 12866 might have been killed
+03-28 22:40:03.830   723   755 W ActivityManager: setHasOverlayUi called on unknown pid: 12840
+03-28 22:40:03.830   723   755 V WindowManager: Unknown focus tokens, dropping reportFocusChanged
+03-28 22:40:03.831   723  1125 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+03-28 22:40:03.833  1493  1493 D ViewRootImpl: Skipping stats log for color mode
+03-28 22:40:03.834  1493  1493 D StatsLog: LAUNCHER_ONRESUME
+03-28 22:40:03.835   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:40:03.835   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:40:03.835   723  1125 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+03-28 22:40:03.835   723  1125 D InetDiagMessage: Destroyed live tcp sockets for uids={10217} in 6ms
+03-28 22:40:03.835   723  1169 D BackgroundInstallControlService: Package event received: 0
+03-28 22:40:03.839  1214  1283 D WindowManagerShell: setLauncherKeepClearAreaHeight: visible=true, height=527
+03-28 22:40:03.839   723  1125 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+03-28 22:40:03.840   723  1125 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+03-28 22:40:03.840   723  1125 D InetDiagMessage: Destroyed live tcp sockets for uids={20217} in 4ms
+03-28 22:40:03.840   723   763 I libprocessgroup: Removed cgroup /sys/fs/cgroup/apps/uid_99009/pid_12866
+03-28 22:40:03.845  1493  1510 D QuickstepModelDelegate: notifyAppTargetEvent action=1 launchLocation=workspace/0/[-1,-1]/[1,1]
+03-28 22:40:03.847  1493  1493 D NexusLauncherModelDelegate: notifySmartspaceEvent: SmartspaceTargetEvent{mSmartspaceTarget=null, mSmartspaceActionId='null', mEventType=6}
+03-28 22:40:03.849  1875  2261 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
+03-28 22:40:03.849  1875  2261 I AiAiEcho: EchoTargets: 
+03-28 22:40:03.849  1875  2261 I AiAiEcho: Filtered by AiAi flag check: 
+03-28 22:40:03.849  1875  2261 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
+03-28 22:40:03.849  1875  2261 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
+03-28 22:40:03.851  1875  2261 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+03-28 22:40:03.853  1493  1493 D BaseDepthController: setSurface:
+03-28 22:40:03.853  1493  1493 D BaseDepthController: 	mWaitingOnSurfaceValidity: false
+03-28 22:40:03.853  1493  1493 D BaseDepthController: 	mBaseSurface: Surface(name=com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity)/@0xbc9dd7
+03-28 22:40:03.989  1493  1493 I NotificationListener: Handling notification state refresh for com.android.vending#0
+03-28 22:40:03.989  1493  1493 I NotificationListener: Handling notification state refresh for android#0
+03-28 22:40:03.989  1493  1493 I NotificationListener: Handling notification state refresh for com.android.systemui#0
+03-28 22:40:03.990  1493  1493 D SsBaseTemplateCard: No text view can be set up
+03-28 22:40:03.990  1493  1493 D SsBaseTemplateCard: Passed-in item info is null
+03-28 22:40:03.990  1493  1493 D SsBaseTemplateCard: Passed-in item info is null
+03-28 22:40:03.990  1493  1493 D SsBaseTemplateCard: Passed-in item info is null
+03-28 22:40:03.990  1493  1493 I SsBaseTemplateCard: Secondary card pane is null
+03-28 22:40:04.012  1214  1529 V WindowManagerShell: onTransitionReady(transaction=3105261356768)
+03-28 22:40:04.012  1214  1283 V WindowManagerShell: onTransitionReady (#40) android.os.BinderProxy@312c823: {id=40 t=CLOSE f=0x10 trk=0 r=[0@Point(0, 0)] c=[
+03-28 22:40:04.012  1214  1283 V WindowManagerShell:         {m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0x75c5c9e sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},
+03-28 22:40:04.012  1214  1283 V WindowManagerShell:         {m=CLOSE f=NONE leash=Surface(name=Task=17)/@0x6bfc37f sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},
+03-28 22:40:04.012  1214  1283 V WindowManagerShell:         {m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{fd65578 showWhenLocked=false})/@0x711f4c sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}
+03-28 22:40:04.012  1214  1283 V WindowManagerShell:     ]}
+03-28 22:40:04.013  1214  1283 V WindowManagerShell: Playing animation for (#40) android.os.BinderProxy@312c823@0
+03-28 22:40:04.013  1214  1283 V ShellRecents: RecentsTransitionHandler.startAnimation: no controller found
+03-28 22:40:04.014  1214  1283 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=40 t=CLOSE f=0x10 trk=0 r=[0@Point(0, 0)] c=[{m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0x75c5c9e sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},{m=CLOSE f=NONE leash=Surface(name=Task=17)/@0x6bfc37f sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},{m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{fd65578 showWhenLocked=false})/@0x711f4c sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}]}
+03-28 22:40:04.014  1214  1283 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x0 checks=[{atype=undefined independent=true modes=[CLOSE,TO_BACK] flags=IN_TASK_WITH_EMBEDDED_ACTIVITY mustBeTask=false order=ANY topActivity=null launchCookie=null taskFragmentToken=android.os.BinderProxy@d2b0204 windowingMode=undefined}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@90543ed, appThread = android.app.IApplicationThread$Stub$Proxy@83e5222, debugName = overlayBackTransition }}
+03-28 22:40:04.014  1214  1283 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x0 checks=[{atype=dream independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined},{atype=home independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@7db84b3, appThread = android.app.IApplicationThread$Stub$Proxy@583a70, debugName = LauncherToDream }}
+03-28 22:40:04.014  1214  1283 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity} launchCookie=null windowingMode=undefined},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined},{NOT atype=undefined independent=true modes=[] flags=NONE mustBeTask=true order=ANY topActivity=null launchCookie=null customAnim=true windowingMode=undefined}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@9ff31e9, appThread = android.app.IApplicationThread$Stub$Proxy@6136e6e, debugName = QuickstepLaunchHome }}
+03-28 22:40:04.014  1214  1283 D RemoteTransitionHandler: Found filterPair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity} launchCookie=null windowingMode=undefined},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined},{NOT atype=undefined independent=true modes=[] flags=NONE mustBeTask=true order=ANY topActivity=null launchCookie=null customAnim=true windowingMode=undefined}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@9ff31e9, appThread = android.app.IApplicationThread$Stub$Proxy@6136e6e, debugName = QuickstepLaunchHome }}
+03-28 22:40:04.014  1214  1283 V WindowManagerShell:  Delegate animation for (#40) to RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@9ff31e9, appThread = android.app.IApplicationThread$Stub$Proxy@6136e6e, debugName = QuickstepLaunchHome }
+03-28 22:40:04.025  1493  1493 D StateManager: createAtomicAnimation - fromState: Background, toState: Normal, partial trace:
+03-28 22:40:04.025  1493  1493 D StateManager: 	at com.android.quickstep.util.ScalingWorkspaceRevealAnim.<init>(go/retraceme 72a59688580715d19f0e415c69e80376c2f062d1648c80db6730905005a27c20:39)
+03-28 22:40:04.025  1493  1493 D StateManager: 	at com.android.launcher3.QuickstepTransitionManager.createWallpaperOpenAnimations(go/retraceme 72a59688580715d19f0e415c69e80376c2f062d1648c80db6730905005a27c20:168)
+03-28 22:40:04.025  1493  1493 D StateManager: 	at com.android.launcher3.QuickstepTransitionManager$WallpaperOpenLauncherAnimationRunner.onAnimationStart(go/retraceme 72a59688580715d19f0e415c69e80376c2f062d1648c80db6730905005a27c20:17)
+03-28 22:40:04.026  1493  1493 D b/311077782: LauncherAnimationRunner.setAnimation
+03-28 22:40:04.040  1493  1510 I s.nexuslauncher: AssetManager2(0x79408d87a798) locale list changing from [] to [en-US]
+03-28 22:40:04.043  1493  1510 W HWUI    : Image decoding logging dropped!
+03-28 22:40:04.069   723   752 V WindowManager: Sent Transition (#40) createdAt=03-28 22:40:03.755 via request=TransitionRequestInfo { type = CLOSE, triggerTask = TaskInfo{userId=0 taskId=17 effectiveUid=10217 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.studentsaas.student/.MainActivity } baseActivity=ComponentInfo{com.studentsaas.student/com.studentsaas.student.MainActivity} topActivity=ComponentInfo{com.studentsaas.student/com.studentsaas.student.MainActivity} origActivity=null realActivity=ComponentInfo{com.studentsaas.student/com.studentsaas.student.MainActivity} numActivities=1 lastActiveTime=3639670 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{385e24 Task{fa9edc7 #17 type=standard A=10217:com.studentsaas.student}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 0 - 0, 0) topActivityInfo=ActivityInfo{8873d8d com.studentsaas.student.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=true isVisible=true isVisibleRequested=true isTopActivityNoDisplay=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false isActivityStackTransparent=false lastNonFullscreenBounds=Rect(276, 694 - 804, 1774) capturedLink=null capturedLinkTimestamp=0 requestedVisibleTypes=-9 topActivityRequestOpenInBrowserEducationTimestamp=0 appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false eligibleForLetterboxEducation= false isLetterboxEducationEnabled= true isLetterboxDoubleTapEnabled= false eligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 topActivityAppBounds=Rect(0, 0 - 1080, 2400) isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false hasMinAspectRatioOverride=false topActivityLetterboxBounds=null cameraCompatTaskInfo=CameraCompatTaskInfo { freeformCameraCompatMode=inactive}} topActivityMainWindowFrame=null}, pipChange = null, remoteTransition = null, displayChange = null, flags = 16, debugId = 40 }
+03-28 22:40:04.069   723   752 V WindowManager:     startWCT=WindowContainerTransaction { changes= {} hops= [] errorCallbackToken=null taskFragmentOrganizer=null }
+03-28 22:40:04.069   723   752 V WindowManager:     info={id=40 t=CLOSE f=0x10 trk=0 r=[0@Point(0, 0)] c=[
+03-28 22:40:04.069   723   752 V WindowManager:         {WCT{RemoteToken{3ddd7d7 Task{b13e422 #1 type=home}}} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0xf62a667 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},
+03-28 22:40:04.069   723   752 V WindowManager:         {WCT{RemoteToken{385e24 Task{fa9edc7 #17 type=standard A=10217:com.studentsaas.student}}} m=CLOSE f=NONE leash=Surface(name=Task=17)/@0xd509278 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1},
+03-28 22:40:04.069   723   752 V WindowManager:         {m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{fd65578 showWhenLocked=false})/@0x91e9981 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}
+03-28 22:40:04.069   723   752 V WindowManager:     ]}
+03-28 22:40:04.072  1214  1283 V WindowManagerShell:  animated by com.android.wm.shell.transition.RemoteTransitionHandler@39e0cba
+03-28 22:40:04.104   723   888 I ImeTracker: com.google.android.apps.nexuslauncher:ce67dcfb: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
+03-28 22:40:04.105  7541  7541 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():2043 
+03-28 22:40:04.106   723  2192 I ImeTracker: system_server:f695d22d: onRequestHide at ORIGIN_SERVER reason IME_REQUESTED_CHANGED_LISTENER fromUser false
+03-28 22:40:04.107   723   755 I ImeTracker: system_server:f695d22d: onCancelled at PHASE_SERVER_SHOULD_HIDE
+03-28 22:40:04.108  7541  7541 I Module  : DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatus():100 repeatCheckTimes = 0, locked = false
+03-28 22:40:04.109  7541  7541 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1293 onStartInput(EditorInfo{EditorInfo{packageName=com.google.android.apps.nexuslauncher, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+03-28 22:40:04.110  7541  7541 I Module  : DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatus():100 repeatCheckTimes = 1, locked = false
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: EmojiCompatManager.getEmojiCompatIfLoaded():343 EmojiCompat.init() was never called.
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: java.lang.IllegalStateException: EmojiCompat is not initialized. Please call EmojiCompat.init() first
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at asx.p(PG:6)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at axb.b(PG:13)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at jnr.b(PG:2)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at jnr.c(PG:4)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at jnr.f(PG:3)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at jnx.c(PG:3)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at kif.cz(PG:47)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at lhl.run(PG:1025)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at jaf.execute(PG:12)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at nco.v(PG:13)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at lhn.m(PG:96)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at lhn.k(PG:25)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at kgn.onStartInput(PG:250)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at android.inputmethodservice.InputMethodService.doStartInput(InputMethodService.java:3521)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at android.inputmethodservice.InputMethodService$InputMethodImpl.startInput(InputMethodService.java:879)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at android.inputmethodservice.InputMethodService$InputMethodImpl.dispatchStartInput(InputMethodService.java:908)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at android.inputmethodservice.IInputMethodWrapper.executeMessage(IInputMethodWrapper.java:201)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at com.android.internal.os.HandlerCaller$MyHandler.handleMessage(HandlerCaller.java:44)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at android.os.Handler.dispatchMessage(Handler.java:110)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at android.os.Looper.loopOnce(Looper.java:248)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at android.os.Looper.loop(Looper.java:338)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at android.app.ActivityThread.main(ActivityThread.java:9067)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at java.lang.reflect.Method.invoke(Native Method)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:593)
+03-28 22:40:04.111  7541  7541 I EmojiCompatManager: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:932)
+03-28 22:40:04.111   723  2192 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.android.apps.nexuslauncher and userId: 0
+03-28 22:40:04.119  1493  1493 D InsetsController: hide(ime(), fromIme=false)
+03-28 22:40:04.119  1493  1493 I ImeTracker: com.google.android.apps.nexuslauncher:ce67dcfb: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+03-28 22:40:04.245  7541  7547 W putmethod.latin: Reducing the number of considered missed Gc histogram windows from 140 to 100
+03-28 22:40:04.257   723   755 W ActivityTaskManager: Activity top resumed state loss timeout for ActivityRecord{244785926 u0 com.studentsaas.student/.MainActivity t17 f} isExiting}
+03-28 22:40:04.411  1470  1470 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 

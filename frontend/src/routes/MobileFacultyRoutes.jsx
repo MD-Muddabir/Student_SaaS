@@ -1,0 +1,75 @@
+/**
+ * Native shell: faculty role only (bundled when VITE_APP_VARIANT=faculty). Teacher app in product docs.
+ */
+
+import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import ProtectedRoute from "./ProtectedRoute";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+
+const Login = lazy(() => import("../pages/auth/Login"));
+const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
+const Terms = lazy(() => import("../pages/public/TermsPage"));
+const Privacy = lazy(() => import("../pages/public/PrivacyPage"));
+const Profile = lazy(() => import("../pages/admin/Profile"));
+const ChatApp = lazy(() => import("../pages/chat/ChatApp"));
+const Unauthorized = lazy(() => import("../pages/common/Unauthorized"));
+
+const FacultyDashboard = lazy(() => import("../pages/faculty/Dashboard"));
+const MarkAttendance = lazy(() => import("../pages/faculty/MarkAttendance"));
+const FacultyViewAttendance = lazy(() => import("../pages/faculty/ViewAttendance"));
+const FacultySmartAttendance = lazy(() => import("../pages/admin/SmartAttendance"));
+const ScanFacultyQR = lazy(() => import("../pages/faculty/ScanFacultyQR"));
+const EnterMarks = lazy(() => import("../pages/faculty/EnterMarks"));
+const ViewStudents = lazy(() => import("../pages/faculty/ViewStudents"));
+const FacultyAnnouncements = lazy(() => import("../pages/faculty/Announcements"));
+const FacultySchedule = lazy(() => import("../pages/faculty/MySchedule"));
+const FacultyNotes = lazy(() => import("../pages/faculty/FacultyNotes"));
+const FacultyAssignments = lazy(() => import("../pages/faculty/Assignments"));
+
+const PageLoader = () => (
+  <div className="page-loader">
+    <LoadingSpinner />
+  </div>
+);
+
+function FacultyArea() {
+  return (
+    <ProtectedRoute allowedRoles={["faculty"]}>
+      <Routes>
+        <Route path="dashboard" element={<FacultyDashboard />} />
+        <Route path="attendance" element={<MarkAttendance />} />
+        <Route path="view-attendance" element={<FacultyViewAttendance />} />
+        <Route path="smart-attendance" element={<FacultySmartAttendance />} />
+        <Route path="scan-attendance" element={<ScanFacultyQR />} />
+        <Route path="marks" element={<EnterMarks />} />
+        <Route path="students" element={<ViewStudents />} />
+        <Route path="announcements" element={<FacultyAnnouncements />} />
+        <Route path="timetable" element={<FacultySchedule />} />
+        <Route path="notes" element={<FacultyNotes />} />
+        <Route path="assignments" element={<FacultyAssignments />} />
+        <Route path="chat" element={<ChatApp />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="*" element={<Navigate to="/faculty/dashboard" replace />} />
+      </Routes>
+    </ProtectedRoute>
+  );
+}
+
+export default function MobileFacultyRoutes() {
+  const home = "/faculty/dashboard";
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/faculty/*" element={<FacultyArea />} />
+        <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="*" element={<Navigate to={home} replace />} />
+      </Routes>
+    </Suspense>
+  );
+}

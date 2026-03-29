@@ -1,0 +1,11 @@
+{
+  "appId": "com.studentsaas.student",
+  "appName": "StudentSaaS-Student",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

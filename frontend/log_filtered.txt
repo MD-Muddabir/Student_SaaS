@@ -1,0 +1,81 @@
+03-28 22:39:59.514 W/ProcessCpuTracker(  723): Failed to stat(/proc/12835): android.system.ErrnoException: stat failed: ENOENT (No such file or directory)
+03-28 22:39:59.515 W/ProcessCpuTracker(  723): Failed to stat(/proc/12837): android.system.ErrnoException: stat failed: ENOENT (No such file or directory)
+03-28 22:40:00.620 D/nativeloader(12840): Load /system/lib64/libwebviewchromium_plat_support.so using class loader ns clns-11 (caller=/data/app/~~BgmYaz3I1ptxt-Dt4q_t5g==/com.google.android.webview-r_Q9ng9CxdX9MEam4JkPiQ==/WebViewGoogle.apk): ok
+03-28 22:40:00.626 E/chromium(12840): [0328/224000.626450:ERROR:variations_seed_loader.cc(39)] Seed missing signature.
+03-28 22:40:00.629 I/chromium(12840): [0328/224000.628874:INFO:variations_seed_loader.cc(67)] Failed to open file for reading.: No such file or directory (2)
+03-28 22:40:00.807 I/ActivityManager(  723): Start proc 12866:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0i9 for  {com.studentsaas.student/org.chromium.content.app.SandboxedProcessService0:0}
+03-28 22:40:00.866 I/cr_WebViewApkApp(12866): version=133.0.6943.137 (694313738) minSdkVersion=29 isBundle=false processName=com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0
+03-28 22:40:01.133 D/Capacitor(12840): Starting BridgeActivity
+03-28 22:40:01.183 D/Capacitor(12840): Registering plugin instance: CapacitorCookies
+03-28 22:40:01.188 D/Capacitor(12840): Registering plugin instance: WebView
+03-28 22:40:01.191 D/Capacitor(12840): Registering plugin instance: CapacitorHttp
+03-28 22:40:01.193 D/Capacitor(12840): Registering plugin instance: App
+03-28 22:40:01.196 D/Capacitor(12840): Registering plugin instance: Preferences
+03-28 22:40:01.198 D/Capacitor(12840): Registering plugin instance: PushNotifications
+03-28 22:40:01.216 W/Capacitor(12840): Unable to read file at path public/plugins
+03-28 22:40:01.225 D/Capacitor(12840): Loading app at http://localhost
+03-28 22:40:01.279 W/chromium(12866): [WARNING:runtime_features.cc(560)] Fenced frames cannot be enabled in this configuration. Use --enable-features=FencedFrames instead.
+03-28 22:40:01.279 W/chromium(12866): [WARNING:runtime_features.cc(585)] Topics cannot be enabled in this configuration. Use --enable-features=BrowsingTopics in addition.
+03-28 22:40:01.279 W/chromium(12866): [WARNING:runtime_features.cc(606)] SharedStorage cannot be enabled in this configuration. Use --enable-features=SharedStorageAPI in addition.
+03-28 22:40:01.325 D/Capacitor(12840): App started
+03-28 22:40:01.330 D/Capacitor/AppPlugin(12840): Firing change: true
+03-28 22:40:01.332 V/Capacitor/AppPlugin(12840): Notifying listeners for event appStateChange
+03-28 22:40:01.332 D/Capacitor/AppPlugin(12840): No listeners found for event appStateChange
+03-28 22:40:01.332 D/Capacitor(12840): App resumed
+03-28 22:40:01.408 W/chromium(12840): [WARNING:viz_main_impl.cc(85)] VizNullHypothesis is disabled (not a warning)
+03-28 22:40:01.480 D/Capacitor(12840): Handling local request: http://localhost/
+03-28 22:40:02.196 I/EmojiCompatManager( 7541): java.lang.IllegalStateException: EmojiCompat is not initialized. Please call EmojiCompat.init() first
+03-28 22:40:02.507 D/Capacitor(12840): Handling local request: http://localhost/assets/index-ByjzEesw.js
+03-28 22:40:02.510 D/Capacitor(12840): Handling local request: http://localhost/assets/index-18-l-p2w.css
+03-28 22:40:03.161 D/Capacitor(12840): Handling local request: http://localhost/assets/index-ovVujv-_.js
+03-28 22:40:03.162 D/Capacitor(12840): Handling local request: http://localhost/favicon.ico
+03-28 22:40:03.163 D/Capacitor(12840): Handling local request: http://localhost/assets/Login-nCDo6rFi.js
+03-28 22:40:03.164 D/Capacitor(12840): Handling local request: http://localhost/assets/ThemeSelector-DMxRpyPC.js
+03-28 22:40:03.164 D/Capacitor(12840): Handling local request: http://localhost/assets/ThemeSelector-XSxbycEM.css
+03-28 22:40:03.165 D/Capacitor(12840): Handling local request: http://localhost/assets/Auth-vKnLDGms.css
+03-28 22:40:03.166 D/Capacitor(12840): Handling local request: http://localhost/favicon.ico
+03-28 22:40:03.166 D/Capacitor(12840): Handling local request: http://localhost/favicon.ico
+03-28 22:40:03.201 V/Capacitor/Plugin(12840): To native (Capacitor plugin): callbackId: 60666381, pluginId: App, methodName: addListener
+03-28 22:40:03.203 V/Capacitor(12840): callback: 60666381, pluginId: App, methodName: addListener, methodData: {"eventName":"appUrlOpen"}
+03-28 22:40:03.206 D/Capacitor(12840): Handling local request: http://localhost/assets/index-HHHTmMQH.js
+03-28 22:40:03.219 D/Capacitor(12840): Handling local request: http://localhost/assets/index-DaZ6eiU_.js
+03-28 22:40:03.625 I/EmojiCompatManager( 7541): java.lang.IllegalStateException: EmojiCompat is not initialized. Please call EmojiCompat.init() first
+03-28 22:40:03.664 V/Capacitor/Plugin(12840): To native (Capacitor plugin): callbackId: 60666382, pluginId: PushNotifications, methodName: checkPermissions
+03-28 22:40:03.664 V/Capacitor(12840): callback: 60666382, pluginId: PushNotifications, methodName: checkPermissions, methodData: {}
+03-28 22:40:03.712 V/Capacitor/Plugin(12840): To native (Capacitor plugin): callbackId: 60666383, pluginId: PushNotifications, methodName: register
+03-28 22:40:03.712 V/Capacitor(12840): callback: 60666383, pluginId: PushNotifications, methodName: register, methodData: {}
+03-28 22:40:03.719 E/Capacitor(12840): Serious error executing plugin
+03-28 22:40:03.719 E/Capacitor(12840): java.lang.reflect.InvocationTargetException
+03-28 22:40:03.719 E/Capacitor(12840): 	at java.lang.reflect.Method.invoke(Native Method)
+03-28 22:40:03.719 E/Capacitor(12840): 	at com.getcapacitor.PluginHandle.invoke(PluginHandle.java:138)
+03-28 22:40:03.719 E/Capacitor(12840): 	at com.getcapacitor.Bridge.lambda$callPluginMethod$0(Bridge.java:844)
+03-28 22:40:03.719 E/Capacitor(12840): 	at com.getcapacitor.Bridge.$r8$lambda$FNYM7cvgeBk0k8YXQH7M96Mrf-c(Unknown Source:0)
+03-28 22:40:03.719 E/Capacitor(12840): 	at com.getcapacitor.Bridge$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+03-28 22:40:03.719 E/Capacitor(12840): 	at android.os.Handler.handleCallback(Handler.java:995)
+03-28 22:40:03.719 E/Capacitor(12840): 	at android.os.Handler.dispatchMessage(Handler.java:103)
+03-28 22:40:03.719 E/Capacitor(12840): 	at android.os.Looper.loopOnce(Looper.java:248)
+03-28 22:40:03.719 E/Capacitor(12840): 	at android.os.Looper.loop(Looper.java:338)
+03-28 22:40:03.719 E/Capacitor(12840): 	at android.os.HandlerThread.run(HandlerThread.java:85)
+03-28 22:40:03.719 E/Capacitor(12840): Caused by: java.lang.IllegalStateException: Default FirebaseApp is not initialized in this process com.studentsaas.student. Make sure to call FirebaseApp.initializeApp(Context) first.
+03-28 22:40:03.719 E/Capacitor(12840): 	at com.google.firebase.FirebaseApp.getInstance(FirebaseApp.java:179)
+03-28 22:40:03.719 E/Capacitor(12840): 	at com.google.firebase.messaging.FirebaseMessaging.getInstance(FirebaseMessaging.java:120)
+03-28 22:40:03.719 E/Capacitor(12840): 	at com.capacitorjs.plugins.pushnotifications.PushNotificationsPlugin.register(PushNotificationsPlugin.java:102)
+03-28 22:40:03.719 E/Capacitor(12840): 	... 10 more
+03-28 22:40:03.725 E/AndroidRuntime(12840): FATAL EXCEPTION: CapacitorPlugins
+03-28 22:40:03.725 E/AndroidRuntime(12840): java.lang.RuntimeException: java.lang.reflect.InvocationTargetException
+03-28 22:40:03.725 E/AndroidRuntime(12840): 	at com.getcapacitor.Bridge.lambda$callPluginMethod$0(Bridge.java:853)
+03-28 22:40:03.725 E/AndroidRuntime(12840): 	at com.getcapacitor.Bridge.$r8$lambda$FNYM7cvgeBk0k8YXQH7M96Mrf-c(Unknown Source:0)
+03-28 22:40:03.725 E/AndroidRuntime(12840): 	at com.getcapacitor.Bridge$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+03-28 22:40:03.725 E/AndroidRuntime(12840): Caused by: java.lang.reflect.InvocationTargetException
+03-28 22:40:03.725 E/AndroidRuntime(12840): 	at com.getcapacitor.PluginHandle.invoke(PluginHandle.java:138)
+03-28 22:40:03.725 E/AndroidRuntime(12840): 	at com.getcapacitor.Bridge.lambda$callPluginMethod$0(Bridge.java:844)
+03-28 22:40:03.725 E/AndroidRuntime(12840): Caused by: java.lang.IllegalStateException: Default FirebaseApp is not initialized in this process com.studentsaas.student. Make sure to call FirebaseApp.initializeApp(Context) first.
+03-28 22:40:03.725 E/AndroidRuntime(12840): 	at com.capacitorjs.plugins.pushnotifications.PushNotificationsPlugin.register(PushNotificationsPlugin.java:102)
+03-28 22:40:03.813 W/ActivityManager(  723): Exception when unbinding service com.studentsaas.student/org.chromium.content.app.SandboxedProcessService0:0
+03-28 22:40:03.813 W/ActivityManager(  723): android.os.DeadObjectException
+03-28 22:40:03.818 I/ActivityManager(  723): Killing 12866:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0a217i9 (adj 900): isolated not needed
+03-28 22:40:04.111 I/EmojiCompatManager( 7541): java.lang.IllegalStateException: EmojiCompat is not initialized. Please call EmojiCompat.init() first
+03-28 22:40:05.039 W/WindowManager(  723): Exception thrown during dispatchAppVisibility Window{31b914 u0 com.studentsaas.student/com.studentsaas.student.MainActivity EXITING}
+03-28 22:40:05.039 W/WindowManager(  723): android.os.DeadObjectException
+03-28 22:42:55.362 W/ModernMediaScanner( 1855): Failed to visit /data/data/com.android.providers.downloads/cache/en.model.metadata: java.nio.file.NoSuchFileException: /data/data/com.android.providers.downloads/cache/en.model.metadata
+03-28 22:43:51.720 W/ModernMediaScanner( 1855): Failed to visit /data/data/com.android.providers.downloads/cache/en.fb.metadata: java.nio.file.NoSuchFileException: /data/data/com.android.providers.downloads/cache/en.fb.metadata

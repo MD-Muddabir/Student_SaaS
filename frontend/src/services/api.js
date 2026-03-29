@@ -1,8 +1,16 @@
 import axios from "axios";
 
+/** Use VITE_API_BASE_URL for Capacitor/device builds (e.g. https://api.yourschool.com/api). */
+function resolveBaseURL() {
+    const fromEnv = import.meta.env.VITE_API_BASE_URL;
+    if (fromEnv && String(fromEnv).trim()) {
+        return String(fromEnv).replace(/\/$/, "");
+    }
+    return `${window.location.protocol}//${window.location.hostname}:5000/api`;
+}
+
 const api = axios.create({
-    // baseURL: "http://localhost:5000/api",
-    baseURL: `${window.location.protocol}//${window.location.hostname}:5000/api`,
+    baseURL: resolveBaseURL(),
 });
 
 api.interceptors.request.use((config) => {

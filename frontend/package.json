@@ -6,7 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:mobile:student": "node scripts/patch-capacitor-app.cjs student && cross-env VITE_APP_VARIANT=student vite build --mode mobile.student --base ./ && npx cap sync",
+    "build:mobile:parent": "node scripts/patch-capacitor-app.cjs parent && cross-env VITE_APP_VARIANT=parent vite build --base ./ && npx cap sync",
+    "build:mobile:faculty": "node scripts/patch-capacitor-app.cjs faculty && cross-env VITE_APP_VARIANT=faculty vite build --base ./ && npx cap sync",
+    "rebuild:student": "node scripts/patch-capacitor-app.cjs student && cross-env VITE_APP_VARIANT=student vite build --mode mobile.student --base ./ && npx cap sync android",
+    "cap:open:android": "npx cap open android",
+    "cap:sync": "npx cap sync"
   },
   "dependencies": {
     "axios": "^1.13.5",
@@ -21,10 +27,17 @@
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.13.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/preferences": "^7.0.0",
+    "@capacitor/push-notifications": "^7.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
+    "@capacitor/cli": "^7.0.0",
+    "cross-env": "^7.0.3",
     "vite": "^5.0.0"
   }
 }
