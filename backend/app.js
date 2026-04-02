@@ -23,7 +23,7 @@ const syncDatabase = async () => {
     // Wrapped in try-catch so they're no-ops if already exist
     // ─────────────────────────────────────────────────────────────────
     console.log("🔧 Adding missing columns...");
-    
+
     const safeAlter = async (sql, description) => {
       try {
         await sequelize.query(sql);
@@ -72,22 +72,22 @@ const syncDatabase = async () => {
     // ─────────────────────────────────────────────────────────────────
     console.log("🔄 Syncing specific models...");
     try {
-      const { 
-        InstitutePublicProfile, 
-        InstituteGalleryPhoto, 
-        InstituteReview, 
-        PublicEnquiry, 
-        Subscription, 
-        Plan 
+      const {
+        InstitutePublicProfile,
+        InstituteGalleryPhoto,
+        InstituteReview,
+        PublicEnquiry,
+        Subscription,
+        Plan
       } = require('./models');
-      
+
       await InstitutePublicProfile.sync({ alter: false });
       await InstituteGalleryPhoto.sync({ alter: false });
       await InstituteReview.sync({ alter: false });
       await PublicEnquiry.sync({ alter: false });
       await Subscription.sync({ alter: false });
       await Plan.sync({ alter: false });
-      
+
       console.log("✅ Specific models synced");
     } catch (e) {
       console.warn("⚠️ Specific model sync skipped:", e.message);
@@ -121,9 +121,9 @@ const syncDatabase = async () => {
     console.error("❌❌❌ Database error:", error.message);
     console.error("Full error:", error);
     console.error("Please ensure MySQL is running and database 'student_saas' exists");
-    process.exit(1); // Exit the process - Railway will restart it
+    process.exit; // Exit the process - Railway will restart it
   }
 };
 
-// Sync database on startup
-syncDatabase();
+// Export syncDatabase function so server.js can call it
+module.exports = { app, syncDatabase };
