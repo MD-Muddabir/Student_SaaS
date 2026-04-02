@@ -1,8 +1,8 @@
 const app = require("./app");
 require("./utils/cron");
 
-const PORT = process.env.PORT || 5000 || 8080;
-const HOST = process.env.HOST || "0.0.0.0";
+const PORT = process.env.PORT || 8080; // ✅ correct
+const HOST = "0.0.0.0"; // ✅ keep this fixed
 
 app.listen(PORT, HOST, () => {
     console.log(`✅ Server running on http://${HOST}:${PORT}`);
