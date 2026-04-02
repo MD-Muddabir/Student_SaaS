@@ -2,6 +2,7 @@ node_modules/
 frontend/node_modules/
 backend/node_modules/
 
+# Local environment files (never commit secrets)
 .env
 frontend/.env*
 backend/.env*
@@ -11,3 +12,6 @@ build/
 android/
 
 *.log
+
+# Keep railway.json tracked (it is NOT a secret)
+!railway.json
