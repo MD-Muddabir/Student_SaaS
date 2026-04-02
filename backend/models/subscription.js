@@ -13,6 +13,12 @@ const Subscription = sequelize.define("Subscription", {
         type: DataTypes.DECIMAL(10, 2),
         defaultValue: 0
     },
+    razorpay_order_id: DataTypes.STRING(100),
+    razorpay_payment_id: DataTypes.STRING(100),
+    coupon_code: DataTypes.STRING(50),
+    invoice_number: { type: DataTypes.STRING(50), unique: true },
+    tax_amount: { type: DataTypes.DECIMAL(10, 2), defaultValue: 0 },
+    paid_at: DataTypes.DATE,
 });
 
 module.exports = Subscription;

@@ -665,6 +665,7 @@ function Fees() {
                                         <th>Amount</th>
                                         <th>Method</th>
                                         <th>Status</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -677,6 +678,31 @@ function Fees() {
                                             <td style={{ color: '#10b981', fontWeight: '700' }}>+₹{parseFloat(p.amount_paid).toLocaleString()}</td>
                                             <td style={{ textTransform: 'capitalize' }}>{p.payment_method}</td>
                                             <td><span className={`badge badge-${p.status === 'success' ? 'success' : 'warning'}`}>{p.status}</span></td>
+                                            <td>
+                                                {p.status === 'success' && (
+                                                    <button 
+                                                        onClick={() => {
+                                                            import('jspdf').then(({ default: jsPDF }) => {
+                                                                const doc = new jsPDF();
+                                                                doc.setFontSize(22);
+                                                                doc.text("Fee Payment Receipt", 105, 20, null, null, "center");
+                                                                doc.setFontSize(12);
+                                                                doc.text(`Transaction ID: ${p.transaction_id}`, 20, 40);
+                                                                doc.text(`Student: ${p.Student?.User?.name}`, 20, 50);
+                                                                doc.text(`Date: ${new Date(p.payment_date).toLocaleDateString()}`, 20, 60);
+                                                                doc.text(`Payment Method: ${p.payment_method}`, 20, 70);
+                                                                doc.text(`Amount Paid: ₹${parseFloat(p.amount_paid).toFixed(2)}`, 20, 80);
+                                                                doc.text(`Status: ${p.status}`, 20, 90);
+                                                                doc.save(`Receipt_${p.transaction_id}.pdf`);
+                                                            });
+                                                        }}
+                                                        className="btn btn-sm btn-secondary"
+                                                        style={{ backgroundColor: "#4f46e5", color: "white", padding: "4px 8px", fontSize: "0.75rem" }}
+                                                    >
+                                                        ⬇ Receipt
+                                                    </button>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>

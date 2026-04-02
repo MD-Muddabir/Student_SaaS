@@ -25,9 +25,23 @@ function InstituteSettings() {
         logo: "",
     });
 
+    const [invoices, setInvoices] = useState([]);
+
     useEffect(() => {
         fetchInstituteData();
+        fetchInvoices();
     }, []);
+
+    const fetchInvoices = async () => {
+        try {
+            const res = await api.get('/invoices');
+            if (res.data.success) {
+                setInvoices(res.data.data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch invoices");
+        }
+    };
 
     const fetchInstituteData = async () => {
         try {
@@ -191,17 +205,63 @@ function InstituteSettings() {
             {/* Subscription Section */}
             <div className="card" style={{ marginTop: "2rem" }}>
                 <div className="card-header">
-                    <h3 className="card-title">Subscription Management</h3>
+                    <h3 className="card-title">Billing & Subscription Management</h3>
                 </div>
                 <div style={{ padding: "1.5rem" }}>
-                    <p>Upgrade your plan to unlock more features</p>
+                    <p style={{ marginBottom: "1rem" }}>Manage your current plan, upgrade options, and download past invoices.</p>
                     <button
                         className="btn btn-primary"
-                        style={{ marginTop: "1rem" }}
+                        style={{ marginBottom: "2rem" }}
                         onClick={() => navigate("/pricing")}
                     >
                         View Plans & Upgrade
                     </button>
+
+                    <h4 style={{ marginBottom: "1rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem" }}>Past Invoices</h4>
+                    {invoices.length === 0 ? (
+                        <p style={{ color: "#6b7280" }}>No invoices found.</p>
+                    ) : (
+                        <div className="table-responsive">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Invoice No</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {invoices.map(inv => (
+                                        <tr key={inv.id}>
+                                            <td>{new Date(inv.createdAt).toLocaleDateString()}</td>
+                                            <td>{inv.invoice_number}</td>
+                                            <td>₹{inv.amount}</td>
+                                            <td>
+                                                <span className={`badge badge-success`}>Paid</span>
+                                            </td>
+                                            <td>
+                                                {inv.file_path ? (
+                                                    <a 
+                                                        href={`/api/invoices/download/${inv.file_path.split('/').pop().split('\\').pop()}`} 
+                                                        target="_blank" 
+                                                        rel="noreferrer"
+                                                        className="btn btn-sm btn-secondary"
+                                                        style={{ textDecoration: 'none', backgroundColor: "#4f46e5", color: "white" }}
+                                                    >
+                                                        ⬇ Download
+                                                    </a>
+                                                ) : (
+                                                    <span style={{color: '#9ca3af', fontSize: '0.875rem'}}>No PDF</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

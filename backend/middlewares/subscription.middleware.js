@@ -1,91 +1,34 @@
-const { Institute, Subscription } = require("../models");
+const { Subscription } = require("../models");
 const { Op } = require("sequelize");
 
-const checkSubscription = async (req, res, next) => {
+async function checkSubscription(req, res, next) {
+    // Super admin bypasses this check
+    if (req.user.role === 'super_admin') return next();
+
     try {
-        // Skip for super admin
-        if (req.user.role === 'super_admin') {
-            return next();
-        }
-
-        const instituteId = req.user.institute_id;
-
-        if (!instituteId) {
-            return res.status(403).json({
-                success: false,
-                message: "No institute associated with this user"
-            });
-        }
-
-        const institute = await Institute.findByPk(instituteId, {
-            include: [{
-                model: Subscription,
-                order: [['createdAt', 'DESC']],
-                limit: 1
-            }]
+        const sub = await Subscription.findOne({
+            where: {
+                institute_id: req.user.institute_id,
+                payment_status: 'paid',
+                end_date: { [Op.gte]: new Date() },  // not expired
+            }
         });
 
-        if (!institute) {
-            return res.status(404).json({
+        if (!sub) {
+            return res.status(402).json({   // 402 = Payment Required
                 success: false,
-                message: "Institute not found"
+                code: 'SUBSCRIPTION_EXPIRED',
+                message: 'Your subscription has expired or no active plan found. Please renew to continue.',
+                renew_url: '/subscription'
             });
         }
 
-        // Check if pending (Registration complete but payment pending)
-        if (institute.status === 'pending') {
-            return res.status(402).json({
-                success: false,
-                message: "Subscription pending payment",
-                code: "PAYMENT_REQUIRED",
-                redirect: "/checkout"
-            });
-        }
-
-        // Check if suspended
-        if (institute.status === 'suspended') {
-            return res.status(403).json({
-                success: false,
-                message: "Account suspended. Please contact support."
-            });
-        }
-
-        // Check expiry
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (institute.subscription_end && new Date(institute.subscription_end) < today) {
-            // Auto-update status if not already updated (handled by cron/middleware lazily)
-            if (institute.status !== 'expired') {
-                await institute.update({ status: 'expired' });
-            }
-
-            // If method is not GET and not requesting payment/renewal, block it
-            const allowedPaths = ['/renew-plan', '/checkout', '/payment', '/plans'];
-            const isAllowedPath = allowedPaths.some(p => req.path.includes(p));
-
-            if (req.method !== 'GET' && !isAllowedPath) {
-                return res.status(403).json({
-                    success: false,
-                    message: "Subscription expired. Your account is in read-only mode. Please renew your plan to perform this action.",
-                    code: "SUBSCRIPTION_EXPIRED",
-                    redirect: "/renew-plan"
-                });
-            }
-        }
-
-        // Attach latest subscription to request for feature checks
-        req.subscription = institute.Subscriptions && institute.Subscriptions[0];
-        req.institute = institute;
-
+        req.subscription = sub;  // available in controllers
         next();
     } catch (error) {
-        console.error("Subscription check error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error during subscription check"
-        });
+        console.error("Subscription Check Error:", error);
+        return res.status(500).json({ success: false, message: "Internal Server Error verifying subscription" });
     }
-};
+}
 
 module.exports = checkSubscription;

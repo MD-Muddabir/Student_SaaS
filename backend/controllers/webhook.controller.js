@@ -17,12 +17,11 @@ exports.handleWebhook = async (req, res) => {
     try {
         const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
         const signature = req.headers["x-razorpay-signature"];
-        const body = JSON.stringify(req.body);
-
-        // Verify webhook signature
+        const rawBody = req.body; // Buffer because of express.raw()
+        
         const expectedSignature = crypto
             .createHmac("sha256", secret)
-            .update(body)
+            .update(rawBody)
             .digest("hex");
 
         if (signature !== expectedSignature) {
@@ -32,8 +31,9 @@ exports.handleWebhook = async (req, res) => {
             });
         }
 
-        const event = req.body.event;
-        const subscriptionData = req.body.payload?.subscription?.entity;
+        const bodyObj = JSON.parse(rawBody.toString());
+        const event = bodyObj.event;
+        const subscriptionData = bodyObj.payload?.subscription?.entity;
 
         // Handle different webhook events
         switch (event) {
@@ -129,16 +129,24 @@ async function handleSubscriptionCharged(subscriptionData) {
 
         // Generate invoice
         try {
-            const invoice = await invoiceService.generateInvoice({
+            const invoiceData = await invoiceService.generateInvoice({
                 institute,
                 plan,
                 subscription: newSubscription,
             });
 
             // Update subscription with invoice path
-            if (invoice && invoice.fileName) {
-                await newSubscription.update({
-                    invoice_path: invoice.fileName,
+            if (invoiceData && invoiceData.filePath) {
+                await Invoice.create({
+                    institute_id: instituteId,
+                    payment_id: rzpPayment.id,
+                    invoice_type: 'subscription',
+                    invoice_number: invoiceData.invoiceNumber,
+                    invoice_date: new Date(),
+                    subtotal: amount,
+                    tax_amount: tax_amount,
+                    total_amount: final_paid,
+                    file_path: invoiceData.filePath
                 });
             }
 

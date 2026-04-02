@@ -34,6 +34,7 @@ function Students() {
         address: "",
         admission_date: "",
         subject_ids: [],
+        status: "active",
     });
 
     useEffect(() => {
@@ -151,6 +152,7 @@ function Students() {
             date_of_birth: student.date_of_birth || "",
             gender: student.gender || "male",
             address: student.address || "",
+            status: student.User?.status || "active",
             subject_ids: [
                 ...(student.is_full_course ? ["full_course"] : []),
                 ...(student.Subjects ? student.Subjects.map(sub => sub.id.toString()) : [])
@@ -192,6 +194,7 @@ function Students() {
             address: "",
             admission_date: "",
             subject_ids: [],
+            status: "active",
         });
         setAvailableSubjects([]);
         setEditMode(false);
@@ -664,6 +667,39 @@ function Students() {
                                         onChange={handleChange}
                                     ></textarea>
                                 </div>
+
+                                {editMode && (
+                                    <div className="form-group" style={{ gridColumn: "1 / -1", marginTop: "1rem" }}>
+                                        <label className="form-label" style={{ fontWeight: '700' }}>Account Status</label>
+                                        <div style={{ display: 'flex', gap: '0.75rem', marginTop: "0.5rem", flexWrap: "wrap" }}>
+                                            {['active', 'blocked'].map(s => (
+                                                <label key={s} style={{
+                                                    display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer',
+                                                    padding: '0.5rem 1.2rem', borderRadius: '8px',
+                                                    border: `1.5px solid ${formData.status === s ? (s === 'active' ? '#10b981' : '#ef4444') : 'var(--border-color)'}`,
+                                                    background: formData.status === s ? (s === 'active' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)') : 'transparent',
+                                                    fontWeight: '600',
+                                                    color: formData.status === s ? (s === 'active' ? '#10b981' : '#ef4444') : 'var(--text-secondary)'
+                                                }}>
+                                                    <input 
+                                                        type="radio" 
+                                                        name="status" 
+                                                        value={s} 
+                                                        checked={formData.status === s} 
+                                                        onChange={handleChange} 
+                                                        style={{ accentColor: s === 'active' ? '#10b981' : '#ef4444' }} 
+                                                    />
+                                                    {s === 'active' ? '● Active' : '🚫 Blocked'}
+                                                </label>
+                                            ))}
+                                        </div>
+                                        {formData.status === 'blocked' && (
+                                            <div style={{ marginTop: '0.6rem', padding: '0.6rem 0.9rem', borderRadius: '8px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', fontSize: '0.83rem', color: '#ef4444' }}>
+                                                ⚠️ Blocked student will not be able to access their account or any course materials.
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 <div className="modal-footer">
                                     <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary">

@@ -12,10 +12,22 @@ exports.registerInstitute = async (data) => {
         throw new Error("All fields are required, including plan selection.");
     }
 
+    // Check if email already exists
+    const existingInstitute = await Institute.findOne({ where: { email } });
+    if (existingInstitute) {
+        throw new Error("This email is already registered as an institute.");
+    }
+
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+        throw new Error("This email is already registered as a user.");
+    }
+
     let subscriptionStart = null;
     let subscriptionEnd = null;
     let instituteStatus = "pending";
     let hasUsedTrial = false;
+    let plan = null;
 
     if (planId) {
         plan = await Plan.findByPk(planId);
@@ -121,6 +133,10 @@ exports.loginUser = async (email, password) => {
     });
 
     if (!user) throw new Error("User not found");
+
+    if (user.status === 'blocked' && (user.role === 'student' || user.role === 'parent')) {
+        throw new Error("Your account has been blocked. Please contact the administrator.");
+    }
 
     // Check Password match
     const isMatch = await comparePassword(password, user.password_hash);

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Student Controller
  * Handles CRUD operations for students
  * Implements institute-level data isolation
@@ -28,7 +28,8 @@ exports.createStudent = async (req, res) => {
             gender,
             address,
             subject_ids, // New array of selected subject ids
-            class_ids // New array of selected class ids
+            class_ids, // New array of selected class ids
+            status // New field for account status
         } = req.body;
 
         const institute_id = req.user.institute_id;
@@ -86,7 +87,7 @@ exports.createStudent = async (req, res) => {
             email,
             phone,
             password_hash,
-            status: "active",
+            status: status || "active",
         });
 
 
@@ -410,7 +411,8 @@ exports.updateStudent = async (req, res) => {
             gender,
             address,
             subject_ids,
-            class_ids
+            class_ids,
+            status
         } = req.body;
 
         const student = await Student.findOne({
@@ -426,11 +428,12 @@ exports.updateStudent = async (req, res) => {
         }
 
         // Update user details
-        if (name || email || phone) {
+        if (name || email || phone || status) {
             await student.User.update({
                 name: name || student.User.name,
                 email: email || student.User.email,
                 phone: phone || student.User.phone,
+                status: status || student.User.status,
             });
         }
 

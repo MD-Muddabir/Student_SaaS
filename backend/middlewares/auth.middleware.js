@@ -14,8 +14,8 @@ const verifyToken = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
 
-    // For managers: check live status from DB to enforce blocking in real-time
-    if (decoded.role === 'manager') {
+    // For managers, students, and parents: check live status from DB to enforce blocking in real-time
+    if (decoded.role === 'manager' || decoded.role === 'student' || decoded.role === 'parent') {
       const dbUser = await User.findByPk(decoded.id, {
         attributes: ['id', 'status', 'permissions', 'role']
       });
@@ -32,9 +32,11 @@ const verifyToken = async (req, res, next) => {
         });
       }
 
-      // Refresh permissions from DB (in case admin updated them after login)
-      req.user.permissions = dbUser.permissions;
-      req.user.status = dbUser.status;
+      if (decoded.role === 'manager') {
+        // Refresh permissions from DB (in case admin updated them after login)
+        req.user.permissions = dbUser.permissions;
+        req.user.status = dbUser.status;
+      }
     }
 
     next();

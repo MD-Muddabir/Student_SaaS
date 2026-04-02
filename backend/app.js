@@ -26,6 +26,11 @@ app.use(cors({
 }));
 
 /**
+ * Webhook Routes (Must be parsed as raw body for signature verification)
+ */
+app.use("/api/webhook", express.raw({ type: 'application/json' }), require("./routes/webhook.routes"));
+
+/**
  * Body Parsers
  * Parse JSON and URL-encoded data
  */
@@ -86,12 +91,12 @@ app.use("/api/announcements", require("./routes/announcement.routes"));
 app.use("/api/subscriptions", require("./routes/subscription.routes"));
 app.use("/api/plans", require("./routes/plan.routes"));
 app.use("/api/payment", require("./routes/payment.routes"));
-app.use("/api/invoice", require("./routes/invoice.routes"));
+app.use("/api/invoices", require("./routes/invoice.routes"));
 app.use("/api/expenses", require("./routes/expense.routes"));
 app.use("/api/transport-fees", require("./routes/transportFee.routes"));
 app.use("/api/manager", require("./routes/manager.routes"));
 app.use("/api/timetable", require("./routes/timetable.routes"));
-app.use("/api/webhook", require("./routes/webhook.routes"));
+// Webhook route already mounted above
 app.use("/api/chat", require("./routes/chat.routes"));
 app.use("/api/parents", require("./routes/parent.routes"));
 app.use("/api/biometric", require("./routes/biometric.routes"));
@@ -267,6 +272,10 @@ const syncDatabase = async () => {
       await sequelize.query(`ALTER TABLE subscriptions ADD COLUMN discount_amount DECIMAL(10,2) DEFAULT 0;`);
     } catch (e) { }
 
+    try {
+      await sequelize.query(`ALTER TABLE subscriptions ADD COLUMN tax_amount DECIMAL(10,2) DEFAULT 0;`);
+    } catch (e) { }
+
     // Biometric attendance columns
     try { await sequelize.query(`ALTER TABLE attendances ADD COLUMN marked_by_type ENUM('manual','biometric','mobile_otp','qr_code') DEFAULT 'manual';`); } catch (e) { }
     try { await sequelize.query(`ALTER TABLE attendances ADD COLUMN biometric_punch_id BIGINT NULL;`); } catch (e) { }
@@ -292,12 +301,14 @@ const syncDatabase = async () => {
     
     // Auto-sync other schema changes using alter for the explicit models to make sure everything matches
     try {
-        const { InstitutePublicProfile, InstituteGalleryPhoto, InstituteReview, PublicEnquiry } = require('./models');
+        const { InstitutePublicProfile, InstituteGalleryPhoto, InstituteReview, PublicEnquiry, Subscription, Plan } = require('./models');
         await InstitutePublicProfile.sync({ alter: true });
         await InstituteGalleryPhoto.sync({ alter: true });
         await InstituteReview.sync({ alter: true });
         await PublicEnquiry.sync({ alter: true });
-    } catch (e) { console.error("Error auto-syncing public page models:", e); }
+        await Subscription.sync({ alter: true });
+        await Plan.sync({ alter: true });
+    } catch (e) { console.error("Error auto-syncing explicit models:", e); }
 
     await sequelize.sync({ alter: false });
     console.log("✅ Database synchronized successfully");

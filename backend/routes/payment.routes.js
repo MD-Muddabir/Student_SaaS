@@ -7,4 +7,8 @@ const verifyToken = require("../middlewares/auth.middleware");
 router.post("/initiate", verifyToken, controller.initiatePayment);
 router.post("/verify", verifyToken, controller.verifyPayment);
 
+// Phase 4: Student Fee Payments
+router.post("/fees/create-order", verifyToken, controller.createFeeOrder);
+router.post("/fees/verify", verifyToken, controller.verifyFeePayment);
+
 module.exports = router;

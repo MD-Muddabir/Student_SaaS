@@ -40,6 +40,10 @@ const Assignment = require("./assignment");
 const AssignmentSubmission = require("./assignmentSubmission");
 const AssignmentSubmissionHistory = require("./assignmentSubmissionHistory");
 const AssignmentSetting = require("./assignmentSetting");
+const RazorpayOrder = require("./razorpayOrder");
+const RazorpayPayment = require("./razorpayPayment");
+const Invoice = require("./invoice");
+const StudentFeePayment = require("./studentFeePayment");
 
 // Public Web Page Models
 const InstitutePublicProfile = require("./institutePublicProfile");
@@ -366,6 +370,37 @@ Institute.hasMany(InstituteDiscount, { foreignKey: "institute_id" });
 InstituteDiscount.belongsTo(User, { as: "approver", foreignKey: "applied_by" });
 User.hasMany(InstituteDiscount, { foreignKey: "applied_by" });
 
+// RazorpayOrder Associations
+RazorpayOrder.belongsTo(Institute, { foreignKey: "institute_id" });
+Institute.hasMany(RazorpayOrder, { foreignKey: "institute_id" });
+
+// RazorpayPayment Associations
+RazorpayPayment.belongsTo(Institute, { foreignKey: "institute_id" });
+Institute.hasMany(RazorpayPayment, { foreignKey: "institute_id" });
+
+RazorpayPayment.belongsTo(RazorpayOrder, { foreignKey: "order_id" });
+RazorpayOrder.hasOne(RazorpayPayment, { foreignKey: "order_id" });
+
+// Invoice Associations
+Invoice.belongsTo(Institute, { foreignKey: "institute_id" });
+Institute.hasMany(Invoice, { foreignKey: "institute_id" });
+
+Invoice.belongsTo(RazorpayPayment, { foreignKey: "payment_id" });
+RazorpayPayment.hasOne(Invoice, { foreignKey: "payment_id" });
+
+// StudentFeePayment Associations
+StudentFeePayment.belongsTo(Institute, { foreignKey: "institute_id" });
+Institute.hasMany(StudentFeePayment, { foreignKey: "institute_id" });
+
+StudentFeePayment.belongsTo(StudentFee, { foreignKey: "student_fee_id" });
+StudentFee.hasMany(StudentFeePayment, { foreignKey: "student_fee_id" });
+
+StudentFeePayment.belongsTo(Student, { foreignKey: "student_id" });
+Student.hasMany(StudentFeePayment, { foreignKey: "student_id" });
+
+StudentFeePayment.belongsTo(User, { as: "collector", foreignKey: "collected_by" });
+User.hasMany(StudentFeePayment, { foreignKey: "collected_by" });
+
 module.exports = {
     sequelize,
     Plan,
@@ -413,4 +448,8 @@ module.exports = {
     PublicEnquiry,
     InstituteDiscount,
     Lead,
+    RazorpayOrder,
+    RazorpayPayment,
+    Invoice,
+    StudentFeePayment,
 };

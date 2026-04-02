@@ -4,7 +4,7 @@ import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
 import "../admin/Dashboard.css";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { useRazorpayPayment } from "../../hooks/useRazorpayPayment";
 
 function PayFees() {
     const { user } = useContext(AuthContext);
@@ -17,6 +17,9 @@ function PayFees() {
     const [error, setError] = useState("");
     const [studentId, setStudentId] = useState(null);
     const [totalPaid, setTotalPaid] = useState(0);
+    const [isTestMode, setIsTestMode] = useState(true);
+
+    const { initializePayment, isPaymentLoading, paymentError, setPaymentError } = useRazorpayPayment();
 
     useEffect(() => {
         fetchData();
@@ -54,29 +57,86 @@ function PayFees() {
         setSelectedFee(fee);
         setPaymentAmount(balance.toFixed(2)); // Default to balance amount
         setShowModal(true);
+        setPaymentError?.(null);
     };
 
-    const handleMockPaymentSubmit = async (e) => {
+    const handlePaymentSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Simulated fake gateway wait
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            await api.post("/fees/pay", {
-                student_id: studentId,
-                fee_structure_id: selectedFee.id,
+            // 1. Create Order on Backend
+            const orderRes = await api.post("/payment/fees/create-order", {
+                student_fee_id: selectedFee.id,
                 amount: parseFloat(paymentAmount),
-                payment_method: "Credit Card",
-                remarks: `Payment for ${selectedFee.fee_type}`
+                testMode: isTestMode
             });
-            alert("Payment Successful!");
 
-            setShowModal(false);
-            setPaymentAmount("");
-            setSelectedFee(null);
-            fetchData();
+            const { order, key } = orderRes.data;
+
+            if (key === "rzp_test_mock") {
+                // Mock verification flow
+                const confirmMock = window.confirm(`Mock Payment Gateway\n\nPay ₹${order.amount / 100}?\n\nClick OK to succeed, Cancel to fail.`);
+                if (confirmMock) {
+                    try {
+                        await api.post("/payment/fees/verify", {
+                            razorpay_order_id: order.id,
+                            razorpay_payment_id: `pay_mock_${Date.now()}`,
+                            razorpay_signature: "mock_signature",
+                            student_fee_id: selectedFee.id,
+                            amount: parseFloat(paymentAmount)
+                        });
+
+                        alert("Payment Successful!");
+                        setShowModal(false);
+                        setPaymentAmount("");
+                        setSelectedFee(null);
+                        fetchData();
+                    } catch (verifyErr) {
+                        alert(verifyErr.response?.data?.message || "Payment Verification Failed.");
+                    }
+                }
+                return;
+            }
+
+            // 2. Initialize Razorpay Checkout
+            initializePayment({
+                orderConfig: {
+                    key: key,
+                    amount: order.amount,
+                    currency: order.currency,
+                    order_id: order.id,
+                },
+                userConfig: {
+                    name: user.name,
+                    email: user.email,
+                    contact: user.phone || ""
+                },
+                onSuccess: async (paymentData) => {
+                    try {
+                        // 3. Verify Payment
+                        await api.post("/payment/fees/verify", {
+                            razorpay_order_id: paymentData.razorpay_order_id,
+                            razorpay_payment_id: paymentData.razorpay_payment_id,
+                            razorpay_signature: paymentData.razorpay_signature,
+                            student_fee_id: selectedFee.id,
+                            amount: parseFloat(paymentAmount)
+                        });
+
+                        alert("Payment Successful!");
+                        setShowModal(false);
+                        setPaymentAmount("");
+                        setSelectedFee(null);
+                        fetchData();
+                    } catch (verifyErr) {
+                        alert(verifyErr.response?.data?.message || "Payment Verification Failed.");
+                    }
+                },
+                onFailure: (errDesc) => {
+                    alert(`Payment Failed: ${errDesc}`);
+                }
+            });
+
         } catch (err) {
-            alert(err.response?.data?.message || "Payment Failed.");
+            alert(err.response?.data?.message || "Could not initiate payment.");
         }
     };
 
@@ -281,7 +341,12 @@ function PayFees() {
                             <button onClick={() => setShowModal(false)} className="btn btn-sm">×</button>
                         </div>
                         <div className="modal-body">
-                            <form onSubmit={handleMockPaymentSubmit}>
+                            {paymentError && (
+                                <div style={{ color: "red", padding: "10px", marginBottom: "1rem", backgroundColor: "#ffebeb", borderRadius: "5px" }}>
+                                    {paymentError}
+                                </div>
+                            )}
+                            <form onSubmit={handlePaymentSubmit}>
                                 <div className="form-group">
                                     <label className="form-label">Fee Details</label>
                                     <input
@@ -292,7 +357,7 @@ function PayFees() {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Amount (USD) *</label>
+                                    <label className="form-label">Amount (INR) *</label>
                                     <input
                                         type="number"
                                         step="0.01"
@@ -303,21 +368,41 @@ function PayFees() {
                                         min="1"
                                     />
                                 </div>
-                                <div className="form-group" style={{ marginTop: "15px" }}>
-                                    <label className="form-label">Select Payment Method</label>
-                                    <select className="form-select">
-                                        <option>Credit / Debit Card</option>
-                                        <option>UPI</option>
-                                        <option>Bank Transfer</option>
-                                    </select>
+                                <div className="payment-mode-toggle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '15px', marginBottom: '15px' }}>
+                                    <span style={{ fontWeight: isTestMode ? '600' : '400', color: isTestMode ? 'var(--primary-color, #3f51b5)' : '#666' }}>Test Mode</span>
+                                    <label style={{ position: 'relative', display: 'inline-block', width: '50px', height: '26px' }}>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={!isTestMode} 
+                                            onChange={(e) => setIsTestMode(!e.target.checked)} 
+                                            style={{ opacity: 0, width: 0, height: 0, margin: 0, padding: 0 }}
+                                        />
+                                        <span style={{
+                                            position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                                            backgroundColor: isTestMode ? '#ccc' : 'var(--primary-color, #3f51b5)', transition: '.3s', borderRadius: '34px'
+                                        }}>
+                                            <span style={{
+                                                position: 'absolute', height: '20px', width: '20px', left: '3px', bottom: '3px',
+                                                backgroundColor: 'white', transition: '.3s', borderRadius: '50%',
+                                                transform: isTestMode ? 'translateX(0)' : 'translateX(24px)',
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                            }}></span>
+                                        </span>
+                                    </label>
+                                    <span style={{ fontWeight: !isTestMode ? '600' : '400', color: !isTestMode ? 'var(--primary-color, #3f51b5)' : '#666' }}>Real Mode</span>
                                 </div>
+                                
                                 <div className="modal-footer" style={{ marginTop: "20px" }}>
-                                    <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary">
+                                    <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary" disabled={isPaymentLoading}>
                                         Cancel
                                     </button>
-                                    <button type="submit" className="btn btn-primary" style={{ backgroundColor: "#10b981", borderColor: "#10b981" }}>
-                                        Pay ${paymentAmount}
+                                    <button type="submit" className="btn btn-primary" style={{ backgroundColor: "#10b981", borderColor: "#10b981" }} disabled={isPaymentLoading}>
+                                        {isPaymentLoading ? "Processing..." : `Pay ₹${paymentAmount || 0}`}
                                     </button>
+                                </div>
+                                <div className="secure-badge" style={{ marginTop: '16px', textAlign: 'center', fontSize: '12px', color: '#666', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                    Secured by Razorpay ({isTestMode ? 'Test Mode' : 'Live Mode'})
                                 </div>
                             </form>
                         </div>
