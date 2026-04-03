@@ -6,7 +6,11 @@
  */
 
 const { Sequelize } = require("sequelize");
-require("dotenv").config();
+
+// ❌ Don't rely on dotenv in production (Render already injects env)
+if (process.env.NODE_ENV !== "production") {
+    require("dotenv").config();
+}
 
 // Log which DB we are connecting to (helps debug Railway issues)
 const dbHost = process.env.DB_HOST || "localhost";
@@ -47,10 +51,10 @@ const sequelize = new Sequelize(
         // ✅ Phase 1.1: Connection Timeout + SSL + Compression
         dialectOptions: {
             connectTimeout: 60000,
-            ssl: process.env.DB_SSL === "true"
-                ? { rejectUnauthorized: true }
-                : false,
-            compress: true, // Enable MySQL protocol compression
+            ssl: {
+                require: true,
+                rejectUnauthorized: false, // ✅ MUST be false
+            }, // Enable MySQL protocol compression
         },
 
         define: {
