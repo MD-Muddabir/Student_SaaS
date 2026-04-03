@@ -341,7 +341,7 @@ export default function AdminAssignments() {
                                             <td>{sub.grade ?? '—'}</td>
                                             <td>
                                                 {sub.submission_file_url ? (
-                                                    <a href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${sub.submission_file_url}`} target="_blank" rel="noreferrer" className="fa-file-link">
+                                                    <a href={`${import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') : (import.meta.env.DEV ? 'http://localhost:5000' : 'https://student-saas-backend.onrender.com')}${sub.submission_file_url}`} target="_blank" rel="noreferrer" className="fa-file-link">
                                                         📥 Download
                                                     </a>
                                                 ) : '—'}
@@ -379,7 +379,7 @@ export default function AdminAssignments() {
                                             <td>{sub.submitted_at ? new Date(sub.submitted_at).toLocaleString() : '—'}</td>
                                             <td>
                                                 {sub.submission_file_url ? (
-                                                    <a href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${sub.submission_file_url}`} target="_blank" rel="noreferrer" className="fa-file-link">📥 View</a>
+                                                    <a href={`${import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') : (import.meta.env.DEV ? 'http://localhost:5000' : 'https://student-saas-backend.onrender.com')}${sub.submission_file_url}`} target="_blank" rel="noreferrer" className="fa-file-link">📥 View</a>
                                                 ) : '—'}
                                             </td>
                                         </tr>
