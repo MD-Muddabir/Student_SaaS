@@ -18,8 +18,8 @@ const getBaseURL = () => {
             // Development fallback
             return "http://localhost:5000/api";
         } else {
-            // Production fallback - Points to the assigned Render backend
-            return "https://student-saas-backend.onrender.com/api";
+            // Production fallback - Points to the correct Render backend
+            return "https://institutes-saas.onrender.com/api";
         }
     }
 
