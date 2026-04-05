@@ -397,7 +397,7 @@ function ChatApp() {
 
                     {/* Admin Filters UI */}
                     {(user?.role === "admin" || user?.role === "manager" || user?.role === "owner") && (
-                        <div className="chat-filters" style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div className="chat-filters">
                             <select
                                 className="form-input"
                                 style={{ fontSize: '0.75rem', padding: '4px' }}
@@ -436,8 +436,8 @@ function ChatApp() {
                                 {filterData.subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                             </select>
                             <select
-                                className="form-input"
-                                style={{ fontSize: '0.75rem', padding: '4px', gridColumn: 'span 2' }}
+                                className="form-input filter-full"
+                                style={{ fontSize: '0.75rem', padding: '4px' }}
                                 value={filters.parent_id}
                                 onChange={(e) => handleFilterChange('parent_id', e.target.value)}
                             >

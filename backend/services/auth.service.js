@@ -134,13 +134,13 @@ exports.loginUser = async (email, password) => {
 
     if (!user) throw new Error("User not found");
 
-    if (user.status === 'blocked' && (user.role === 'student' || user.role === 'parent')) {
-        throw new Error("Your account has been blocked. Please contact the administrator.");
-    }
+    // We removed the throw for blocked students/parents here.
+    // They will now login successfully but be caught by ProtectedRoute's BlockedScreen
+    // resulting in the desired Phase 7 "Account Suspended" page.
 
     // Check Password match
     const isMatch = await comparePassword(password, user.password_hash);
-    if (!isMatch) throw new Error("Invalid credentials");
+    if (!isMatch) throw new Error("Incorrect password");
 
     // --- Admin Limit Enforcement ---
     // If user is an admin, check if they are within the allowed limit (Grandfathering Logic)

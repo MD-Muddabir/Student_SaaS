@@ -44,7 +44,15 @@
     color: var(--text-primary);
 }
 
-.chat-filters { padding: 0 4px; animation: fadeIn 0.3s ease; }
+.chat-filters {
+    padding: 0 4px;
+    animation: fadeIn 0.3s ease;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 1rem;
+}
+.chat-filters .filter-full { grid-column: span 2; }
 .chat-filters select {
     background: var(--background-hover);
     border: 1px solid var(--border);
@@ -349,115 +357,155 @@
 
 /* ════════════════════════════════════════════════════════════
    MOBILE CHAT — Complete responsive re-layout
-   On mobile: single-panel view. Sidebar = room list (hidden
-   when a room is active). Main = full-screen chat (always
-   full-width). Back button in chat header returns to list.
+   Single-panel: sidebar = full room list (hidden when room open).
+   Main = full-screen chat. Back button returns to list.
    ════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
 
-    /* Remove the side-by-side flex layout */
+    /* ── Container fills the entire visible screen ── */
     .chat-container {
-        flex-direction: column;
-        height: calc(100vh - 62px); /* account for bottom nav */
-        border-radius: 0;
-        border: none;
-        box-shadow: none;
-        margin: 0;
-        width: 100vw;
-        max-width: 100vw;
-        overflow: hidden;
+        height: 100dvh !important;           /* fill dynamic viewport */
+        height: 100vh !important;            /* fallback for older Safari */
+        min-height: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+        animation: none !important;          /* skip entrance animation on mobile */
     }
 
-    /* ── Sidebar becomes full-width room list ── */
+    /* ── Sidebar: full-width, fills available height ── */
     .chat-sidebar {
         width: 100% !important;
         min-width: 0 !important;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-        flex: 1;
-        overflow: hidden;
-        /* Hidden when a room is selected */
+        max-height: none !important;         /* override any old 200px cap */
+        border-right: none !important;
+        border-bottom: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
     }
 
-    /* ── When a room is open, hide sidebar, show main ── */
-    .chat-container.room-open .chat-sidebar {
-        display: none;
-    }
-    .chat-container.room-open .chat-main {
-        flex: 1;
-        display: flex;
-        width: 100%;
-    }
-
-    /* ── No room: show sidebar, hide main panel ── */
+    /* ── When NO room selected: show sidebar, hide main ── */
     .chat-container:not(.room-open) .chat-main {
-        display: none;
+        display: none !important;
     }
     .chat-container:not(.room-open) .chat-sidebar {
-        display: flex;
+        display: flex !important;
     }
 
-    /* Sidebar header compact */
+    /* ── When room IS selected: hide sidebar, show main ── */
+    .chat-container.room-open .chat-sidebar {
+        display: none !important;
+    }
+    .chat-container.room-open .chat-main {
+        display: flex !important;
+        flex: 1 !important;
+        min-height: 0 !important;
+        width: 100% !important;
+    }
+
+    /* ── Sidebar header — compact ── */
     .chat-sidebar-header {
-        padding: 14px 16px;
+        padding: 12px 16px !important;
+        flex-shrink: 0 !important;
     }
-    .chat-sidebar-header h3 { font-size: 1.05rem; }
+    .chat-sidebar-header h3 { font-size: 1.05rem !important; }
 
-    /* Room list items — more compact on mobile */
+    /* ── Room list: scrollable, fills remaining height ── */
+    .chat-room-list {
+        flex: 1 !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: env(safe-area-inset-bottom, 16px) !important;
+    }
+
+    /* ── Admin filters grid ── */
+    .chat-filters {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        margin-top: 10px !important;
+        padding: 0 2px !important;
+    }
+    .chat-filters > select:last-of-type,
+    .chat-filters > .filter-full {
+        grid-column: span 2 !important;
+    }
+
+    /* ── Room list items ── */
     .chat-room-item {
-        padding: 12px 14px;
-        margin: 3px 8px;
+        padding: 12px 14px !important;
+        margin: 3px 8px !important;
+        border-radius: 10px !important;
     }
     .room-avatar {
-        width: 42px;
-        height: 42px;
-        font-size: 1rem;
-        margin-right: 12px;
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 1rem !important;
+        margin-right: 12px !important;
     }
-    .room-name { font-size: 0.95rem; }
-    .room-subtitle { font-size: 0.8rem; }
+    .room-name    { font-size: 0.95rem !important; }
+    .room-subtitle { font-size: 0.8rem !important; }
 
-    /* Main chat header: show back button to return to list */
-    .chat-header {
-        padding: 12px 14px;
+    /* ── Main chat area ── */
+    .chat-main {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
     }
-    .chat-header h3 { font-size: 1rem; }
 
-    /* Messages area */
+    /* Chat header */
+    .chat-header { padding: 12px 14px !important; flex-shrink: 0 !important; }
+    .chat-header h3 { font-size: 1rem !important; }
+
+    /* Messages scrollable area */
     .chat-messages {
-        padding: 14px 12px;
-        gap: 12px;
+        padding: 14px 12px !important;
+        gap: 12px !important;
+        flex: 1 !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
     }
 
-    /* Message bubbles — slightly wider on mobile */
-    .chat-message { max-width: 85%; }
-    .msg-bubble {
-        padding: 10px 14px;
-        font-size: 0.9rem;
-    }
+    /* Message bubbles — wider on mobile */
+    .chat-message { max-width: 85% !important; }
+    .msg-bubble   { padding: 10px 14px !important; font-size: 0.9rem !important; }
 
-    /* Chat input — safe area aware */
+    /* Input pinned to bottom */
     .chat-input-area {
-        padding: 10px 12px;
-        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+        flex-shrink: 0 !important;
+        padding: 10px 12px !important;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
     }
     .chat-input {
-        padding: 10px 14px;
-        font-size: 0.95rem;
-        min-height: 44px;
+        padding: 10px 14px !important;
+        font-size: 0.95rem !important;
+        min-height: 44px !important;
     }
     .chat-send-btn {
-        padding: 10px 16px;
-        font-size: 0.8rem;
-        min-height: 44px;
+        padding: 10px 16px !important;
+        font-size: 0.8rem !important;
+        min-height: 44px !important;
     }
 
-    /* Participants panel: hide on mobile — shown as bottom sheet instead */
+    /* Participants panel: hidden on mobile */
     .chat-participants-panel {
         display: none !important;
     }
 
-    /* Mobile back button in chat header */
+    /* ── Mobile back button in chat header ── */
     .chat-mobile-back {
         display: flex !important;
         align-items: center;
@@ -468,20 +516,23 @@
         font-size: 0.9rem;
         font-weight: 700;
         cursor: pointer;
-        padding: 6px 8px;
+        padding: 8px 10px;
         border-radius: 8px;
-        margin-right: 8px;
+        margin-right: 6px;
         min-height: 40px;
+        min-width: 40px;
         flex-shrink: 0;
     }
     .chat-mobile-back:active { opacity: 0.7; }
 
-    /* Admin filter grid — 1 col on small mobile */
-    .chat-filters > div[style*="grid"] {
-        grid-template-columns: 1fr !important;
+    /* Monitor banner */
+    .chat-monitor-banner {
+        flex-shrink: 0 !important;
+        font-size: 0.82rem !important;
+        padding: 10px 16px !important;
     }
 
-    /* Create room modal — full screen bottom sheet */
+    /* Create room modal — bottom sheet */
     .modal-overlay {
         align-items: flex-end !important;
     }
@@ -491,7 +542,12 @@
         width: 100% !important;
         margin: 0 !important;
         padding: 20px !important;
-        max-height: 90vh;
-        overflow-y: auto;
+        max-height: 90dvh !important;
+        overflow-y: auto !important;
     }
-}
+
+    /* Empty state */
+    .chat-empty-state { padding: 24px 16px !important; }
+    .chat-empty-icon  { font-size: 3rem !important; }
+    .chat-empty-state h2 { font-size: 1.3rem !important; }
+}

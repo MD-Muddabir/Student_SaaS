@@ -1,5 +1,15 @@
-const authService = require("../services/auth.service");
+const authService  = require("../services/auth.service");
 const generateToken = require("../utils/generateToken");
+const emailService  = require("../services/email.service");
+const bcrypt        = require("bcrypt");
+const jwt           = require("jsonwebtoken");
+const { generateOtp, saveOtp, validateOtp, invalidateOtp } = require("../utils/otp.util");
+const { Institute, OtpVerification } = require("../models");
+const { Op } = require("sequelize");
+
+// ─── Legacy in-memory cache (kept for backward compat with /send-otp) ───────
+const otpCache = new Map();
+
 
 /**
  * Register a new institute
@@ -36,7 +46,16 @@ exports.register = async (req, res) => {
  */
 exports.registerInstitute = async (req, res) => {
     try {
-        const { name, email, password, phone, address, city, state, pincode, plan_id } = req.body;
+        const { name, email, password, phone, address, city, state, pincode, plan_id, otp } = req.body;
+
+        // Phase 3: OTP Validation
+        if (!otp || otpCache.get(email.trim().toLowerCase()) !== otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid or expired OTP"
+            });
+        }
+        otpCache.delete(email.trim().toLowerCase());
 
         // Validation
         if (!name || !email || !password || !phone || !plan_id) {
@@ -251,5 +270,313 @@ exports.saveTheme = async (req, res) => {
         res.json({ success: true, message: "Theme saved" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.sendOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ success: false, message: "Email is required" });
+        
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        otpCache.set(email.trim().toLowerCase(), otp);
+        
+        try {
+            await emailService.sendEmail(email, "Registration OTP", `<p>Your OTP for registration is: <strong>${otp}</strong></p>`);
+        } catch(e) {
+            console.log(`Failed to send OTP email configured via SMTP. Falling back logic: OTP for ${email} is ${otp}`);
+        }
+        
+        // Let it expire in 10 minutes
+        setTimeout(() => {
+            if (otpCache.get(email.trim().toLowerCase()) === otp) {
+                otpCache.delete(email.trim().toLowerCase());
+            }
+        }, 10 * 60 * 1000);
+
+        const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
+        res.json({ 
+            success: true, 
+            message: "OTP sent successfully. Please check your email.",
+            devOtp: isDev ? otp : undefined
+        });
+    } catch(err) {
+        res.status(500).json({ success: false, message: err.message || "Failed to send OTP" });
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NEW OTP SYSTEM — DB-backed, secure, resend-limited, attempt-locked
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Step 1 of Registration — Send OTP to email
+ * POST /api/auth/register-init
+ */
+exports.registerInit = async (req, res) => {
+    try {
+        const { name, email, phone, password, plan_id } = req.body;
+
+        if (!name || !email || !phone || !password || !plan_id) {
+            return res.status(400).json({ success: false, message: "All fields are required." });
+        }
+
+        // Check if already registered AND verified
+        const existing = await Institute.findOne({ where: { email: email.trim().toLowerCase() } });
+        if (existing && existing.email_verified) {
+            return res.status(409).json({
+                success: false,
+                message: "This email is already registered. Please login."
+            });
+        }
+
+        const otp = generateOtp();
+        await saveOtp(email.trim().toLowerCase(), otp, "registration");
+
+        try {
+            await emailService.sendOtpEmail(email.trim().toLowerCase(), otp, "registration");
+        } catch (mailErr) {
+            console.error("Email send failed:", mailErr.message);
+            // In dev: fallback — return OTP in response
+            const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
+            if (isDev) {
+                return res.status(200).json({
+                    success: true,
+                    message: "OTP generated (email service not configured).",
+                    devOtp: otp
+                });
+            }
+            return res.status(500).json({ success: false, message: "Email service unavailable. Please try again later." });
+        }
+
+        const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
+        res.status(200).json({
+            success: true,
+            message: "OTP sent to your email. Please verify to complete registration.",
+            devOtp: isDev ? otp : undefined
+        });
+    } catch (error) {
+        console.error("registerInit error:", error);
+        res.status(500).json({ success: false, message: error.message || "Failed to send OTP." });
+    }
+};
+
+/**
+ * Step 2 of Registration — Verify OTP and create account
+ * POST /api/auth/verify-registration
+ */
+exports.verifyRegistrationOtp = async (req, res) => {
+    try {
+        const { email, otp, name, phone, password, plan_id, address, city, state, pincode } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({ success: false, message: "Email and OTP are required." });
+        }
+
+        const { valid, message, record } = await validateOtp(email.trim().toLowerCase(), otp, "registration");
+        if (!valid) return res.status(400).json({ success: false, message });
+
+        // NOTE: Do NOT pre-hash — authService.registerInstitute hashes internally
+        // Create Institute (using existing authService for consistency)
+        const result = await authService.registerInstitute({
+            name:     name.trim(),
+            email:    email.trim().toLowerCase(),
+            password, // raw — service will hash
+            phone:    phone.replace(/\s/g, ""),
+            address:  address?.trim(),
+            city:     city?.trim(),
+            state:    state?.trim(),
+            pincode:  pincode?.trim(),
+            plan_id,
+            status: "pending" // stays pending until payment
+        });
+
+        // Mark email as verified after account creation
+        await result.institute.update({ email_verified: true });
+
+        // Mark OTP used
+        await invalidateOtp(record);
+
+        // Generate JWT
+        const token = generateToken(result.adminUser);
+
+        res.status(201).json({
+            success: true,
+            message: "Account created successfully! Please complete payment to activate.",
+            token,
+            user: {
+                id:             result.adminUser.id,
+                name:           result.adminUser.name,
+                email:          result.adminUser.email,
+                role:           result.adminUser.role,
+                institute_id:   result.institute.id,
+                institute_name: result.institute.name
+            },
+            data: {
+                institute_id: result.institute.id,
+                email:        result.institute.email,
+                name:         result.institute.name
+            }
+        });
+    } catch (error) {
+        console.error("verifyRegistrationOtp error:", error);
+        if (error.message && error.message.toLowerCase().includes("email")) {
+            return res.status(400).json({ success: false, message: "This email is already registered." });
+        }
+        res.status(500).json({ success: false, message: error.message || "Verification failed." });
+    }
+};
+
+/**
+ * Forgot Password — Send OTP to registered email
+ * POST /api/auth/forgot-password
+ */
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ success: false, message: "Email is required." });
+
+        const GENERIC = "If this email is registered, you will receive an OTP shortly.";
+
+        const User = require("../models/user");
+        const user = await User.findOne({ where: { email: email.trim().toLowerCase() } });
+        if (!user) {
+            // Security: never reveal if email exists
+            return res.status(200).json({ success: true, message: GENERIC });
+        }
+
+        const otp = generateOtp();
+        await saveOtp(email.trim().toLowerCase(), otp, "password_reset");
+
+        try {
+            await emailService.sendOtpEmail(email.trim().toLowerCase(), otp, "password_reset");
+        } catch (mailErr) {
+            console.error("Forgot-password email send failed:", mailErr.message);
+            const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
+            if (isDev) {
+                return res.status(200).json({ success: true, message: GENERIC, devOtp: otp });
+            }
+            return res.status(500).json({ success: false, message: "Email service unavailable. Please try again later." });
+        }
+
+        const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
+        res.status(200).json({
+            success: true,
+            message: GENERIC,
+            devOtp: isDev ? otp : undefined
+        });
+    } catch (error) {
+        console.error("forgotPassword error:", error);
+        res.status(500).json({ success: false, message: error.message || "Failed to process request." });
+    }
+};
+
+/**
+ * Reset Password — Verify OTP then update password
+ * POST /api/auth/reset-password
+ */
+exports.resetPassword = async (req, res) => {
+    try {
+        const { email, otp, new_password, confirm_password } = req.body;
+
+        if (!email || !otp || !new_password || !confirm_password) {
+            return res.status(400).json({ success: false, message: "All fields are required." });
+        }
+        if (new_password !== confirm_password) {
+            return res.status(400).json({ success: false, message: "Passwords do not match." });
+        }
+        if (new_password.length < 8) {
+            return res.status(400).json({ success: false, message: "Password must be at least 8 characters." });
+        }
+
+        const { valid, message, record } = await validateOtp(email.trim().toLowerCase(), otp, "password_reset");
+        if (!valid) return res.status(400).json({ success: false, message });
+
+        const { hashPassword } = require("../utils/hashPassword");
+        const hashed = await hashPassword(new_password);
+
+        // Update the specific User's password
+        const User = require("../models/user");
+        const user = await User.findOne({ where: { email: email.trim().toLowerCase() } });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "Account not found." });
+        }
+
+        await user.update({ password_hash: hashed });
+
+        await invalidateOtp(record);
+
+        res.status(200).json({ success: true, message: "Password reset successfully. Please login with your new password." });
+    } catch (error) {
+        console.error("resetPassword error:", error);
+        res.status(500).json({ success: false, message: error.message || "Password reset failed." });
+    }
+};
+
+/**
+ * Resend OTP — Rate-limited to 3 resends per session
+ * POST /api/auth/resend-otp
+ */
+exports.resendOtp = async (req, res) => {
+    try {
+        const { email, type } = req.body;
+        if (!email || !type) {
+            return res.status(400).json({ success: false, message: "Email and type are required." });
+        }
+        if (!["registration", "password_reset"].includes(type)) {
+            return res.status(400).json({ success: false, message: "Invalid OTP type." });
+        }
+
+        // Check existing resend count before creating new OTP
+        const existing = await OtpVerification.findOne({
+            where: { email: email.trim().toLowerCase(), type, is_used: false },
+            order: [["created_at", "DESC"]]
+        });
+
+        const maxResend = parseInt(process.env.OTP_MAX_RESEND) || 3;
+        if (existing && existing.resend_count >= maxResend) {
+            return res.status(429).json({
+                success: false,
+                message: `Maximum resend limit (${maxResend}) reached. Please restart the process.`
+            });
+        }
+
+        // Save resend count before deleting old record
+        const newResendCount = existing ? existing.resend_count + 1 : 1;
+
+        const otp = generateOtp();
+        // saveOtp deletes old unused OTPs for this email+type, then creates fresh one
+        const newRecord = await saveOtp(email.trim().toLowerCase(), otp, type);
+        // Store cumulative resend count
+        await newRecord.update({ resend_count: newResendCount });
+
+        try {
+            await emailService.sendOtpEmail(email.trim().toLowerCase(), otp, type);
+        } catch (mailErr) {
+            console.error("Resend OTP email failed:", mailErr.message);
+            const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
+            if (isDev) {
+                return res.status(200).json({
+                    success: true,
+                    message: `New OTP generated (email not configured). Resends used: ${newResendCount}/${maxResend}`,
+                    devOtp: otp,
+                    resendCount: newResendCount,
+                    maxResend
+                });
+            }
+            return res.status(500).json({ success: false, message: "Email service unavailable." });
+        }
+
+        const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
+        res.status(200).json({
+            success: true,
+            message: "New OTP sent to your email.",
+            resendCount: newResendCount,
+            maxResend,
+            devOtp: isDev ? otp : undefined
+        });
+    } catch (error) {
+        console.error("resendOtp error:", error);
+        res.status(500).json({ success: false, message: error.message || "Failed to resend OTP." });
     }
 };

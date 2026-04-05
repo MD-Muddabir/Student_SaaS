@@ -681,13 +681,13 @@ function Students() {
                                                     fontWeight: '600',
                                                     color: formData.status === s ? (s === 'active' ? '#10b981' : '#ef4444') : 'var(--text-secondary)'
                                                 }}>
-                                                    <input 
-                                                        type="radio" 
-                                                        name="status" 
-                                                        value={s} 
-                                                        checked={formData.status === s} 
-                                                        onChange={handleChange} 
-                                                        style={{ accentColor: s === 'active' ? '#10b981' : '#ef4444' }} 
+                                                    <input
+                                                        type="radio"
+                                                        name="status"
+                                                        value={s}
+                                                        checked={formData.status === s}
+                                                        onChange={handleChange}
+                                                        style={{ accentColor: s === 'active' ? '#10b981' : '#ef4444' }}
                                                     />
                                                     {s === 'active' ? '● Active' : '🚫 Blocked'}
                                                 </label>

@@ -39,9 +39,9 @@ export default function Footer() {
           <ul className='lp-footer-links'>
             <li><span>📍 Hyderabad, Telangana</span></li>
             <li><a href='mailto:muddabir@gmail.com'>muddabir03@gmail.com</a></li>
-            <li><a href='tel:+917887682938'>+91 78876 82938</a></li>
+            <li><a href='tel:+918275668600'>+91 82756 68600</a></li>
             <li style={{ marginTop: '16px' }}>
-              <Link to='/register' className='lp-btn-primary' style={{ padding: '8px 16px', fontSize: '13px' }}>
+              <Link to='/register' className='lp-btn-primary' style={{ padding: '8px 16px', fontSize: '13px', color: 'white' }}>
                 Book Demo
               </Link>
             </li>

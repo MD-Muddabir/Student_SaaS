@@ -25,18 +25,18 @@ function Login() {
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const [showPass, setShowPass] = useState(false);
 
-  // Force pro theme for auth pages
+  // Force pro theme for auth pages (Default to light mode for Phase 2)
   useEffect(() => {
-    setTheme(isDark, "pro");
+    setTheme(false, "pro");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Redirect if already logged in
   useEffect(() => {
-    const raw = localStorage.getItem("user");
+    const raw = sessionStorage.getItem("user");
     if (!raw) return;
     let userObj;
     try {
@@ -70,25 +70,45 @@ function Login() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError("");
+    if (errors[e.target.name] || errors.general) {
+        setErrors({});
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Local Validation Check to prevent unnecessary network requests
+    let localErrors = {};
+    if (!formData.email.trim()) localErrors.email = "Please enter your email";
+    if (!formData.password) localErrors.password = "Please enter your password";
+
+    if (Object.keys(localErrors).length > 0) {
+        setErrors(localErrors);
+        setTimeout(() => {
+            const firstErrorElement = document.querySelector(".auth-input--error");
+            if (firstErrorElement) {
+                firstErrorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                firstErrorElement.focus({ preventScroll: true });
+            }
+        }, 50);
+        return;
+    }
+
     setLoading(true);
-    setError("");
+    setErrors({});
     try {
       await login(formData);
-      const user = JSON.parse(localStorage.getItem("user"));
+      const user = JSON.parse(sessionStorage.getItem("user"));
       if (isMobileApp) {
         if (MOBILE_ALLOWED_ROLE && user.role !== MOBILE_ALLOWED_ROLE) {
           logout();
-          setError(`This app is for ${MOBILE_ALLOWED_ROLE === "faculty" ? "faculty" : MOBILE_ALLOWED_ROLE} accounts only.`);
+          setErrors({ general: `This app is for ${MOBILE_ALLOWED_ROLE === "faculty" ? "faculty" : MOBILE_ALLOWED_ROLE} accounts only.` });
           return;
         }
         if (!MOBILE_ALLOWED_ROLE && !["student", "parent", "faculty"].includes(user.role)) {
           logout();
-          setError("Admin and Manager dashboards are not available on the mobile application.");
+          setErrors({ general: "Admin and Manager dashboards are not available on the mobile application." });
           return;
         }
       }
@@ -102,7 +122,27 @@ function Login() {
         default: navigate("/");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please check your credentials.");
+      const msg = err.response?.data?.message || "Login failed. Please check your credentials.";
+      
+      const scrollToErr = () => {
+        setTimeout(() => {
+            const firstErrorElement = document.querySelector(".auth-input--error, .auth-alert");
+            if (firstErrorElement) {
+                firstErrorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+        }, 50);
+      };
+
+      if (msg.toLowerCase().includes("not found") || msg.toLowerCase().includes("email")) {
+          setErrors({ email: "Email not registered. Please check again." });
+          scrollToErr();
+      } else if (msg.toLowerCase().includes("incorrect password") || msg.toLowerCase().includes("credentials")) {
+          setErrors({ password: "Incorrect password. Please try again." });
+          scrollToErr();
+      } else {
+          setErrors({ general: msg });
+          scrollToErr();
+      }
     } finally {
       setLoading(false);
     }
@@ -132,11 +172,11 @@ function Login() {
             </p>
           </div>
 
-          {/* Error Alert */}
-          {error && (
+          {/* General Error Alert */}
+          {errors.general && (
             <div className="auth-alert">
               <span className="auth-alert__icon">⚠️</span>
-              <span>{error}</span>
+              <span>{errors.general}</span>
             </div>
           )}
 
@@ -151,13 +191,14 @@ function Login() {
                 type="email"
                 id="email"
                 name="email"
-                className="auth-input"
+                className={`auth-input${errors.email ? " auth-input--error" : ""}`}
                 placeholder="you@example.com"
                 value={formData.email}
                 onChange={handleChange}
                 required
                 autoFocus
               />
+              {errors.email && <span className="auth-field-error" style={{ color: "#EF4444", fontSize: "0.85rem", marginTop: "4px", display: "block" }}>{errors.email}</span>}
             </div>
 
             <div className="auth-field">
@@ -170,7 +211,7 @@ function Login() {
                   type={showPass ? "text" : "password"}
                   id="password"
                   name="password"
-                  className="auth-input"
+                  className={`auth-input${errors.password ? " auth-input--error" : ""}`}
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
@@ -185,6 +226,7 @@ function Login() {
                   {showPass ? "🙈" : "👁️"}
                 </button>
               </div>
+              {errors.password && <span className="auth-field-error" style={{ color: "#EF4444", fontSize: "0.85rem", marginTop: "4px", display: "block" }}>{errors.password}</span>}
             </div>
 
             <div className="auth-row">

@@ -178,8 +178,13 @@
         gap: 0.45rem !important;
     }
 
-    .action-icon { font-size: 1.35rem !important; }
-    .action-title { font-size: 0.65rem !important; }
+    .action-icon {
+        font-size: 1.35rem !important;
+    }
+
+    .action-title {
+        font-size: 0.65rem !important;
+    }
 
     .stat-icon {
         width: 36px !important;
@@ -187,8 +192,13 @@
         font-size: 1.1rem !important;
     }
 
-    .stat-content h3 { font-size: 1.05rem !important; }
-    .stat-content p  { font-size: 0.65rem !important; }
+    .stat-content h3 {
+        font-size: 1.05rem !important;
+    }
+
+    .stat-content p {
+        font-size: 0.65rem !important;
+    }
 }
 
 /* Animations */

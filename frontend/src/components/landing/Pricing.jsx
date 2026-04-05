@@ -168,7 +168,7 @@ function PlanCard({ plan, isHot, isAnnual, planIndex, totalPlans, allPlans }) {
 
 export default function Pricing() {
   useScrollReveal('reveal', 0.1);
-  const [isAnnual, setIsAnnual] = useState(true);
+  const [isAnnual, setIsAnnual] = useState(false);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
 

@@ -43,7 +43,7 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         try {
-            const token = localStorage.getItem("token");
+            const token = sessionStorage.getItem("token");
 
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
@@ -68,6 +68,9 @@ api.interceptors.response.use(
         // 🌐 Network error
         if (!response) {
             console.error("🚫 Network error:", error.message);
+            // Check for toast availability if imported, or dispatch an event that NetworkStatus can listen to.
+            // Using standard alert is ok, but we can emit a custom event to show beautiful popup.
+            window.dispatchEvent(new Event('offline_api_error'));
             alert("Network error. Please check your connection.");
             return Promise.reject(error);
         }
@@ -97,8 +100,8 @@ api.interceptors.response.use(
             }
 
             // 🔑 Unauthorized
-            if (status === 401) {
-                localStorage.clear();
+            if (status === 401 && window.location.pathname !== "/login") {
+                sessionStorage.clear();
                 window.location.href = "/login";
             }
 
@@ -115,10 +118,10 @@ api.interceptors.response.use(
  */
 function handleBlockedAccount() {
     try {
-        const storedUser = localStorage.getItem("user");
+        const storedUser = sessionStorage.getItem("user");
 
         if (!storedUser) {
-            localStorage.clear();
+            sessionStorage.clear();
             window.location.href = "/login";
             return;
         }
@@ -128,7 +131,7 @@ function handleBlockedAccount() {
         // Student / Parent
         if (user.role === "student" || user.role === "parent") {
             alert("Your account has been blocked. Contact administrator.");
-            localStorage.clear();
+            sessionStorage.clear();
             window.location.href = "/login";
             return;
         }
@@ -136,7 +139,7 @@ function handleBlockedAccount() {
         // Admin / Manager
         if (user.status !== "blocked") {
             user.status = "blocked";
-            localStorage.setItem("user", JSON.stringify(user));
+            sessionStorage.setItem("user", JSON.stringify(user));
         }
 
         if (!window.location.pathname.includes("/admin/dashboard")) {
@@ -145,7 +148,7 @@ function handleBlockedAccount() {
 
     } catch (err) {
         console.error("⚠️ Blocked account handling error:", err.message);
-        localStorage.clear();
+        sessionStorage.clear();
         window.location.href = "/login";
     }
 }

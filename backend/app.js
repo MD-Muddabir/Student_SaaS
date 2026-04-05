@@ -21,12 +21,12 @@ const app = express();
 // ============================================
 // Compress all HTTP responses — reduces payload size by ~70%
 app.use(compression({
-    level: 6,           // Compression level (0-9): 6 is best speed/size balance
-    threshold: 1024,    // Only compress responses > 1KB
-    filter: (req, res) => {
-        if (req.headers["x-no-compression"]) return false;
-        return compression.filter(req, res);
-    },
+  level: 6,           // Compression level (0-9): 6 is best speed/size balance
+  threshold: 1024,    // Only compress responses > 1KB
+  filter: (req, res) => {
+    if (req.headers["x-no-compression"]) return false;
+    return compression.filter(req, res);
+  },
 }));
 
 // ============================================
@@ -39,23 +39,23 @@ app.use(performanceLogger);
 // ============================================
 // Global rate limiter: 200 requests per 15 minutes per IP
 const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 200,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { success: false, message: "Too many requests — please try again later." },
-    skip: (req) => req.ip === "127.0.0.1" || req.ip === "::1", // Don't limit localhost
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many requests — please try again later." },
+  skip: (req) => req.ip === "127.0.0.1" || req.ip === "::1", // Don't limit localhost
 });
 app.use("/api/", globalLimiter);
 
 // Strict auth limiter: 10 login attempts per 15 minutes per IP
 const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 10,
-    skipSuccessfulRequests: true,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { success: false, message: "Too many login attempts — please wait 15 minutes." },
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many login attempts — please wait 15 minutes." },
 });
 app.use("/api/auth/login", authLimiter);
 
@@ -68,26 +68,27 @@ app.use("/api/auth/login", authLimiter);
  * Specific origins only (faster than wildcard) + preflight cache (24h)
  */
 const allowedOrigins = [
-    "https://student-saa-s-version-1-0-0-md-muddabirs-projects.vercel.app",
-    process.env.FRONTEND_URL,
-    "http://localhost:5173",
-    "http://localhost:3000",
+  "https://student-saa-s-version-1-0-0-md-muddabirs-projects.vercel.app",
+  process.env.FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:3000",
 ].filter(Boolean);
 
 app.use(cors({
-    origin: (origin, callback) => {
-        // Allow requests with no origin (mobile apps, Postman, server-to-server)
-        // Also allow ANY .vercel.app domain to support dynamic Vercel preview branch URLs
-        if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
-            callback(null, true);
-        } else {
-            callback(new Error(`Not allowed by CORS: ${origin}`));
-        }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    maxAge: 86400, // ✅ Cache preflight for 24 hours — reduces OPTIONS requests
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, server-to-server)
+    // Also allow ANY .vercel.app domain to support dynamic Vercel preview branch URLs
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Not allowed by CORS: ${origin}`));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  maxAge: 86400, // ✅ Cache preflight for 24 hours — reduces OPTIONS requests
 }));
 
 
@@ -109,15 +110,15 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
  * In production with Cloudinary, all URLs are direct Cloudinary CDN links.
  */
 const isCloudinaryReady =
-    process.env.CLOUDINARY_CLOUD_NAME &&
-    process.env.CLOUDINARY_CLOUD_NAME !== "your_cloud_name" &&
-    process.env.CLOUDINARY_API_KEY &&
-    process.env.CLOUDINARY_API_KEY !== "your_api_key";
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_CLOUD_NAME !== "your_cloud_name" &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_KEY !== "your_api_key";
 
 if (!isCloudinaryReady) {
-    // Serve local uploads only when Cloudinary is not set up (local dev fallback)
-    app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-    console.log("📂 Serving local /uploads (Cloudinary not configured)");
+  // Serve local uploads only when Cloudinary is not set up (local dev fallback)
+  app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+  console.log("📂 Serving local /uploads (Cloudinary not configured)");
 }
 
 

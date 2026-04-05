@@ -27,9 +27,9 @@ export default function Contact() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      
+
       const resData = await response.json();
-      
+
       if (resData.success) {
         toast.success(resData.message || 'Message sent! We will contact you within 24 hours.');
         e.target.reset();
@@ -59,21 +59,21 @@ export default function Contact() {
             <div className='lp-contact-icon'>📧</div>
             <div>
               <div className='lp-contact-title'>Email Us</div>
-              <div className='lp-contact-desc'>sales@studentsaas.in<br />support@studentsaas.in</div>
+              <div className='lp-contact-desc'>mmuddabir03@gmail.com<br />support@studentsaas.in</div>
             </div>
           </div>
           <div className='lp-contact-item'>
             <div className='lp-contact-icon'>📞</div>
             <div>
               <div className='lp-contact-title'>Call or WhatsApp</div>
-              <div className='lp-contact-desc'>+91 98765 43210<br />Mon-Sat, 9AM to 7PM IST</div>
+              <div className='lp-contact-desc'>+91 82756 68600<br />Mon-Sat, 9AM to 7PM IST</div>
             </div>
           </div>
           <div className='lp-contact-item'>
             <div className='lp-contact-icon'>📍</div>
             <div>
               <div className='lp-contact-title'>Headquarters</div>
-              <div className='lp-contact-desc'>Tech Park, Vazirabad<br />Hyderabad, Telangana 500001</div>
+              <div className='lp-contact-desc'>MD Lines, Tolichowki<br />Hyderabad, Telangana 500001</div>
             </div>
           </div>
         </div>

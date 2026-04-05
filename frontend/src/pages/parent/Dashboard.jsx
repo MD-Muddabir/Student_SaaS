@@ -550,6 +550,26 @@ function ParentDashboard() {
                                 </div>
                             )}
 
+                            {/* ═══ ASSIGNMENTS TAB — Phase 8 ═══ */}
+                            {activeTab === 'assignments' && (
+                                <div className="dashboard-card" style={{ textAlign: "center", padding: "3rem" }}>
+                                    <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>📝</div>
+                                    <h3 style={{ justifyContent: "center" }}>Assignments & Homework</h3>
+                                    <p>View assignments and submit homework for {selectedStudent?.User?.name}.</p>
+                                    <button
+                                        onClick={() => navigate('/parent/assignments')}
+                                        style={{
+                                            marginTop: "1.5rem", padding: "0.85rem 2rem", borderRadius: "10px",
+                                            background: "linear-gradient(135deg,#0ea5e9,#38bdf8)", color: "#fff",
+                                            border: "none", fontWeight: "700", fontSize: "1rem", cursor: "pointer",
+                                            boxShadow: "0 4px 16px rgba(14,165,233,0.35)"
+                                        }}
+                                    >
+                                        📝 Open Assignments →
+                                    </button>
+                                </div>
+                            )}
+
                             {/* ═══ CHAT TAB — Phase 8 ═══ */}
                             {activeTab === 'chat' && (
                                 <div className="dashboard-card" style={{ textAlign: "center", padding: "3rem" }}>

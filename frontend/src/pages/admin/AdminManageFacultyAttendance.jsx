@@ -163,7 +163,7 @@ function AdminManageFacultyAttendance() {
                     <p>Mark and track daily faculty attendance manually</p>
                 </div>
                 <div style={{ display: "flex", gap: "10px" }}>
-                    <Link to="/admin/view-faculty-attendance" className="btn btn-primary" style={{ backgroundColor: "#4f46e5" }}>
+                    <Link to="/admin/view-faculty-attendance" className="btn btn-primary" style={{ backgroundColor: "#4f46e5", color: "white" }}>
                         📊 View Report
                     </Link>
                     <Link to="/admin/dashboard" className="btn btn-secondary">

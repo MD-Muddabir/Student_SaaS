@@ -1,27 +1,47 @@
-const express = require("express");
-const router = express.Router();
+const express    = require("express");
+const router     = express.Router();
+const rateLimit  = require("express-rate-limit");
 const authController = require("../controllers/auth.controller");
+const verifyToken    = require("../middlewares/auth.middleware");
 
-const verifyToken = require("../middlewares/auth.middleware");
+// ── Rate limiter: max 5 OTP-email requests per IP per 15 minutes ────────────
+const otpLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: "Too many OTP requests. Please try again after 15 minutes." }
+});
 
-router.post("/register", authController.register);
+// ── Legacy routes (kept for backward compatibility) ─────────────────────────
+router.post("/register",           authController.register);
 router.post("/register-institute", authController.registerInstitute);
-router.post("/login", authController.login);
-router.post("/change-password", verifyToken, authController.changePassword);
-router.get("/profile", verifyToken, authController.getProfile);
-router.put("/profile", verifyToken, authController.updateProfile);
-router.put("/theme", verifyToken, authController.saveTheme);   // ← Phase 2: save theme to DB
-router.post("/logout", authController.logout);
+router.post("/send-otp",           authController.sendOtp);
 
+// ── Auth ─────────────────────────────────────────────────────────────────────
+router.post("/login",            authController.login);
+router.post("/logout",           authController.logout);
+router.post("/change-password",  verifyToken, authController.changePassword);
+router.get( "/profile",          verifyToken, authController.getProfile);
+router.put( "/profile",          verifyToken, authController.updateProfile);
+router.put( "/theme",            verifyToken, authController.saveTheme);
+
+// ── NEW: Registration with OTP ───────────────────────────────────────────────
+router.post("/register-init",       otpLimiter, authController.registerInit);
+router.post("/verify-registration",             authController.verifyRegistrationOtp);
+router.post("/resend-otp",                      authController.resendOtp);
+
+// ── NEW: Forgot Password with OTP ────────────────────────────────────────────
+router.post("/forgot-password",  otpLimiter, authController.forgotPassword);
+router.post("/reset-password",               authController.resetPassword);
+
+// ── DB Health Check ──────────────────────────────────────────────────────────
 const sequelize = require("../config/database");
-
-// Add this route
 router.get("/test-db", async (req, res) => {
     try {
         await sequelize.authenticate();
         const [tables] = await sequelize.query("SHOW TABLES");
-        const [dbInfo] = await sequelize.query("SELECT DATABASE() as current_db");
-
+        const [dbInfo]  = await sequelize.query("SELECT DATABASE() as current_db");
         res.json({
             success: true,
             message: "Database connected successfully",
@@ -29,12 +49,9 @@ router.get("/test-db", async (req, res) => {
             tables: tables.map(t => Object.values(t)[0])
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-
 module.exports = router;
+

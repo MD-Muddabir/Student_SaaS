@@ -659,14 +659,14 @@
     gap: 0.5rem !important;
   }
 
-  /* ─── CHAT messages ─── */
+  /* ─── CHAT — override moved to ChatApp.css (do not constrain here) ─── */
   .chat-container {
     flex-direction: column !important;
   }
 
   .chat-sidebar {
     width: 100% !important;
-    max-height: 200px !important;
+    max-height: none !important;  /* remove the 200px cap */
   }
 
   /* ─── BACK BUTTON — prominent on mobile ─── */

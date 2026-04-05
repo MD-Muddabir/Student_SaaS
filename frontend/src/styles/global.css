@@ -220,6 +220,7 @@ a:hover {
     background-color: var(--primary-700);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
+    color: white;
 }
 
 .btn-secondary {
@@ -247,6 +248,7 @@ a:hover {
 
 .btn-danger:hover:not(:disabled) {
     background-color: #dc2626;
+    color: white;
 }
 
 .btn-warning {
@@ -454,7 +456,7 @@ a:hover {
     border-left: 4px solid var(--info);
 }
 
-/* Modal Styles */
+/* Modals */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -469,13 +471,14 @@ a:hover {
     animation: fadeIn 0.2s ease-in-out;
 }
 
-.modal {
+.modal, .modal-content {
     background: white;
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-xl);
     max-width: 500px;
     width: 90%;
     max-height: 90vh;
+    padding: var(--spacing-lg);
     overflow-y: auto;
     animation: slideUp 0.3s ease-out;
 }
@@ -535,16 +538,24 @@ a:hover {
         padding: 0 var(--spacing-sm);
     }
 
-    h1 { font-size: 1.5rem; }
-    h2 { font-size: 1.25rem; }
-    h3 { font-size: 1.05rem; }
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    h3 {
+        font-size: 1.05rem;
+    }
 
     /* Modal becomes bottom sheet */
     .modal-overlay {
         align-items: flex-end !important;
     }
 
-    .modal {
+    .modal, .modal-content {
         width: 100% !important;
         max-width: 100% !important;
         border-radius: 1.25rem 1.25rem 0 0 !important;
@@ -571,9 +582,17 @@ a:hover {
 }
 
 @media (max-width: 480px) {
-    h1 { font-size: 1.25rem; }
-    h2 { font-size: 1.05rem; }
-    h3 { font-size: 0.95rem; }
+    h1 {
+        font-size: 1.25rem;
+    }
+
+    h2 {
+        font-size: 1.05rem;
+    }
+
+    h3 {
+        font-size: 0.95rem;
+    }
 
     .btn {
         font-size: 0.78rem;
@@ -685,7 +704,7 @@ html.dark-mode .form-textarea:focus {
 }
 
 /* Modals */
-html.dark-mode .modal {
+html.dark-mode .modal, html.dark-mode .modal-content {
     background: #1e293b;
     color: #f1f5f9;
 }

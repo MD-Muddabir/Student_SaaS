@@ -4,7 +4,8 @@
  * Phase 4: Student SaaS Landing Page preview section
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 import ThemeSelector from "../../components/ThemeSelector";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
@@ -13,6 +14,7 @@ import "../../components/common/Buttons.css";
 
 function SuperAdminDashboard() {
     const navigate = useNavigate();
+    const { logout } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         totalInstitutes: 0,
@@ -54,8 +56,7 @@ function SuperAdminDashboard() {
 
     const handleLogout = () => {
         if (window.confirm("Are you sure you want to logout?")) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
+            logout();
             navigate("/login");
         }
     };

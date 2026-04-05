@@ -44,6 +44,7 @@ const RazorpayOrder = require("./razorpayOrder");
 const RazorpayPayment = require("./razorpayPayment");
 const Invoice = require("./invoice");
 const StudentFeePayment = require("./studentFeePayment");
+const OtpVerification = require("./otpVerification");
 
 // Public Web Page Models
 const InstitutePublicProfile = require("./institutePublicProfile");
@@ -452,4 +453,5 @@ module.exports = {
     RazorpayPayment,
     Invoice,
     StudentFeePayment,
+    OtpVerification,
 };

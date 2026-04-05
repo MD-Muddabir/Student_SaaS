@@ -8,13 +8,14 @@ const { Op } = require("sequelize");
 
 exports.createFeeStructure = async (req, res) => {
     try {
-        const { class_id, subject_id, fee_type, amount, due_date, description } = req.body;
+        const { class_id, subject_id, fee_type, amount, due_date, description, individual_student_id } = req.body;
         const institute_id = req.user.institute_id;
 
         const feeStructure = await FeesStructure.create({
             institute_id,
             class_id,
             subject_id: subject_id || null, // null means it's a generic class fee
+            individual_student_id: individual_student_id || null,
             fee_type,
             amount,
             due_date,
@@ -354,7 +355,7 @@ exports.updateFeeStructure = async (req, res) => {
     try {
         const { id } = req.params;
         const institute_id = req.user.institute_id;
-        const { class_id, subject_id, fee_type, amount, due_date, description } = req.body;
+        const { class_id, subject_id, fee_type, amount, due_date, description, individual_student_id } = req.body;
 
         const feeStructure = await FeesStructure.findOne({ where: { id, institute_id } });
 
@@ -365,6 +366,7 @@ exports.updateFeeStructure = async (req, res) => {
         await feeStructure.update({
             class_id,
             subject_id: subject_id || null,
+            individual_student_id: individual_student_id || null,
             fee_type,
             amount,
             due_date,
@@ -436,7 +438,9 @@ exports.getAssignedStudentFees = async (req, res) => {
 
             for (const fs of structures) {
                 let applies = false;
-                if (classIds.includes(fs.class_id)) {
+                if (fs.individual_student_id) {
+                    if (s.id === fs.individual_student_id) applies = true;
+                } else if (classIds.includes(fs.class_id)) {
                     if (fs.subject_id !== null) {
                         if (subjectIds.includes(fs.subject_id)) applies = true;
                     } else {

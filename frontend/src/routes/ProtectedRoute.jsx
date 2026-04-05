@@ -7,6 +7,7 @@
 import { Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import BlockedScreen from "../pages/admin/BlockedScreen";
 
 /**
  * ProtectedRoute wrapper component
@@ -16,12 +17,22 @@ import { AuthContext } from "../context/AuthContext";
  * @returns {React.ReactElement} Protected content or redirect
  */
 function ProtectedRoute({ children, allowedRoles = [] }) {
-  const { user } = useContext(AuthContext);
-  const token = localStorage.getItem("token");
+  const { user, isInitializing } = useContext(AuthContext);
+  const token = sessionStorage.getItem("token");
+
+  // Prevent premature redirect while verifying the session on component mount
+  if (isInitializing) {
+     return <div style={{ display: 'flex', height: '100vh', width: '100vw', alignItems: 'center', justifyContent: 'center' }}><div className="auth-spinner" style={{ width: '40px', height: '40px', borderTopColor: '#6366f1' }}/></div>;
+  }
 
   // Check if user is authenticated
   if (!token || !user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Phase 7: Globally render the Blocked / Suspended screen for any blocked user
+  if (user.status === 'blocked') {
+    return <BlockedScreen />;
   }
 
   // Check if user has required role

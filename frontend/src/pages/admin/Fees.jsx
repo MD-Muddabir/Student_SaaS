@@ -61,7 +61,7 @@ function Fees() {
     const [editingStructureId, setEditingStructureId] = useState(null);
     const [availableSubjects, setAvailableSubjects] = useState([]);
     const [structureForm, setStructureForm] = useState({
-        class_id: '', subject_id: '', fee_type: 'Tuition Fee', amount: '', due_date: '', description: '',
+        class_id: '', subject_id: '', fee_type: 'Tuition Fee', custom_fee_type: '', amount: '', due_date: '', description: '',
         student_target: 'all', individual_student_id: ''
     });
     const [allStudentsForClass, setAllStudentsForClass] = useState([]);
@@ -240,8 +240,11 @@ function Fees() {
         }
         const payload = {
             ...structureForm,
+            fee_type: structureForm.fee_type === 'Other' ? structureForm.custom_fee_type : structureForm.fee_type,
             // Only send individual_student_id if individual target
-            individual_student_id: structureForm.student_target === 'individual' ? structureForm.individual_student_id : null
+            individual_student_id: structureForm.student_target === 'individual' ? structureForm.individual_student_id : null,
+            // Force subject_id to null if targeting an individual
+            subject_id: structureForm.student_target === 'individual' ? null : structureForm.subject_id
         };
         try {
             if (editingStructureId) {
@@ -255,7 +258,7 @@ function Fees() {
             setShowStructureModal(false);
             const r = await api.get('/fees/structure');
             setFeeStructures(r.data.data || []);
-            setStructureForm({ class_id: '', subject_id: '', fee_type: 'Tuition Fee', amount: '', due_date: '', description: '', student_target: 'all', individual_student_id: '' });
+            setStructureForm({ class_id: '', subject_id: '', fee_type: 'Tuition Fee', custom_fee_type: '', amount: '', due_date: '', description: '', student_target: 'all', individual_student_id: '' });
             setEditingStructureId(null);
         } catch (err) {
             alert(err.response?.data?.message || 'Error saving fee structure');
@@ -263,11 +266,13 @@ function Fees() {
     };
 
     const handleEditStructure = (fs) => {
+        const isPredefined = ['Tuition Fee', 'Exam Fee', 'Transport Fee', 'Library Fee'].includes(fs.fee_type);
         setEditingStructureId(fs.id);
         setStructureForm({
             class_id: fs.class_id,
             subject_id: fs.subject_id || '',
-            fee_type: fs.fee_type,
+            fee_type: isPredefined ? fs.fee_type : 'Other',
+            custom_fee_type: isPredefined ? '' : fs.fee_type,
             amount: fs.amount,
             due_date: fs.due_date,
             description: fs.description || '',
@@ -341,7 +346,7 @@ function Fees() {
                     {tab === 'structure' && hasPerm('fees', 'create') && (
                         <button className="btn btn-primary" onClick={() => {
                             setEditingStructureId(null);
-                            setStructureForm({ class_id: '', subject_id: '', fee_type: 'Tuition Fee', amount: '', due_date: '', description: '' });
+                            setStructureForm({ class_id: '', subject_id: '', fee_type: 'Tuition Fee', custom_fee_type: '', amount: '', due_date: '', description: '', student_target: 'all', individual_student_id: '' });
                             setShowStructureModal(true);
                         }}
                             style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: 'none' }}>
@@ -1012,8 +1017,8 @@ function Fees() {
 
             {/* ═══ STRUCTURE MODAL ═══ */}
             {showStructureModal && (hasPerm('fees', 'create') || hasPerm('fees', 'update')) && (
-                <div className="modal-overlay">
-                    <div className="modal-content" style={{ maxWidth: '520px', width: '95%', maxHeight: '92vh', overflowY: 'auto' }}>
+                <div className="modal-overlay" style={{ zIndex: 1050, overflowY: 'auto', padding: '2rem 1rem', display: 'flex', alignItems: 'flex-start' }}>
+                    <div className="modal-content" style={{ maxWidth: '520px', width: '95%', margin: '0 auto' }}>
                         <h2 style={{ marginBottom: '1.25rem' }}>{editingStructureId ? '✏️ Edit Fee Structure' : '📐 Add Fee Structure'}</h2>
                         <form onSubmit={handleStructureSubmit}>
                             {/* Class */}
@@ -1032,16 +1037,22 @@ function Fees() {
                             {/* Subject (only shown after class is selected) */}
                             <div className="form-group">
                                 <label className="form-label">Subject (Optional)</label>
-                                <select
-                                    className="form-select"
-                                    value={structureForm.subject_id}
-                                    disabled={!structureForm.class_id}
-                                    onChange={e => setStructureForm({ ...structureForm, subject_id: e.target.value })}>
-                                    <option value="">All Subjects (Full Class)</option>
-                                    {availableSubjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                </select>
-                                {structureForm.class_id && availableSubjects.length === 0 && (
-                                    <small style={{ color: '#f59e0b', marginTop: '4px', display: 'block' }}>No subjects found for this class.</small>
+                                {structureForm.student_target === 'individual' ? (
+                                    <input type="text" className="form-input" value="None (Not applicable for individual student)" disabled style={{ backgroundColor: 'var(--gray-200)', color: 'var(--gray-500)', opacity: 0.7 }} title="Subject is automatically removed when applying fees to an individual." />
+                                ) : (
+                                    <>
+                                        <select
+                                            className="form-select"
+                                            value={structureForm.subject_id}
+                                            disabled={!structureForm.class_id}
+                                            onChange={e => setStructureForm({ ...structureForm, subject_id: e.target.value })}>
+                                            <option value="">All Subjects (Full Class)</option>
+                                            {availableSubjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                        </select>
+                                        {structureForm.class_id && availableSubjects.length === 0 && (
+                                            <small style={{ color: '#f59e0b', marginTop: '4px', display: 'block' }}>No subjects found for this class.</small>
+                                        )}
+                                    </>
                                 )}
                             </div>
 
@@ -1070,21 +1081,51 @@ function Fees() {
                             {structureForm.student_target === 'individual' && (
                                 <div className="form-group">
                                     <label className="form-label">Select Student *</label>
-                                    <select
-                                        className="form-select"
-                                        value={structureForm.individual_student_id}
-                                        required
-                                        onChange={e => setStructureForm({ ...structureForm, individual_student_id: e.target.value })}>
-                                        <option value="">-- Select Student --</option>
-                                        {allStudentsForClass.map(s => (
-                                            <option key={s.id} value={s.id}>
-                                                {s.User?.name || s.name} {s.roll_number ? `(${s.roll_number})` : ''}
-                                            </option>
-                                        ))}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <input 
+                                            type="text" 
+                                            className="form-input" 
+                                            placeholder="🔍 Search by name or roll number..." 
+                                            onChange={e => {
+                                                const val = e.target.value.toLowerCase();
+                                                const selects = document.querySelectorAll('.student-option-item');
+                                                selects.forEach(opt => {
+                                                    const text = opt.innerText.toLowerCase();
+                                                    if (text.includes(val)) opt.style.display = 'block';
+                                                    else opt.style.display = 'none';
+                                                });
+                                            }}
+                                        />
+                                        <div style={{ maxHeight: '180px', overflowY: 'auto', border: '1px solid var(--gray-300)', borderRadius: '8px', background: 'var(--card-bg, transparent)' }}>
+                                            {allStudentsForClass.length === 0 ? (
+                                                <div style={{ padding: '10px', color: '#f59e0b', fontSize: '0.9rem' }}>No students found in this class.</div>
+                                            ) : (
+                                                allStudentsForClass.map(s => (
+                                                    <div 
+                                                        key={s.id} 
+                                                        className="student-option-item"
+                                                        onClick={() => setStructureForm({ ...structureForm, individual_student_id: s.id })}
+                                                        style={{
+                                                            padding: '8px 12px',
+                                                            cursor: 'pointer',
+                                                            background: structureForm.individual_student_id === s.id ? 'rgba(99,102,241,0.1)' : 'transparent',
+                                                            borderBottom: '1px solid var(--gray-200)',
+                                                            fontWeight: structureForm.individual_student_id === s.id ? 'bold' : 'normal',
+                                                            color: structureForm.individual_student_id === s.id ? '#6366f1' : 'inherit',
+                                                            fontSize: '0.9rem'
+                                                        }}
+                                                    >
+                                                        {structureForm.individual_student_id === s.id && <span style={{ marginRight: '8px' }}>✅</span>}
+                                                        {s.User?.name || s.name} {s.roll_number ? `(Roll: ${s.roll_number})` : ''}
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                    <select style={{ display: 'none' }} required value={structureForm.individual_student_id} onChange={() => {}}>
+                                        <option value="">Required</option>
+                                        <option value={structureForm.individual_student_id}>{structureForm.individual_student_id}</option>
                                     </select>
-                                    {structureForm.class_id && allStudentsForClass.length === 0 && (
-                                        <small style={{ color: '#f59e0b', marginTop: '4px', display: 'block' }}>No students found in this class.</small>
-                                    )}
                                 </div>
                             )}
 
@@ -1096,6 +1137,15 @@ function Fees() {
                                     {['Tuition Fee', 'Exam Fee', 'Transport Fee', 'Library Fee', 'Other'].map(t => <option key={t}>{t}</option>)}
                                 </select>
                             </div>
+                            
+                            {structureForm.fee_type === 'Other' && (
+                                <div className="form-group">
+                                    <label className="form-label">Custom Fee Type Name *</label>
+                                    <input type="text" className="form-input" required value={structureForm.custom_fee_type}
+                                        placeholder="e.g. Dance Fee, Sports Fee"
+                                        onChange={e => setStructureForm({ ...structureForm, custom_fee_type: e.target.value })} />
+                                </div>
+                            )}
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                                 <div className="form-group">
@@ -1124,7 +1174,7 @@ function Fees() {
                             </div>
 
                             <div className="modal-actions">
-                                <button type="button" className="btn btn-secondary" onClick={() => { setShowStructureModal(false); setStructureForm({ class_id: '', subject_id: '', fee_type: 'Tuition Fee', amount: '', due_date: '', description: '', student_target: 'all', individual_student_id: '' }); setEditingStructureId(null); }}>Cancel</button>
+                                <button type="button" className="btn btn-secondary" onClick={() => { setShowStructureModal(false); setStructureForm({ class_id: '', subject_id: '', fee_type: 'Tuition Fee', custom_fee_type: '', amount: '', due_date: '', description: '', student_target: 'all', individual_student_id: '' }); setEditingStructureId(null); }}>Cancel</button>
                                 <button type="submit" className="btn btn-primary" style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: 'none' }}>
                                     {editingStructureId ? 'Save Changes' : 'Create Structure'}
                                 </button>

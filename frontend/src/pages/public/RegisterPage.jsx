@@ -1,11 +1,10 @@
 /**
- * Register Page — Premium Design (Phase 6)
- * Matches the Login page aesthetic with glassmorphism, animated orbs.
- * Uses Auth.css base + register-specific styles.
- * Always Pro theme active (same as login).
+ * Register Page — Premium Design
+ * OTP System: DB-backed via /register-init + /verify-registration
+ * Features: 6-box OTP input, 10-min countdown, resend limit (3x)
  */
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
@@ -19,72 +18,88 @@ function RegisterPage() {
     const { setUser } = useContext(AuthContext);
     const { setTheme, isDark } = useContext(ThemeContext);
 
-    const [loading, setLoading] = useState(false);
-    const [plans, setPlans] = useState([]);
-    const [errors, setErrors] = useState({});
-    const [step, setStep] = useState(1);
+    const [loading, setLoading]             = useState(false);
+    const [plans, setPlans]                 = useState([]);
+    const [errors, setErrors]               = useState({});
+    const [showOtpScreen, setShowOtpScreen] = useState(false);
+
+    // OTP state
+    const [otpDigits, setOtpDigits]         = useState(["", "", "", "", "", ""]);
+    const [otpLoading, setOtpLoading]       = useState(false);
+    const [resendLoading, setResendLoading] = useState(false);
+    const [timer, setTimer]                 = useState(600); // 10 min
+    const [timerActive, setTimerActive]     = useState(false);
+    const [resendCount, setResendCount]     = useState(0);
+    const [resendMax]                       = useState(3);
+    const [otpError, setOtpError]           = useState("");
+    const [devOtp, setDevOtp]               = useState("");
+    const otpRefs = useRef([]);
 
     const [formData, setFormData] = useState({
-        instituteName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        phone: "",
-        address: "",
-        city: "",
-        state: "",
-        pincode: "",
-        planId: "",
+        instituteName: "", email: "", password: "", confirmPassword: "",
+        phone: "", address: "", city: "", state: "", pincode: "", planId: "",
         agreedToTerms: false
     });
 
     useEffect(() => {
         fetchPlans();
-        const selectedPlan = localStorage.getItem("selectedPlan");
-        if (selectedPlan) setFormData(prev => ({ ...prev, planId: selectedPlan }));
-
-        // Force pro theme for auth pages
+        const savedPlan = localStorage.getItem("selectedPlan");
+        if (savedPlan) setFormData(prev => ({ ...prev, planId: savedPlan }));
         setTheme(isDark, "pro");
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Countdown timer
+    useEffect(() => {
+        if (!timerActive) return;
+        if (timer <= 0) { setTimerActive(false); return; }
+        const id = setInterval(() => setTimer(t => t - 1), 1000);
+        return () => clearInterval(id);
+    }, [timerActive, timer]);
+
+    const startTimer = () => { setTimer(600); setTimerActive(true); };
+
+    const formatTime = (secs) => {
+        const m = Math.floor(secs / 60).toString().padStart(2, "0");
+        const s = (secs % 60).toString().padStart(2, "0");
+        return `${m}:${s}`;
+    };
+
     const fetchPlans = async () => {
         try {
-            const response = await api.get("/plans");
-            setPlans(response.data.data.filter(plan => plan.status === "active"));
-        } catch (error) {
-            console.error("Error fetching plans:", error);
-        }
+            const res = await api.get("/plans");
+            setPlans(res.data.data.filter(p => p.status === "active"));
+        } catch (e) { console.error("Plans fetch error:", e); }
     };
 
     const validateForm = () => {
-        const newErrors = {};
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^[6-9]\d{9}$/;
-        const pincodeRegex = /^\d{6}$/;
+        const errs = {};
+        const emailRx   = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRx   = /^[6-9]\d{9}$/;
+        const pincodeRx = /^\d{6}$/;
 
         if (!formData.instituteName.trim() || formData.instituteName.trim().length < 3)
-            newErrors.instituteName = "Institute name must be at least 3 characters";
-        if (!formData.email.trim() || !emailRegex.test(formData.email))
-            newErrors.email = "Please enter a valid email address";
+            errs.instituteName = "Institute name must be at least 3 characters";
+        if (!formData.email.trim() || !emailRx.test(formData.email))
+            errs.email = "Please enter a valid email address";
         if (!formData.password || formData.password.length < 8)
-            newErrors.password = "Password must be at least 8 characters";
+            errs.password = "Password must be at least 8 characters";
         else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password))
-            newErrors.password = "Password must contain uppercase, lowercase, and number";
+            errs.password = "Password must contain uppercase, lowercase, and number";
         if (formData.password !== formData.confirmPassword)
-            newErrors.confirmPassword = "Passwords do not match";
-        if (!formData.phone.trim() || !phoneRegex.test(formData.phone.replace(/\s/g, "")))
-            newErrors.phone = "Please enter a valid 10-digit phone number";
-        if (!formData.address.trim()) newErrors.address = "Address is required";
-        if (!formData.city.trim()) newErrors.city = "City is required";
-        if (!formData.state.trim()) newErrors.state = "State is required";
-        if (!formData.pincode.trim() || !pincodeRegex.test(formData.pincode))
-            newErrors.pincode = "Please enter a valid 6-digit pincode";
-        if (!formData.planId) newErrors.planId = "Please select a plan";
-        if (!formData.agreedToTerms) newErrors.agreedToTerms = "You must agree to the Terms of Service";
+            errs.confirmPassword = "Passwords do not match";
+        if (!formData.phone.trim() || !phoneRx.test(formData.phone.replace(/\s/g, "")))
+            errs.phone = "Please enter a valid 10-digit phone number";
+        if (!formData.address.trim()) errs.address = "Address is required";
+        if (!formData.city.trim())    errs.city    = "City is required";
+        if (!formData.state.trim())   errs.state   = "State is required";
+        if (!formData.pincode.trim() || !pincodeRx.test(formData.pincode))
+            errs.pincode = "Please enter a valid 6-digit pincode";
+        if (!formData.planId)         errs.planId       = "Please select a plan";
+        if (!formData.agreedToTerms)  errs.agreedToTerms = "You must agree to the Terms of Service";
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        setErrors(errs);
+        return Object.keys(errs).length === 0;
     };
 
     const handleChange = (e) => {
@@ -93,29 +108,114 @@ function RegisterPage() {
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
     };
 
+    // ── Step 1: Submit form → POST /register-init ──────────────────────────
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) return;
+        
+        const scrollToError = () => {
+            setTimeout(() => {
+                const firstErrorElement = document.querySelector(".auth-input--error");
+                if (firstErrorElement) {
+                    firstErrorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                    firstErrorElement.focus({ preventScroll: true });
+                }
+            }, 100);
+        };
+
+        if (!validateForm()) {
+            scrollToError();
+            return;
+        }
+        
         setLoading(true);
         try {
-            const response = await api.post("/auth/register-institute", {
-                name: formData.instituteName.trim(),
-                email: formData.email.trim().toLowerCase(),
+            const res = await api.post("/auth/register-init", {
+                name:     formData.instituteName.trim(),
+                email:    formData.email.trim().toLowerCase(),
+                phone:    formData.phone.replace(/\s/g, ""),
                 password: formData.password,
-                phone: formData.phone.replace(/\s/g, ""),
-                address: formData.address.trim(),
-                city: formData.city.trim(),
-                state: formData.state.trim(),
-                pincode: formData.pincode.trim(),
-                plan_id: formData.planId
+                plan_id:  formData.planId
             });
+            if (res.data.success) {
+                setShowOtpScreen(true);
+                setResendCount(0);
+                setOtpDigits(["", "", "", "", "", ""]);
+                setOtpError("");
+                startTimer();
+                if (res.data.devOtp) {
+                    setDevOtp(res.data.devOtp);
+                    setOtpDigits(res.data.devOtp.split(""));
+                }
+                setTimeout(() => otpRefs.current[0]?.focus(), 100);
+            }
+        } catch (err) {
+            const msg = err.response?.data?.message || "";
+            if (msg.toLowerCase().includes("already registered")) {
+                setErrors({ email: "This email is already registered. Please login." });
+                scrollToError();
+            } else if (err.response?.status === 429) {
+                alert("Too many OTP requests. Please wait 15 minutes before trying again.");
+            } else {
+                alert(msg || "Failed to send OTP. Please check your details and try again.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            if (response.data.success) {
+    // ── OTP digit handlers ────────────────────────────────────────────────
+    const handleOtpDigit = (idx, val) => {
+        const digit = val.replace(/\D/g, "").slice(-1);
+        const next  = [...otpDigits];
+        next[idx] = digit;
+        setOtpDigits(next);
+        setOtpError("");
+        if (digit && idx < 5) otpRefs.current[idx + 1]?.focus();
+    };
+
+    const handleOtpKeyDown = (idx, e) => {
+        if (e.key === "Backspace" && !otpDigits[idx] && idx > 0)
+            otpRefs.current[idx - 1]?.focus();
+        if (e.key === "ArrowLeft"  && idx > 0) otpRefs.current[idx - 1]?.focus();
+        if (e.key === "ArrowRight" && idx < 5) otpRefs.current[idx + 1]?.focus();
+    };
+
+    const handleOtpPaste = (e) => {
+        e.preventDefault();
+        const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+        if (pasted.length === 6) {
+            setOtpDigits(pasted.split(""));
+            otpRefs.current[5]?.focus();
+        }
+    };
+
+    // ── Step 2: Verify OTP → POST /verify-registration ────────────────────
+    const handleOtpSubmit = async (e) => {
+        e?.preventDefault();
+        const otp = otpDigits.join("");
+        if (otp.length !== 6) { setOtpError("Please enter all 6 digits."); return; }
+        setOtpLoading(true);
+        setOtpError("");
+        try {
+            const res = await api.post("/auth/verify-registration", {
+                name:     formData.instituteName.trim(),
+                email:    formData.email.trim().toLowerCase(),
+                otp,
+                password: formData.password,
+                phone:    formData.phone.replace(/\s/g, ""),
+                address:  formData.address.trim(),
+                city:     formData.city.trim(),
+                state:    formData.state.trim(),
+                pincode:  formData.pincode.trim(),
+                plan_id:  formData.planId
+            });
+            if (res.data.success) {
+                setTimerActive(false);
                 const selectedPlan = plans.find(p => p.id === parseInt(formData.planId));
-                if (response.data.token) {
-                    localStorage.setItem("token", response.data.token);
-                    localStorage.setItem("user", JSON.stringify(response.data.user));
-                    setUser(response.data.user);
+                if (res.data.token) {
+                    localStorage.setItem("token", res.data.token);
+                    localStorage.setItem("user", JSON.stringify(res.data.user));
+                    setUser(res.data.user);
                 }
                 if (selectedPlan && selectedPlan.price > 0 && !selectedPlan.is_free_trial) {
                     alert("Registration successful! Redirecting to payment...");
@@ -123,200 +223,302 @@ function RegisterPage() {
                 } else {
                     localStorage.removeItem("token");
                     localStorage.removeItem("user");
-                    if (selectedPlan && selectedPlan.is_free_trial) {
-                        alert("Registration successful! Your free trial is active. Please login to continue.");
-                    } else {
-                        alert("Registration successful! Please login to continue.");
-                    }
+                    const msg = selectedPlan?.is_free_trial
+                        ? "Registration successful! Your free trial is active. Please login."
+                        : "Registration successful! Please login to continue.";
+                    alert(msg);
                     navigate("/login");
                 }
             }
-        } catch (error) {
-            if (error.response?.data?.message?.includes("email")) {
-                setErrors({ email: "This email is already registered" });
-            } else {
-                alert(error.response?.data?.message || "Registration failed. Please try again.");
-            }
+        } catch (err) {
+            setOtpError(err.response?.data?.message || "Invalid OTP. Please try again.");
         } finally {
-            setLoading(false);
+            setOtpLoading(false);
         }
     };
 
+    // ── Resend OTP ────────────────────────────────────────────────────────
+    const handleResend = async () => {
+        if (resendCount >= resendMax) return;
+        setResendLoading(true);
+        setOtpError("");
+        try {
+            const res = await api.post("/auth/resend-otp", {
+                email: formData.email.trim().toLowerCase(),
+                type:  "registration"
+            });
+            if (res.data.success) {
+                setResendCount(res.data.resendCount ?? resendCount + 1);
+                startTimer();
+                setOtpDigits(["", "", "", "", "", ""]);
+                if (res.data.devOtp) {
+                    setDevOtp(res.data.devOtp);
+                    setOtpDigits(res.data.devOtp.split(""));
+                    alert(`[DEV] New OTP: ${res.data.devOtp}`);
+                } else {
+                    alert("A new OTP has been sent to your email.");
+                }
+                setTimeout(() => otpRefs.current[0]?.focus(), 100);
+            }
+        } catch (err) {
+            const msg = err.response?.data?.message || "Failed to resend OTP.";
+            setOtpError(msg);
+            if (err.response?.status === 429) setResendCount(resendMax);
+        } finally {
+            setResendLoading(false);
+        }
+    };
+
+    // ─────────────────────────────────────────────────────────────────────
     return (
         <div className="auth-page">
-            {/* Animated background orbs */}
             <div className="auth-orb auth-orb--1" />
             <div className="auth-orb auth-orb--2" />
             <div className="auth-orb auth-orb--3" />
+            <div className="auth-theme-controls"><ThemeSelector loginMode /></div>
 
-            {/* Theme toggle (top-right, login mode) */}
-            <div className="auth-theme-controls">
-                <ThemeSelector loginMode />
-            </div>
-
-            <div className="auth-container" style={{ maxWidth: "560px" }}>
-                <div className="auth-card reg-card">
-                    {/* Header */}
-                    <div className="auth-header">
-                        <div className="auth-logo">🏫</div>
-                        <h1 className="auth-title">Register Your Institute</h1>
-                        <p className="auth-subtitle">Join thousands of institutes. Start free, scale as you grow.</p>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="auth-form reg-form" noValidate>
-
-                        {/* ── Section 1: Institute Info ── */}
-                        <div className="reg-section">
-                            <h3 className="reg-section-title">🏫 Institute Information</h3>
-
-                            <div className="auth-field">
-                                <label className="auth-label">
-                                    <span className="auth-label__icon">🏷️</span> Institute Name *
-                                </label>
-                                <input type="text" name="instituteName" className={`auth-input${errors.instituteName ? " auth-input--error" : ""}`}
-                                    placeholder="e.g. Sunrise Academy" value={formData.instituteName} onChange={handleChange} />
-                                {errors.instituteName && <span className="reg-error">{errors.instituteName}</span>}
-                            </div>
-
-                            <div className="reg-row">
-                                <div className="auth-field">
-                                    <label className="auth-label">
-                                        <span className="auth-label__icon">✉️</span> Email *
-                                    </label>
-                                    <input type="email" name="email" className={`auth-input${errors.email ? " auth-input--error" : ""}`}
-                                        placeholder="institute@example.com" value={formData.email} onChange={handleChange} />
-                                    {errors.email && <span className="reg-error">{errors.email}</span>}
-                                </div>
-                                <div className="auth-field">
-                                    <label className="auth-label">
-                                        <span className="auth-label__icon">📱</span> Phone *
-                                    </label>
-                                    <input type="tel" name="phone" className={`auth-input${errors.phone ? " auth-input--error" : ""}`}
-                                        placeholder="9876543210" value={formData.phone} onChange={handleChange} />
-                                    {errors.phone && <span className="reg-error">{errors.phone}</span>}
-                                </div>
-                            </div>
-
-                            <div className="auth-field">
-                                <label className="auth-label">
-                                    <span className="auth-label__icon">📍</span> Address *
-                                </label>
-                                <input type="text" name="address" className={`auth-input${errors.address ? " auth-input--error" : ""}`}
-                                    placeholder="Street / Area / Locality" value={formData.address} onChange={handleChange} />
-                                {errors.address && <span className="reg-error">{errors.address}</span>}
-                            </div>
-
-                            <div className="reg-row reg-row--3">
-                                <div className="auth-field">
-                                    <label className="auth-label">🏙️ City *</label>
-                                    <input type="text" name="city" className={`auth-input${errors.city ? " auth-input--error" : ""}`}
-                                        placeholder="City" value={formData.city} onChange={handleChange} />
-                                    {errors.city && <span className="reg-error">{errors.city}</span>}
-                                </div>
-                                <div className="auth-field">
-                                    <label className="auth-label">🗺️ State *</label>
-                                    <input type="text" name="state" className={`auth-input${errors.state ? " auth-input--error" : ""}`}
-                                        placeholder="State" value={formData.state} onChange={handleChange} />
-                                    {errors.state && <span className="reg-error">{errors.state}</span>}
-                                </div>
-                                <div className="auth-field">
-                                    <label className="auth-label">📮 ZIP Code *</label>
-                                    <input type="text" name="pincode" className={`auth-input${errors.pincode ? " auth-input--error" : ""}`}
-                                        placeholder="123456" value={formData.pincode} onChange={handleChange} maxLength="6" />
-                                    {errors.pincode && <span className="reg-error">{errors.pincode}</span>}
-                                </div>
-                            </div>
+            {showOtpScreen ? (
+                /* ── OTP Verification Screen ── */
+                <div className="auth-container" style={{ maxWidth: "480px" }}>
+                    <div className="auth-card">
+                        <div className="auth-header">
+                            <div className="auth-logo">✉️</div>
+                            <h1 className="auth-title">Verify Your Email</h1>
+                            <p className="auth-subtitle">
+                                We sent a 6-digit code to <strong>{formData.email}</strong>
+                            </p>
+                            <p style={{ color: "var(--text-muted,#6B7280)", fontSize: "0.85rem", marginTop: "0.25rem" }}>
+                                Check your inbox and spam folder
+                            </p>
                         </div>
 
-                        {/* ── Section 2: Security ── */}
-                        <div className="reg-section">
-                            <h3 className="reg-section-title">🔐 Security</h3>
-                            <div className="reg-row">
-                                <div className="auth-field">
-                                    <label className="auth-label">
-                                        <span className="auth-label__icon">🔒</span> Password *
-                                    </label>
-                                    <input type="password" name="password" className={`auth-input${errors.password ? " auth-input--error" : ""}`}
-                                        placeholder="Min 8 chars, A-Z, 0-9" value={formData.password} onChange={handleChange} />
-                                    {errors.password && <span className="reg-error">{errors.password}</span>}
-                                </div>
-                                <div className="auth-field">
-                                    <label className="auth-label">
-                                        <span className="auth-label__icon">✅</span> Confirm Password *
-                                    </label>
-                                    <input type="password" name="confirmPassword" className={`auth-input${errors.confirmPassword ? " auth-input--error" : ""}`}
-                                        placeholder="Repeat password" value={formData.confirmPassword} onChange={handleChange} />
-                                    {errors.confirmPassword && <span className="reg-error">{errors.confirmPassword}</span>}
-                                </div>
+                        {devOtp && (
+                            <div style={{ background: "#FFF7ED", border: "1px solid #F59E0B", borderRadius: "8px", padding: "10px 14px", marginBottom: "1rem", fontSize: "0.85rem", color: "#92400E" }}>
+                                🛠️ <strong>Dev Mode OTP:</strong>{" "}
+                                <span style={{ fontFamily: "monospace", fontSize: "1.1rem", letterSpacing: "3px" }}>{devOtp}</span>
                             </div>
-                        </div>
+                        )}
 
-                        {/* ── Section 3: Plan Selection ── */}
-                        <div className="reg-section">
-                            <h3 className="reg-section-title">📦 Choose Your Plan</h3>
-                            <div className="auth-field">
-                                <label className="auth-label">
-                                    <span className="auth-label__icon">🎯</span> Select Plan *
-                                </label>
-                                <select name="planId" className={`auth-input${errors.planId ? " auth-input--error" : ""}`}
-                                    value={formData.planId} onChange={handleChange}>
-                                    <option value="">-- Select a plan --</option>
-                                    {plans.map(plan => (
-                                        <option key={plan.id} value={plan.id}>
-                                            {plan.name} — {plan.is_free_trial ? '₹0/month (Free Trial)' : `₹${plan.price}/month`}
-                                            {plan.max_students ? ` · Up to ${plan.max_students} students` : " · Unlimited"}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.planId && <span className="reg-error">{errors.planId}</span>}
-                                <div className="reg-plan-hint">
-                                    <Link to="/pricing" target="_blank" className="auth-link">
-                                        📋 View all plans & features
-                                    </Link>
-                                </div>
+                        <form onSubmit={handleOtpSubmit}>
+                            {/* 6-box OTP input */}
+                            <div style={{ display: "flex", gap: "10px", justifyContent: "center", margin: "1.5rem 0" }}>
+                                {otpDigits.map((d, i) => (
+                                    <input
+                                        key={i}
+                                        ref={el => otpRefs.current[i] = el}
+                                        type="text"
+                                        inputMode="numeric"
+                                        maxLength={1}
+                                        value={d}
+                                        onChange={e => handleOtpDigit(i, e.target.value)}
+                                        onKeyDown={e => handleOtpKeyDown(i, e)}
+                                        onPaste={i === 0 ? handleOtpPaste : undefined}
+                                        style={{
+                                            width: "52px", height: "60px", textAlign: "center",
+                                            fontSize: "1.6rem", fontWeight: "700",
+                                            border: `2px solid ${d ? "var(--pro-accent,#818cf8)" : "var(--pro-glass-border,rgba(255,255,255,0.15))"}`,
+                                            borderRadius: "10px",
+                                            background: "var(--pro-glass-bg,rgba(255,255,255,0.05))",
+                                            color: "var(--text-primary,#1f2937)",
+                                            outline: "none", transition: "border-color 0.2s", cursor: "text"
+                                        }}
+                                    />
+                                ))}
                             </div>
-                        </div>
 
-                        {/* ── Terms Checkbox ── */}
-                        <div className="reg-terms">
-                            <label className="reg-terms-label">
-                                <input type="checkbox" name="agreedToTerms" checked={formData.agreedToTerms} onChange={handleChange} />
-                                <span>
-                                    I agree to the{" "}
-                                    <Link to="/terms" target="_blank" className="auth-link">Terms of Service</Link>
-                                    {" "}and{" "}
-                                    <Link to="/privacy" target="_blank" className="auth-link">Privacy Policy</Link>
-                                </span>
-                            </label>
-                            {errors.agreedToTerms && <span className="reg-error">{errors.agreedToTerms}</span>}
-                        </div>
-
-                        {/* ── Submit ── */}
-                        <button
-                            type="submit"
-                            className={`auth-submit${loading ? " auth-submit--loading" : ""}`}
-                            disabled={loading}
-                            style={{ marginTop: "0.5rem" }}
-                        >
-                            {loading ? (
-                                <><span className="auth-spinner" /> Creating Account...</>
-                            ) : (
-                                <><span>🚀</span> Create Account &amp; Continue</>
+                            {otpError && (
+                                <div className="auth-alert" style={{ marginBottom: "1rem" }}>
+                                    <span className="auth-alert__icon">⚠️</span>
+                                    <span>{otpError}</span>
+                                </div>
                             )}
-                        </button>
-                    </form>
 
-                    {/* Footer */}
-                    <div className="auth-footer">
-                        <div className="auth-divider"><span>OR</span></div>
-                        <p className="auth-footer__text">
-                            Already have an account?{" "}
-                            <Link to="/login" className="auth-link">Login here</Link>
-                        </p>
-                        <Link to="/" className="auth-back-home">← Back to Home</Link>
+                            <div style={{ textAlign: "center", marginBottom: "1.25rem", fontSize: "0.9rem", color: timer <= 60 ? "#EF4444" : "var(--text-muted,#6B7280)" }}>
+                                {timer > 0
+                                    ? <>⏱ Code expires in <strong>{formatTime(timer)}</strong></>
+                                    : <span style={{ color: "#EF4444" }}>⚠️ OTP expired — please resend</span>
+                                }
+                            </div>
+
+                            <button
+                                type="submit"
+                                className={`auth-submit${otpLoading ? " auth-submit--loading" : ""}`}
+                                disabled={otpLoading || otpDigits.join("").length !== 6}
+                            >
+                                {otpLoading ? <><span className="auth-spinner" /> Verifying...</> : <>✅ Verify &amp; Create Account</>}
+                            </button>
+
+                            <div style={{ marginTop: "1rem", textAlign: "center" }}>
+                                {resendCount < resendMax ? (
+                                    <button
+                                        type="button"
+                                        onClick={handleResend}
+                                        disabled={resendLoading || otpLoading || timer > 540}
+                                        style={{
+                                            background: "none", border: "none",
+                                            color: "var(--pro-accent,#818cf8)",
+                                            cursor: (resendLoading || timer > 540) ? "not-allowed" : "pointer",
+                                            textDecoration: "underline", fontSize: "0.9rem", padding: "0.5rem",
+                                            opacity: (resendLoading || timer > 540) ? 0.5 : 1
+                                        }}
+                                    >
+                                        {resendLoading ? "Sending..." : `Resend OTP (${resendMax - resendCount} left)`}
+                                    </button>
+                                ) : (
+                                    <p style={{ color: "#EF4444", fontSize: "0.85rem" }}>
+                                        Resend limit reached. Please{" "}
+                                        <button type="button" onClick={() => { setShowOtpScreen(false); setDevOtp(""); }}
+                                            style={{ background: "none", border: "none", color: "inherit", textDecoration: "underline", cursor: "pointer", padding: 0 }}>
+                                            go back
+                                        </button>{" "}and try again.
+                                    </p>
+                                )}
+                                <p style={{ fontSize: "0.8rem", color: "var(--text-muted,#6B7280)", marginTop: "0.5rem" }}>
+                                    Used {resendCount}/{resendMax} resends
+                                </p>
+                            </div>
+
+                            <div style={{ textAlign: "center", marginTop: "1rem" }}>
+                                <button type="button"
+                                    onClick={() => { setShowOtpScreen(false); setDevOtp(""); setTimerActive(false); }}
+                                    style={{ background: "none", border: "none", color: "var(--text-muted,#6B7280)", cursor: "pointer", fontSize: "0.85rem", textDecoration: "underline" }}>
+                                    ← Back to registration form
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </div>
+            ) : (
+                /* ── Registration Form ── */
+                <div className="auth-container" style={{ maxWidth: "560px" }}>
+                    <div className="auth-card reg-card">
+                        <div className="auth-header">
+                            <div className="auth-logo">🏫</div>
+                            <h1 className="auth-title">Register Your Institute</h1>
+                            <p className="auth-subtitle">Join thousands of institutes. Start free, scale as you grow.</p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="auth-form reg-form" noValidate>
+
+                            <div className="reg-section">
+                                <h3 className="reg-section-title">🏫 Institute Information</h3>
+                                <div className="auth-field">
+                                    <label className="auth-label"><span className="auth-label__icon">🏷️</span> Institute Name *</label>
+                                    <input type="text" name="instituteName" className={`auth-input${errors.instituteName ? " auth-input--error" : ""}`}
+                                        placeholder="e.g. Sunrise Academy" value={formData.instituteName} onChange={handleChange} />
+                                    {errors.instituteName && <span className="reg-error">{errors.instituteName}</span>}
+                                </div>
+                                <div className="reg-row">
+                                    <div className="auth-field">
+                                        <label className="auth-label"><span className="auth-label__icon">✉️</span> Email *</label>
+                                        <input type="email" name="email" className={`auth-input${errors.email ? " auth-input--error" : ""}`}
+                                            placeholder="institute@example.com" value={formData.email} onChange={handleChange} />
+                                        {errors.email && <span className="reg-error">{errors.email}</span>}
+                                    </div>
+                                    <div className="auth-field">
+                                        <label className="auth-label"><span className="auth-label__icon">📱</span> Phone *</label>
+                                        <input type="tel" name="phone" className={`auth-input${errors.phone ? " auth-input--error" : ""}`}
+                                            placeholder="9876543210" value={formData.phone} onChange={handleChange} />
+                                        {errors.phone && <span className="reg-error">{errors.phone}</span>}
+                                    </div>
+                                </div>
+                                <div className="auth-field">
+                                    <label className="auth-label"><span className="auth-label__icon">📍</span> Address *</label>
+                                    <input type="text" name="address" className={`auth-input${errors.address ? " auth-input--error" : ""}`}
+                                        placeholder="Street / Area / Locality" value={formData.address} onChange={handleChange} />
+                                    {errors.address && <span className="reg-error">{errors.address}</span>}
+                                </div>
+                                <div className="reg-row reg-row--3">
+                                    <div className="auth-field">
+                                        <label className="auth-label">🏙️ City *</label>
+                                        <input type="text" name="city" className={`auth-input${errors.city ? " auth-input--error" : ""}`}
+                                            placeholder="City" value={formData.city} onChange={handleChange} />
+                                        {errors.city && <span className="reg-error">{errors.city}</span>}
+                                    </div>
+                                    <div className="auth-field">
+                                        <label className="auth-label">🗺️ State *</label>
+                                        <input type="text" name="state" className={`auth-input${errors.state ? " auth-input--error" : ""}`}
+                                            placeholder="State" value={formData.state} onChange={handleChange} />
+                                        {errors.state && <span className="reg-error">{errors.state}</span>}
+                                    </div>
+                                    <div className="auth-field">
+                                        <label className="auth-label">📮 ZIP Code *</label>
+                                        <input type="text" name="pincode" className={`auth-input${errors.pincode ? " auth-input--error" : ""}`}
+                                            placeholder="123456" value={formData.pincode} onChange={handleChange} maxLength="6" />
+                                        {errors.pincode && <span className="reg-error">{errors.pincode}</span>}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="reg-section">
+                                <h3 className="reg-section-title">🔐 Security</h3>
+                                <div className="reg-row">
+                                    <div className="auth-field">
+                                        <label className="auth-label"><span className="auth-label__icon">🔒</span> Password *</label>
+                                        <input type="password" name="password" className={`auth-input${errors.password ? " auth-input--error" : ""}`}
+                                            placeholder="Min 8 chars, A-Z, 0-9" value={formData.password} onChange={handleChange} />
+                                        {errors.password && <span className="reg-error">{errors.password}</span>}
+                                    </div>
+                                    <div className="auth-field">
+                                        <label className="auth-label"><span className="auth-label__icon">✅</span> Confirm Password *</label>
+                                        <input type="password" name="confirmPassword" className={`auth-input${errors.confirmPassword ? " auth-input--error" : ""}`}
+                                            placeholder="Repeat password" value={formData.confirmPassword} onChange={handleChange} />
+                                        {errors.confirmPassword && <span className="reg-error">{errors.confirmPassword}</span>}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="reg-section">
+                                <h3 className="reg-section-title">📦 Choose Your Plan</h3>
+                                <div className="auth-field">
+                                    <label className="auth-label"><span className="auth-label__icon">🎯</span> Select Plan *</label>
+                                    <select name="planId" className={`auth-input${errors.planId ? " auth-input--error" : ""}`}
+                                        value={formData.planId} onChange={handleChange}>
+                                        <option value="">-- Select a plan --</option>
+                                        {plans.map(plan => (
+                                            <option key={plan.id} value={plan.id}>
+                                                {plan.name} — {plan.is_free_trial ? "₹0/month (Free Trial)" : `₹${plan.price}/month`}
+                                                {plan.max_students ? ` · Up to ${plan.max_students} students` : " · Unlimited"}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.planId && <span className="reg-error">{errors.planId}</span>}
+                                    <div className="reg-plan-hint">
+                                        <Link to="/pricing" target="_blank" className="auth-link">📋 View all plans &amp; features</Link>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="reg-terms">
+                                <label className="reg-terms-label">
+                                    <input type="checkbox" name="agreedToTerms" checked={formData.agreedToTerms} onChange={handleChange} />
+                                    <span>
+                                        I agree to the{" "}
+                                        <Link to="/terms" target="_blank" className="auth-link">Terms of Service</Link>
+                                        {" "}and{" "}
+                                        <Link to="/privacy" target="_blank" className="auth-link">Privacy Policy</Link>
+                                    </span>
+                                </label>
+                                {errors.agreedToTerms && <span className="reg-error">{errors.agreedToTerms}</span>}
+                            </div>
+
+                            <button type="submit" className={`auth-submit${loading ? " auth-submit--loading" : ""}`}
+                                disabled={loading} style={{ marginTop: "0.5rem" }}>
+                                {loading ? <><span className="auth-spinner" /> Sending OTP...</> : <><span>🚀</span> Create Account &amp; Continue</>}
+                            </button>
+                        </form>
+
+                        <div className="auth-footer">
+                            <div className="auth-divider"><span>OR</span></div>
+                            <p className="auth-footer__text">
+                                Already have an account?{" "}
+                                <Link to="/login" className="auth-link">Login here</Link>
+                            </p>
+                            <Link to="/" className="auth-back-home">← Back to Home</Link>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

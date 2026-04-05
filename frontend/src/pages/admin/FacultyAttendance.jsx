@@ -112,7 +112,9 @@ function FacultyAttendance() {
     const handleScanAnother = async () => {
         setMessage(null);
         isProcessed.current = false;
-        await startScanner();
+        setTimeout(async () => {
+            await startScanner();
+        }, 100);
     };
 
     return (

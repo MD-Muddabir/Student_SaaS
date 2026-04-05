@@ -14,6 +14,10 @@ const Institute = sequelize.define("Institute", {
     subscription_start: DataTypes.DATEONLY,
     subscription_end: DataTypes.DATEONLY,
     status: DataTypes.ENUM("active", "expired", "suspended", "pending"),
+    email_verified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     has_used_trial: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
