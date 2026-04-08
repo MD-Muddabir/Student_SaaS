@@ -27,7 +27,19 @@ const STEPS = [
   { label: "Publish" },
 ];
 
-const AFFILIATION_OPTIONS = ["CBSE", "State Board", "ICSE", "IB", "University", "Other"];
+const AFFILIATION_OPTIONS = [
+  "CBSE",
+  "ICSE",
+  "State Board (SSC)",
+  "State Board (HSC)",
+  "IB (International Baccalaureate)",
+  "IGCSE / Cambridge",
+  "University-Affiliated",
+  "NIOS (National Institute of Open Schooling)",
+  "Others",
+];
+// Values that are recognized presets (for pre-fill detection)
+const AFFILIATION_PRESET_SET = new Set(AFFILIATION_OPTIONS);
 
 // 10 built-in course stock images (emojis & gradients as fallbacks)
 const STOCK_COURSE_IMAGES = [
@@ -68,6 +80,10 @@ export default function PublicPageWizard({ onDone, existingData }) {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
+
+  // Board / Affiliation — separate state for the "Others" free-text input
+  const [affiliationDropdown, setAffiliationDropdown] = useState(""); // dropdown value
+  const [affiliationCustom, setAffiliationCustom] = useState("");     // free-text for Others
 
   // Form state — all steps merged
   const [form, setForm] = useState({
@@ -113,6 +129,22 @@ export default function PublicPageWizard({ onDone, existingData }) {
   // Pre-fill from existing data
   useEffect(() => {
     if (existingData) {
+      // ── Affiliation pre-fill logic ──────────────────────────────
+      // If stored value is a known preset → set dropdown to that value
+      // If stored value is non-empty but NOT a preset → it was a custom "Others" entry
+      const savedAffil = existingData.affiliation || "";
+      if (!savedAffil) {
+        setAffiliationDropdown("");
+        setAffiliationCustom("");
+      } else if (AFFILIATION_PRESET_SET.has(savedAffil)) {
+        setAffiliationDropdown(savedAffil);
+        setAffiliationCustom("");
+      } else {
+        // Custom value → restore the "Others" mode
+        setAffiliationDropdown("Others");
+        setAffiliationCustom(savedAffil);
+      }
+
       setForm(prev => ({
         ...prev,
         tagline: existingData.tagline || "",
@@ -120,7 +152,7 @@ export default function PublicPageWizard({ onDone, existingData }) {
         about_text: existingData.about_text || "",
         established_year: existingData.established_year || "",
         years_of_excellence: existingData.years_of_excellence || "",
-        affiliation: existingData.affiliation || "",
+        affiliation: savedAffil,
         admission_status: existingData.admission_status || "",
         pass_rate: existingData.pass_rate || "",
         competitive_selections: existingData.competitive_selections || "",
@@ -222,11 +254,26 @@ export default function PublicPageWizard({ onDone, existingData }) {
     try {
       const fd = new FormData();
       const jsonFields = ["usp_points", "enrollment_benefits", "selected_subject_ids", "selected_faculty_ids"];
+
+      // Resolve final affiliation value before sending:
+      // If "Others" selected → use the custom text input value
+      // If a preset is selected → use that preset value directly
+      const resolvedAffiliation = affiliationDropdown === "Others"
+        ? affiliationCustom.trim()
+        : affiliationDropdown;
+
       Object.entries(form).forEach(([k, v]) => {
         if (k === "logo_url" || k === "cover_photo_url") return;
+        if (k === "affiliation") {
+          // We handle affiliation separately below
+          return;
+        }
         if (jsonFields.includes(k)) fd.append(k, JSON.stringify(v));
         else if (v !== "") fd.append(k, v);
       });
+
+      // Append resolved affiliation
+      if (resolvedAffiliation) fd.append("affiliation", resolvedAffiliation);
 
       // Append manual courses (with stock image idx info; actual files below)
       const coursesPayload = manualCourses.map((c, idx) => ({
@@ -265,7 +312,7 @@ export default function PublicPageWizard({ onDone, existingData }) {
     } finally {
       setSaving(false);
     }
-  }, [form, logoFile, coverFile, onDone, manualCourses, courseImageFiles, manualFaculty, facultyImageFiles]);
+  }, [form, logoFile, coverFile, onDone, manualCourses, courseImageFiles, manualFaculty, facultyImageFiles, affiliationDropdown, affiliationCustom]);
 
   const handleNext = async () => {
     await saveStep();
@@ -390,10 +437,57 @@ export default function PublicPageWizard({ onDone, existingData }) {
       <div className="form-grid-2">
         <div className="form-row">
           <label>Board / Affiliation</label>
-          <select value={form.affiliation} onChange={e => set("affiliation", e.target.value)}>
+          <select
+            value={affiliationDropdown}
+            onChange={e => {
+              const val = e.target.value;
+              setAffiliationDropdown(val);
+              // If not "Others", update form affiliation directly
+              if (val !== "Others") {
+                set("affiliation", val);
+                setAffiliationCustom("");
+              } else {
+                // Temporarily set to empty; actual value comes from custom input
+                set("affiliation", "");
+              }
+            }}
+          >
             <option value="">Select...</option>
-            {AFFILIATION_OPTIONS.map(o => <option key={o}>{o}</option>)}
+            {AFFILIATION_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
           </select>
+
+          {/* Show custom input when "Others" is selected */}
+          {affiliationDropdown === "Others" && (
+            <div style={{ marginTop: "0.6rem" }}>
+              <input
+                id="affiliation-custom-input"
+                type="text"
+                placeholder="Type your board / affiliation name…"
+                value={affiliationCustom}
+                maxLength={100}
+                autoFocus
+                onChange={e => {
+                  setAffiliationCustom(e.target.value);
+                  set("affiliation", e.target.value);
+                }}
+                style={{
+                  width: "100%",
+                  padding: "0.55rem 0.85rem",
+                  borderRadius: "8px",
+                  border: "1.5px solid var(--primary, #6366f1)",
+                  fontSize: ".9rem",
+                  outline: "none",
+                  boxShadow: "0 0 0 3px rgba(99,102,241,.15)",
+                  transition: "border-color .2s, box-shadow .2s",
+                  background: "var(--card-bg, #fff)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <div className="form-hint" style={{ marginTop: "0.3rem" }}>
+                Enter your board / affiliation name (max 100 characters)
+              </div>
+            </div>
+          )}
         </div>
         <div className="form-row">
           <label>Theme Color (hex)</label>
