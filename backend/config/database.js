@@ -33,17 +33,39 @@ const sequelize = new Sequelize(dbUrl, {
         : false,
     benchmark: process.env.NODE_ENV === "development",
 
-    // Optimized Connection Pooling
+    // Optimized Connection Pooling for Serverless (Neon)
     pool: {
-        max: 10,
-        min: 2,
-        acquire: 30000,
-        idle: 10000,
+        max: 5,
+        min: 0,
+        acquire: 60000,
+        idle: 20000,
+        evict: 15000,
+    },
+
+    // Retry Logic for Neon Cold Starts & Intermittent DNS issues
+    retry: {
+        match: [
+            /ENOTFOUND/,         // Catches getaddrinfo ENOTFOUND
+            /EAI_AGAIN/,         // DNS timeout
+            /ECONNRESET/,
+            /ECONNREFUSED/,
+            /ETIMEDOUT/,
+            /SequelizeConnection/,
+            /SequelizeHost/,
+            /TimeoutError/
+        ],
+        name: 'query',
+        max: 5, // Try up to 5 times
+        backoffBase: 1000, // Initial backoff 1s
+        backoffExponent: 1.5, // 1s, 1.5s, 2.25s, etc.
     },
 
     // SSL Configuration for Neon
     dialectOptions: {
         connectTimeout: 60000,
+        keepAlive: true,
+        statement_timeout: 60000, // 60s
+        idle_in_transaction_session_timeout: 60000, // 60s
         ...(isLocal ? {} : {
             ssl: {
                 require: true,

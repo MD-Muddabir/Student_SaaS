@@ -93,16 +93,16 @@ exports.getDashboardStats = async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 exports.getAnalytics = async (req, res) => {
     try {
-        // Monthly Revenue (by month of subscription creation)
+        // Monthly Revenue (by month of subscription creation) — PostgreSQL compatible
         const monthlyRevenue = await Subscription.findAll({
             attributes: [
-                [fn("MONTH", col("created_at")), "month"],
-                [fn("YEAR", col("created_at")), "year"],
+                [literal("EXTRACT(MONTH FROM created_at)"), "month"],
+                [literal("EXTRACT(YEAR FROM created_at)"), "year"],
                 [fn("SUM", col("amount_paid")), "totalRevenue"]
             ],
             where: { payment_status: "paid" },
-            group: [fn("YEAR", col("created_at")), fn("MONTH", col("created_at"))],
-            order: [[fn("YEAR", col("created_at")), "ASC"], [fn("MONTH", col("created_at")), "ASC"]],
+            group: [literal("EXTRACT(YEAR FROM created_at)"), literal("EXTRACT(MONTH FROM created_at)")],
+            order: [[literal("EXTRACT(YEAR FROM created_at)"), "ASC"], [literal("EXTRACT(MONTH FROM created_at)"), "ASC"]],
             limit: 12
         });
 

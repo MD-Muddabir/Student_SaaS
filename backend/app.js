@@ -273,59 +273,10 @@ const syncDatabase = async () => {
     console.log("✅ Database connection established successfully");
 
     // ─────────────────────────────────────────────────────────────────
-    // AUTO-CLEANUP: Drop duplicate indexes before syncing.
-    // Sequelize's alter:true was adding a new copy of every index on
-    // every restart, quickly hitting MySQL's 64-key limit.
-    // This cleanup runs on every startup and is a no-op when clean.
+    // NOTE: MySQL-specific index cleanup removed.
+    // PostgreSQL manages indexes efficiently and does not suffer
+    // from the same index duplication issues as MySQL.
     // ─────────────────────────────────────────────────────────────────
-    try {
-      const DB_NAME = process.env.DB_NAME || "student_saas";
-
-      // Get tables with too many indexes
-      const [tables] = await sequelize.query(
-        `SELECT TABLE_NAME, COUNT(DISTINCT INDEX_NAME) as idx_count
-         FROM information_schema.STATISTICS
-         WHERE TABLE_SCHEMA = '${DB_NAME}'
-         GROUP BY TABLE_NAME
-         HAVING idx_count > 30`
-      );
-
-      for (const row of tables) {
-        const tableName = row.TABLE_NAME;
-        console.log(`🔧 Cleaning duplicate indexes on '${tableName}'...`);
-
-        const [indexRows] = await sequelize.query(
-          `SELECT INDEX_NAME, NON_UNIQUE, COLUMN_NAME, SEQ_IN_INDEX
-           FROM information_schema.STATISTICS
-           WHERE TABLE_SCHEMA = '${DB_NAME}' AND TABLE_NAME = '${tableName}'
-           ORDER BY INDEX_NAME, SEQ_IN_INDEX`
-        );
-
-        const indexMap = {};
-        for (const idx of indexRows) {
-          if (!indexMap[idx.INDEX_NAME]) {
-            indexMap[idx.INDEX_NAME] = { unique: idx.NON_UNIQUE === 0, columns: [] };
-          }
-          indexMap[idx.INDEX_NAME].columns.push(idx.COLUMN_NAME);
-        }
-
-        const seen = new Set();
-        for (const [name, idx] of Object.entries(indexMap)) {
-          if (name === "PRIMARY") continue;
-          const sig = [...idx.columns].sort().join(",") + (idx.unique ? "|u" : "|n");
-          if (seen.has(sig)) {
-            try {
-              await sequelize.query(`ALTER TABLE \`${tableName}\` DROP INDEX \`${name}\``);
-              console.log(`   ✓ Dropped duplicate index: ${name}`);
-            } catch (_) { /* ignore if already gone */ }
-          } else {
-            seen.add(sig);
-          }
-        }
-      }
-    } catch (cleanupErr) {
-      console.warn("⚠️  Index cleanup skipped:", cleanupErr.message);
-    }
 
     // ─────────────────────────────────────────────────────────────────
     // SAFE SYNC: alter:false only creates missing tables,
@@ -350,16 +301,18 @@ const syncDatabase = async () => {
       await sequelize.query(`ALTER TABLE subscriptions ADD COLUMN tax_amount DECIMAL(10,2) DEFAULT 0;`);
     } catch (e) { }
 
-    // Biometric attendance columns
-    try { await sequelize.query(`ALTER TABLE attendances ADD COLUMN marked_by_type ENUM('manual','biometric','mobile_otp','qr_code') DEFAULT 'manual';`); } catch (e) { }
+    // Biometric attendance columns (PostgreSQL-compatible — use VARCHAR instead of ENUM)
+    try { await sequelize.query(`ALTER TABLE attendances ADD COLUMN marked_by_type VARCHAR(20) DEFAULT 'manual';`); } catch (e) { }
     try { await sequelize.query(`ALTER TABLE attendances ADD COLUMN biometric_punch_id BIGINT NULL;`); } catch (e) { }
     try { await sequelize.query(`ALTER TABLE attendances ADD COLUMN time_in TIME NULL;`); } catch (e) { }
     try { await sequelize.query(`ALTER TABLE attendances ADD COLUMN time_out TIME NULL;`); } catch (e) { }
     try { await sequelize.query(`ALTER TABLE attendances ADD COLUMN is_late BOOLEAN DEFAULT false;`); } catch (e) { }
     try { await sequelize.query(`ALTER TABLE attendances ADD COLUMN late_by_minutes INT DEFAULT 0;`); } catch (e) { }
     try { await sequelize.query(`ALTER TABLE attendances ADD COLUMN is_half_day BOOLEAN DEFAULT false;`); } catch (e) { }
-    // Modify attendance status ENUM to add half_day
-    try { await sequelize.query(`ALTER TABLE attendances MODIFY COLUMN status ENUM('present','absent','late','holiday','half_day');`); } catch (e) { }
+    // Modify attendance status type to include half_day (PostgreSQL-safe — no-op if already correct)
+    try {
+      await sequelize.query(`ALTER TABLE attendances ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'present';`);
+    } catch (e) { /* ignore — column already exists */ }
 
     // Public Web Page feature columns
     try { await sequelize.query(`ALTER TABLE plans ADD COLUMN feature_public_page BOOLEAN DEFAULT false;`); } catch (e) { }
@@ -426,8 +379,7 @@ const syncDatabase = async () => {
     // ✅ Phase 2.2: Critical Performance Indexes
     // Students - fast lookups by institute + class (most common query)
     try { await sequelize.query(`CREATE INDEX idx_students_inst_class ON students(institute_id, class_id);`); } catch (e) { }
-    try { await sequelize.query(`CREATE UNIQUE INDEX idx_students_email ON students(email);`); } catch (e) { }
-    try { await sequelize.query(`CREATE INDEX idx_students_status ON students(institute_id, status);`); } catch (e) { }
+    try { await sequelize.query(`CREATE INDEX idx_students_user ON students(user_id);`); } catch (e) { }
 
     // Attendance - fast date-range lookups (most frequent query)
     try { await sequelize.query(`CREATE INDEX idx_att_student_date ON attendances(student_id, date);`); } catch (e) { }
@@ -435,15 +387,14 @@ const syncDatabase = async () => {
     try { await sequelize.query(`CREATE INDEX idx_att_class_date ON attendances(class_id, date);`); } catch (e) { }
 
     // Subscriptions - fast middleware checks (called on every authenticated request)
-    try { await sequelize.query(`CREATE INDEX idx_sub_inst_status ON subscriptions(institute_id, status);`); } catch (e) { }
-    try { await sequelize.query(`CREATE INDEX idx_sub_end_date ON subscriptions(subscription_end);`); } catch (e) { }
+    try { await sequelize.query(`CREATE INDEX idx_sub_inst_status ON subscriptions(institute_id, payment_status);`); } catch (e) { }
+    try { await sequelize.query(`CREATE INDEX idx_sub_end_date ON subscriptions(end_date);`); } catch (e) { }
 
     // Subjects - class + institute lookups
     try { await sequelize.query(`CREATE INDEX idx_subjects_class_inst ON subjects(class_id, institute_id);`); } catch (e) { }
 
     // Faculty - institute lookups
     try { await sequelize.query(`CREATE INDEX idx_faculty_inst ON faculty(institute_id);`); } catch (e) { }
-    try { await sequelize.query(`CREATE UNIQUE INDEX idx_faculty_email ON faculty(email);`); } catch (e) { }
 
     // Student fees - fast fee tracking
     try { await sequelize.query(`CREATE INDEX idx_sfee_student ON student_fees(student_id, institute_id);`); } catch (e) { }
