@@ -169,9 +169,6 @@ exports.updateSalary = async (req, res) => {
         if (!salary) {
             return res.status(404).json({ success: false, message: "Salary record not found" });
         }
-        if (salary.status === "paid") {
-            return res.status(400).json({ success: false, message: "Cannot modify a paid salary record" });
-        }
 
         const b = parseFloat(basic_salary || salary.basic_salary);
         const a = parseFloat(allowances !== undefined ? allowances : salary.allowances);
@@ -207,9 +204,6 @@ exports.deleteSalary = async (req, res) => {
         const salary = await FacultySalary.findOne({ where: { id, institute_id } });
         if (!salary) {
             return res.status(404).json({ success: false, message: "Salary record not found" });
-        }
-        if (salary.status === "paid") {
-            return res.status(400).json({ success: false, message: "Cannot delete a paid salary record" });
         }
 
         await salary.destroy();

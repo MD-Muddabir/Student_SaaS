@@ -374,7 +374,28 @@ const syncDatabase = async () => {
     try { await sequelize.query(`ALTER TABLE plans ADD COLUMN feature_expenses BOOLEAN DEFAULT false;`); } catch (e) { }
     try { await sequelize.query(`ALTER TABLE plans ADD COLUMN feature_finance_reports BOOLEAN DEFAULT false;`); } catch (e) { }
     try { await sequelize.query(`ALTER TABLE plans ADD COLUMN feature_transport_fees BOOLEAN DEFAULT false;`); } catch (e) { }
+    try { await sequelize.query(`ALTER TABLE plans ADD COLUMN feature_finance BOOLEAN DEFAULT false;`); } catch (e) { }
+    try { await sequelize.query(`ALTER TABLE institutes ADD COLUMN current_feature_finance BOOLEAN DEFAULT false;`); } catch (e) { }
+    try { await sequelize.query(`ALTER TABLE institutes ADD COLUMN current_feature_salary BOOLEAN DEFAULT false;`); } catch (e) { }
     console.log("✅ Finance module feature columns ensured");
+
+    // ── Manager Type columns (CreateManager.md — Phase 1 DB changes) ────────
+    // PostgreSQL-safe: CREATE TYPE IF NOT EXISTS, then ADD COLUMN IF NOT EXISTS
+    try {
+      await sequelize.query(`
+        DO $$ BEGIN
+          CREATE TYPE "enum_users_manager_type" AS ENUM ('fees', 'data', 'academic', 'ops', 'hr', 'custom');
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+      `);
+    } catch (e) { /* type already exists */ }
+    try {
+      await sequelize.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS manager_type "enum_users_manager_type" DEFAULT 'custom';`);
+    } catch (e) { }
+    try {
+      await sequelize.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS manager_type_label VARCHAR(50) DEFAULT NULL;`);
+    } catch (e) { }
+    console.log("✅ Manager type columns ensured on users table");
 
     // Free Trial columns
     try { await sequelize.query(`ALTER TABLE plans ADD COLUMN is_free_trial BOOLEAN DEFAULT false;`); } catch (e) { }
@@ -383,13 +404,14 @@ const syncDatabase = async () => {
 
     // Auto-sync other schema changes using alter for the explicit models to make sure everything matches
     try {
-      const { InstitutePublicProfile, InstituteGalleryPhoto, InstituteReview, PublicEnquiry, Subscription, Plan } = require('./models');
+      const { InstitutePublicProfile, InstituteGalleryPhoto, InstituteReview, PublicEnquiry, Subscription, Plan, User } = require('./models');
       await InstitutePublicProfile.sync({ alter: true });
       await InstituteGalleryPhoto.sync({ alter: true });
       await InstituteReview.sync({ alter: true });
       await PublicEnquiry.sync({ alter: true });
       await Subscription.sync({ alter: true });
       await Plan.sync({ alter: true });
+      await User.sync({ alter: true });  // ✅ picks up manager_type + manager_type_label
     } catch (e) { console.error("Error auto-syncing explicit models:", e); }
 
     await sequelize.sync({ alter: false });

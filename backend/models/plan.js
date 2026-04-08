@@ -88,6 +88,14 @@ const Plan = sequelize.define("Plan", {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    feature_finance: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    feature_salary: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     feature_reports: {
         type: DataTypes.STRING(10),
         validate: { isIn: [['none', 'basic', 'advanced']] },

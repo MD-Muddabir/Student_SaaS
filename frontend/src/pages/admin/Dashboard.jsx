@@ -105,6 +105,12 @@ function AdminDashboard() {
         let featureName = "";
 
         switch (featureKey) {
+            case 'finance':
+                if (!features.finance) { hasAccess = false; featureName = "Finance Dashboard"; }
+                break;
+            case 'salary':
+                if (!features.salary) { hasAccess = false; featureName = "Faculty Salary Management"; }
+                break;
             case 'attendance':
                 if (features.attendance === 'none') { hasAccess = false; featureName = "Attendance Management"; }
                 break;
@@ -164,6 +170,8 @@ function AdminDashboard() {
                 ((planDetails.plan.is_free_trial && getTrialDaysLeft() <= 0) || 
                 (featureKey && (
                     (featureKey === 'fees' && !planDetails.features.fees) ||
+                    (featureKey === 'finance' && !planDetails.features.finance) ||
+                    (featureKey === 'salary' && !planDetails.features.salary) ||
                     (featureKey === 'announcements' && !planDetails.features.announcements) ||
                     (featureKey === 'attendance' && planDetails.features.attendance === 'none') ||
                     (featureKey === 'reports' && planDetails.features.reports === 'none') ||
@@ -211,6 +219,7 @@ function AdminDashboard() {
         notes: '📓 Notes',
         chat: '💬 Chat Monitor',
         finance: '📊 Finance Dash',
+        salary: '💼 Faculty Salary',
         recent_payments: '🧾 Recent Payments',
     };
 
@@ -499,8 +508,8 @@ function AdminDashboard() {
 
                     {hasPermission('fees') && <ActionCard path={`${basePath}/fees`} icon="💰" title="Collect Fees" featureKey="fees" />}
                     {hasPermission('expenses') && <ActionCard path={`${basePath}/expenses`} icon="💸" title="Finances & Transport" featureKey="expenses" />}
-                    {(isAdmin || hasPermission('finance')) && <ActionCard path={`${basePath}/finance`} icon="📊" title="Finance Dashboard" featureKey="reports" highlight />}
-                    {(isAdmin || hasPermission('finance')) && <ActionCard path={`${basePath}/salary`} icon="💼" title="Faculty Salary" featureKey="reports" />}
+                    {(isAdmin || hasPermission('finance')) && <ActionCard path={`${basePath}/finance`} icon="📊" title="Finance Dashboard" featureKey="finance" highlight />}
+                    {(isAdmin || hasPermission('salary')) && <ActionCard path={`${basePath}/salary`} icon="💼" title="Faculty Salary" featureKey="salary" />}
 
                     {hasPermission('reports') && <ActionCard path={`${basePath}/reports`} icon="📊" title="Reports & Analytics" featureKey="reports" />}
                     {hasPermission('exams') && <ActionCard path={`${basePath}/exams`} icon="📝" title="Manage Exams" featureKey="exams" />}

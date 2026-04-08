@@ -59,6 +59,14 @@ const Institute = sequelize.define("Institute", {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    current_feature_finance: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    current_feature_salary: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     current_feature_reports: {
         type: DataTypes.STRING(10),
         validate: { isIn: [['none', 'basic', 'advanced']] },

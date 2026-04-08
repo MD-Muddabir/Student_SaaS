@@ -24,6 +24,16 @@ const User = sequelize.define("User", {
     permissions: { type: DataTypes.JSONB, defaultValue: null },
     last_announcement_seen_at: { type: DataTypes.DATE, defaultValue: null },
     last_chat_seen_at: { type: DataTypes.DATE, defaultValue: null },
+    manager_type: {
+        type: DataTypes.ENUM('fees', 'data', 'academic', 'ops', 'hr', 'custom'),
+        defaultValue: 'custom',
+        allowNull: true,
+    },
+    manager_type_label: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        defaultValue: null,
+    },
 });
 
 module.exports = User;

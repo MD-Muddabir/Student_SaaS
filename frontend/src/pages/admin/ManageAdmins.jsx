@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
 import ThemeSelector from "../../components/ThemeSelector";
+import { MANAGER_TYPES, buildPermissionsFromPreset } from "../../config/managerPresets";
 import "./Dashboard.css";
 import "./ManageAdmins.css";
 
@@ -14,6 +15,7 @@ const CRUD_MODULES = [
     { val: 'subjects', label: 'Manage Subjects', icon: '📖', desc: 'Subject records management' },
     { val: 'fees', label: 'Fee Structure', icon: '💰', desc: 'Fee structures & collections' },
     { val: 'expenses', label: 'Record Expenses', icon: '💸', desc: 'Add & delete expenses' },
+    { val: 'salary', label: 'Faculty Salary Management', icon: '💼', desc: 'Manage faculty salaries' },
 ];
 
 const CRUD_OPS = [
@@ -39,6 +41,83 @@ const TOGGLE_MODULES = [
     { val: 'finance', label: 'Finance Dashboard', icon: '📊', desc: 'Financial reports and analytics' },
     { val: 'assignments', label: 'Assignments', icon: '📄', desc: 'View & manage assignments' },
 ];
+
+// ── TypeBadge component ──────────────────────────────────
+function TypeBadge({ managerType }) {
+    const type = MANAGER_TYPES.find(t => t.id === managerType) || MANAGER_TYPES[5]; // fallback to custom
+    return (
+        <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: '4px',
+            background: type.bg,
+            color: type.color,
+            border: `1px solid ${type.border}`,
+            padding: '2px 10px',
+            borderRadius: '20px',
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+        }}>
+            {type.emoji} {type.label}
+        </span>
+    );
+}
+
+// ── ManagerTypeSelector component ────────────────────────
+function ManagerTypeSelector({ selectedType, onSelect }) {
+    return (
+        <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{
+                fontWeight: 700, fontSize: '0.92rem',
+                marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem'
+            }}>
+                🏷️ Select Manager Type
+                <span style={{ fontWeight: 400, fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
+                    (auto-fills permissions — you can still adjust individually)
+                </span>
+            </div>
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '0.5rem'
+            }}>
+                {MANAGER_TYPES.map(type => {
+                    const isSelected = selectedType === type.id;
+                    return (
+                        <button
+                            key={type.id}
+                            type="button"
+                            onClick={() => onSelect(type.id)}
+                            style={{
+                                padding: '0.7rem 0.5rem',
+                                border: `2px solid ${isSelected ? type.color : 'var(--border-color)'}`,
+                                borderRadius: '10px',
+                                background: isSelected ? type.bg : 'transparent',
+                                cursor: 'pointer',
+                                textAlign: 'center',
+                                transition: 'all 0.15s',
+                                outline: 'none',
+                                transform: isSelected ? 'scale(1.02)' : 'scale(1)',
+                                boxShadow: isSelected ? `0 2px 8px ${type.border}` : 'none',
+                            }}
+                        >
+                            <div style={{ fontSize: '1.4rem', marginBottom: '2px' }}>{type.emoji}</div>
+                            <div style={{
+                                fontWeight: 700, fontSize: '0.78rem',
+                                color: isSelected ? type.color : 'var(--text-primary)',
+                                marginBottom: '2px'
+                            }}>
+                                {type.label}
+                            </div>
+                            <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', lineHeight: 1.3 }}>
+                                {type.description}
+                            </div>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
 
 // ── Helpers ─────────────────────────────────────────────
 // Given a permissions array, check if a CRUD module is enabled (any op or base key)
@@ -173,6 +252,10 @@ function ManageAdmins() {
     const [formErrors, setFormErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
 
+    // Manager type preset state
+    const [selectedType, setSelectedType] = useState('custom');
+    const [typeConfirmPending, setTypeConfirmPending] = useState(null); // typeId waiting for confirm
+
     // Edit modal
     const [editingManager, setEditingManager] = useState(null);
     const [editPerms, setEditPerms] = useState([]);
@@ -213,6 +296,31 @@ function ManageAdmins() {
         setFormErrors({ ...formErrors, [e.target.name]: '' });
     };
 
+    // ── Manager Type selection ──────────────────────────────
+    const handleTypeSelect = (typeId) => {
+        // If any permissions are already manually set and user is switching types,
+        // ask for confirmation before overwriting (edge case: custom -> custom is a reset)
+        const hasManualPerms = formData.permissions.length > 0;
+        const isSwitching = selectedType !== typeId && hasManualPerms;
+
+        if (isSwitching && typeId !== selectedType) {
+            // Store pending type and show confirm dialog (inline in modal)
+            setTypeConfirmPending(typeId);
+            return;
+        }
+        applyTypePreset(typeId);
+    };
+
+    const applyTypePreset = (typeId) => {
+        setSelectedType(typeId);
+        setTypeConfirmPending(null);
+        const presetPerms = buildPermissionsFromPreset(typeId);
+        setFormData(fd => ({ ...fd, permissions: presetPerms }));
+    };
+
+    const cancelTypeSwitch = () => setTypeConfirmPending(null);
+    // ── End type selection ─────────────────────────────────
+
     const handleTogglePerm = (val) => {
         setFormData(fd => ({
             ...fd,
@@ -227,10 +335,14 @@ function ManageAdmins() {
         if (!validateForm()) return;
         try {
             setSubmitting(true);
-            const res = await api.post('/admin/admins', formData);
+            const res = await api.post('/admin/admins', {
+                ...formData,
+                manager_type: selectedType,  // send selected type to backend
+            });
             if (res.data.success) {
                 setShowModal(false);
                 setFormData({ name: '', email: '', phone: '', password: '', permissions: [] });
+                setSelectedType('custom');
                 fetchManagers();
             }
         } catch (err) {
@@ -296,7 +408,7 @@ function ManageAdmins() {
                     {user?.role === 'admin' && (
                         <button
                             className="btn btn-primary"
-                            onClick={() => setShowModal(true)}
+                            onClick={() => { setShowModal(true); setSelectedType('custom'); setTypeConfirmPending(null); }}
                             style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: 'none' }}
                         >
                             + Create Manager
@@ -315,9 +427,9 @@ function ManageAdmins() {
                 display: 'flex', gap: '2rem', flexWrap: 'wrap'
             }}>
                 {[
-                    { icon: '1️⃣', title: 'Create Manager', desc: 'Fill name, email, password' },
-                    { icon: '2️⃣', title: 'Set Permissions', desc: 'Choose modules + CRUD ops' },
-                    { icon: '3️⃣', title: 'Manager Logs In', desc: 'Sees only allowed tools' },
+                    { icon: '1️⃣', title: 'Pick Manager Type', desc: 'Fees, Data, Academic, Ops, HR or Custom' },
+                    { icon: '2️⃣', title: 'Auto-Fill Permissions', desc: 'Preset fills all checkboxes instantly' },
+                    { icon: '3️⃣', title: 'Fine-Tune & Create', desc: 'Override any toggle before creating' },
                     { icon: '4️⃣', title: 'Admin Controls', desc: 'Edit/block anytime' },
                 ].map(s => (
                     <div key={s.icon} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -360,7 +472,8 @@ function ManageAdmins() {
                         Create your first manager to delegate operational tasks.
                     </p>
                     {user?.role === 'admin' && (
-                        <button className="btn btn-primary" onClick={() => setShowModal(true)}
+                        <button className="btn btn-primary"
+                            onClick={() => { setShowModal(true); setSelectedType('custom'); setTypeConfirmPending(null); }}
                             style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: 'none' }}>
                             + Create First Manager
                         </button>
@@ -399,7 +512,7 @@ function ManageAdmins() {
                                             {(mgr.name || 'M')[0].toUpperCase()}
                                         </div>
                                         <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '4px', flexWrap: 'wrap' }}>
                                                 <strong style={{ fontSize: '1.05rem' }}>{mgr.name}</strong>
                                                 <span style={{
                                                     fontSize: '0.72rem', padding: '1px 8px', borderRadius: '20px', fontWeight: '600',
@@ -408,6 +521,8 @@ function ManageAdmins() {
                                                 }}>
                                                     {isBlocked ? '🚫 Blocked' : '● Active'}
                                                 </span>
+                                                {/* ── Manager Type Badge ── */}
+                                                <TypeBadge managerType={mgr.manager_type || 'custom'} />
                                             </div>
                                             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>📧 {mgr.email}</div>
                                             {mgr.phone && <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>📞 {mgr.phone}</div>}
@@ -487,11 +602,33 @@ function ManageAdmins() {
             {/* ── CREATE MANAGER MODAL ── */}
             {showModal && (
                 <div className="modal-overlay">
-                    <div className="modal-content" style={{ maxWidth: '680px', width: '95%', maxHeight: '92vh', overflowY: 'auto' }}>
+                    <div className="modal-content" style={{ maxWidth: '720px', width: '95%', maxHeight: '92vh', overflowY: 'auto' }}>
                         <h2 style={{ marginBottom: '0.25rem' }}>👨‍💼 Create New Manager</h2>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
-                            Set the exact operations this manager can perform. They only see what you allow.
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.25rem' }}>
+                            Choose a manager type to auto-fill permissions, or pick Custom to set manually.
                         </p>
+
+                        {/* ── Type confirmation dialog (inline) ── */}
+                        {typeConfirmPending && (
+                            <div style={{
+                                background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.4)',
+                                borderRadius: '10px', padding: '0.85rem 1rem', marginBottom: '1rem',
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap'
+                            }}>
+                                <div style={{ fontSize: '0.85rem', color: '#92400e' }}>
+                                    ⚠️ Switching type will reset all current permissions. Continue?
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button type="button" className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '4px 14px' }}
+                                        onClick={cancelTypeSwitch}>Cancel</button>
+                                    <button type="button" className="btn btn-primary" style={{ fontSize: '0.8rem', padding: '4px 14px', background: '#f59e0b', border: 'none' }}
+                                        onClick={() => applyTypePreset(typeConfirmPending)}>Yes, Switch</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ── Manager Type Selector ── */}
+                        <ManagerTypeSelector selectedType={selectedType} onSelect={handleTypeSelect} />
 
                         <form onSubmit={handleCreateManager}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>

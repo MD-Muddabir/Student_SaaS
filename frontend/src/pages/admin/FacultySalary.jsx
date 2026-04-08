@@ -46,7 +46,11 @@ function SalaryBadge({ status }) {
 function FacultySalaryPage() {
   const { user } = useContext(AuthContext);
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
-  const hasFinancePermission = isAdmin || (user?.role === "manager" && user?.permissions?.includes("finance"));
+  const hasPerm = (action) => isAdmin || (user?.role === "manager" && user?.permissions?.includes(`salary.${action}`));
+  const canRead = hasPerm("read");
+  const canCreate = hasPerm("create");
+  const canUpdate = hasPerm("update");
+  const canDelete = hasPerm("delete");
 
   // ── Data state ────────────────────────────────────────────────────────────
   const [salaries, setSalaries]     = useState([]);
@@ -59,6 +63,7 @@ function FacultySalaryPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showPayModal,    setShowPayModal]    = useState(false);
   const [payingRecord,    setPayingRecord]    = useState(null);
+  const [editingRecord,   setEditingRecord]   = useState(null);
   const [success, setSuccess]                = useState("");
   const [formError, setFormError]            = useState("");
 
@@ -134,7 +139,7 @@ function FacultySalaryPage() {
       return;
     }
     try {
-      await api.post("/salary", {
+      const payload = {
         ...form,
         basic_salary:  parseFloat(form.basic_salary),
         allowances:    parseFloat(form.allowances  || 0),
@@ -142,13 +147,22 @@ function FacultySalaryPage() {
         advance_paid:  parseFloat(form.advance_paid|| 0),
         working_days:  parseInt(form.working_days  || 26),
         present_days:  parseInt(form.present_days  || 26)
-      });
+      };
+
+      if (editingRecord) {
+        await api.put(`/salary/${editingRecord.id}`, payload);
+        showSuccess("✅ Salary record updated successfully!");
+      } else {
+        await api.post("/salary", payload);
+        showSuccess("✅ Salary record created successfully!");
+      }
+
       setShowCreateModal(false);
+      setEditingRecord(null);
       setForm(emptyForm);
-      showSuccess("✅ Salary record created successfully!");
       await loadData();
     } catch (err) {
-      setFormError(err.response?.data?.message || "Failed to create salary record.");
+      setFormError(err.response?.data?.message || "Failed to save salary record.");
     }
   };
 
@@ -169,7 +183,7 @@ function FacultySalaryPage() {
 
   // ── Delete ────────────────────────────────────────────────────────────────
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this pending salary record?")) return;
+    if (!window.confirm("Delete this salary record?")) return;
     try {
       await api.delete(`/salary/${id}`);
       showSuccess("🗑️ Salary record deleted.");
@@ -180,7 +194,7 @@ function FacultySalaryPage() {
   };
 
   // ── Guard ─────────────────────────────────────────────────────────────────
-  if (!hasFinancePermission) {
+  if (!canRead) {
     return (
       <div className="dashboard-container">
         <div style={{
@@ -218,13 +232,15 @@ function FacultySalaryPage() {
             onChange={e => setMonthFilter(e.target.value)}
             style={{ padding: "0.4rem 0.75rem", fontSize: 14, borderRadius: 8 }}
           />
-          <button
-            className="btn btn-primary"
-            onClick={() => { setForm({ ...emptyForm, month_year: monthFilter }); setFormError(""); setShowCreateModal(true); }}
-            style={{ background: "linear-gradient(135deg,#6366f1,#a855f7)", border: "none" }}
-          >
-            + Add Salary Record
-          </button>
+          {canCreate && (
+            <button
+              className="btn btn-primary"
+              onClick={() => { setEditingRecord(null); setForm({ ...emptyForm, month_year: monthFilter }); setFormError(""); setShowCreateModal(true); }}
+              style={{ background: "linear-gradient(135deg,#6366f1,#a855f7)", border: "none" }}
+            >
+              + Add Salary Record
+            </button>
+          )}
           <Link to="/admin/finance" className="btn btn-secondary">📊 Finance Dashboard</Link>
           <Link to="/admin/dashboard" className="btn btn-secondary">← Back</Link>
         </div>
@@ -279,13 +295,15 @@ function FacultySalaryPage() {
           <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
             Create salary records for faculty members to get started.
           </p>
-          <button
-            className="btn btn-primary"
-            onClick={() => { setForm({ ...emptyForm, month_year: monthFilter }); setFormError(""); setShowCreateModal(true); }}
-            style={{ background: "linear-gradient(135deg,#6366f1,#a855f7)", border: "none" }}
-          >
-            + Add First Salary Record
-          </button>
+          {canCreate && (
+            <button
+              className="btn btn-primary"
+              onClick={() => { setEditingRecord(null); setForm({ ...emptyForm, month_year: monthFilter }); setFormError(""); setShowCreateModal(true); }}
+              style={{ background: "linear-gradient(135deg,#6366f1,#a855f7)", border: "none" }}
+            >
+              + Add First Salary Record
+            </button>
+          )}
         </div>
       ) : (
         <div className="card">
@@ -336,12 +354,12 @@ function FacultySalaryPage() {
                       ) : "—"}
                     </td>
                     <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                      {s.status !== "paid" && (
-                        <>
+                      <div style={{ display: "flex", gap: "6px", alignItems: "center", justifyContent: "flex-end" }}>
+                        {s.status !== "paid" && canUpdate && (
                           <button
                             className="btn btn-primary"
                             style={{
-                              padding: "4px 12px", fontSize: "0.78rem", marginRight: 6,
+                              padding: "4px 12px", fontSize: "0.78rem",
                               background: "linear-gradient(135deg,#10b981,#059669)", border: "none"
                             }}
                             onClick={() => {
@@ -353,6 +371,32 @@ function FacultySalaryPage() {
                           >
                             💰 Pay
                           </button>
+                        )}
+                        {canUpdate && (
+                          <button
+                            className="btn btn-secondary"
+                            style={{ padding: "4px 10px", fontSize: "0.78rem", border: "1px solid #d1d5db", background: "white" }}
+                            onClick={() => {
+                              setForm({
+                                faculty_id: s.faculty_id,
+                                month_year: s.month_year,
+                                basic_salary: s.basic_salary,
+                                allowances: s.allowances,
+                                deductions: s.deductions,
+                                advance_paid: s.advance_paid,
+                                working_days: s.working_days,
+                                present_days: s.present_days,
+                                remarks: s.remarks || ""
+                              });
+                              setEditingRecord(s);
+                              setFormError("");
+                              setShowCreateModal(true);
+                            }}
+                          >
+                            ✏️
+                          </button>
+                        )}
+                        {canDelete && (
                           <button
                             className="btn btn-danger"
                             style={{ padding: "4px 10px", fontSize: "0.78rem" }}
@@ -360,12 +404,12 @@ function FacultySalaryPage() {
                           >
                             🗑️
                           </button>
-                        </>
-                      )}
+                        )}
+                      </div>
                       {s.status === "paid" && (
-                        <span style={{ fontSize: 12, color: "#10b981", fontWeight: 600 }}>
+                        <div style={{ fontSize: 11, color: "#10b981", fontWeight: 600, marginTop: 6, opacity: 0.9 }}>
                           Paid by {s.paidBy?.name || "Admin"}
-                        </span>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -381,7 +425,9 @@ function FacultySalaryPage() {
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: 560 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <h2 style={{ margin: 0, fontSize: "1.2rem" }}>➕ Create Salary Record</h2>
+              <h2 style={{ margin: 0, fontSize: "1.2rem" }}>
+                {editingRecord ? "✏️ Edit Salary Record" : "➕ Create Salary Record"}
+              </h2>
               <button onClick={() => setShowCreateModal(false)} style={{ background: "none", border: "none", fontSize: "1.5rem", cursor: "pointer", color: "var(--text-secondary)" }}>✕</button>
             </div>
 
@@ -487,7 +533,7 @@ function FacultySalaryPage() {
                 <button type="button" className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary"
                   style={{ background: "linear-gradient(135deg,#6366f1,#a855f7)", border: "none" }}>
-                  💾 Create Salary Record
+                  {editingRecord ? "💾 Save Changes" : "💾 Create Salary Record"}
                 </button>
               </div>
             </form>

@@ -43,6 +43,8 @@ function Plans() {
         // Boolean Features
         feature_auto_attendance: false,
         feature_fees: false,
+        feature_finance: false,
+        feature_salary: false,
         feature_announcements: false,
         feature_exams: false,
         feature_timetable: false,
@@ -230,6 +232,12 @@ function Plans() {
                                 </li>
                                 <li style={{ marginBottom: "0.3rem", display: "flex", justifyContent: "space-between" }}>
                                     Fees: <span>{plan.feature_fees ? "✅" : "❌"}</span>
+                                </li>
+                                <li style={{ marginBottom: "0.3rem", display: "flex", justifyContent: "space-between" }}>
+                                    Finance Dashboard: <span>{plan.feature_finance ? "✅" : "❌"}</span>
+                                </li>
+                                <li style={{ marginBottom: "0.3rem", display: "flex", justifyContent: "space-between" }}>
+                                    Faculty Salary: <span>{plan.feature_salary ? "✅" : "❌"}</span>
                                 </li>
                                 <li style={{ marginBottom: "0.3rem", display: "flex", justifyContent: "space-between" }}>
                                     Exams: <span>{plan.feature_exams ? "✅" : "❌"}</span>
@@ -457,6 +465,8 @@ function Plans() {
                                         {[
                                             { key: 'feature_auto_attendance', label: 'Smart Attendance' },
                                             { key: 'feature_fees', label: 'Fees Management' },
+                                            { key: 'feature_finance', label: 'Finance Dashboard' },
+                                            { key: 'feature_salary', label: 'Faculty Salary Management' },
                                             { key: 'feature_announcements', label: 'Announcements' },
                                             { key: 'feature_exams', label: 'Examinations' },
                                             { key: 'feature_timetable', label: 'Master Timetable' },

@@ -223,6 +223,8 @@ exports.getInstituteDetails = async (req, res) => {
             'current_feature_attendance',
             'current_feature_auto_attendance',
             'current_feature_fees',
+            'current_feature_finance',
+            'current_feature_salary',
             'current_feature_reports',
             'current_feature_announcements',
             'current_feature_export',
@@ -278,6 +280,8 @@ exports.updateInstituteLimits = async (req, res) => {
             current_feature_attendance,
             current_feature_auto_attendance,
             current_feature_fees,
+            current_feature_finance,
+            current_feature_salary,
             current_feature_reports,
             current_feature_announcements,
             current_feature_export,
@@ -300,6 +304,8 @@ exports.updateInstituteLimits = async (req, res) => {
         if (current_feature_attendance !== undefined) updates.current_feature_attendance = current_feature_attendance;
         if (current_feature_auto_attendance !== undefined) updates.current_feature_auto_attendance = !!current_feature_auto_attendance;
         if (current_feature_fees !== undefined) updates.current_feature_fees = !!current_feature_fees;
+        if (current_feature_finance !== undefined) updates.current_feature_finance = !!current_feature_finance;
+        if (current_feature_salary !== undefined) updates.current_feature_salary = !!current_feature_salary;
         if (current_feature_reports !== undefined) updates.current_feature_reports = current_feature_reports;
         if (current_feature_announcements !== undefined) updates.current_feature_announcements = !!current_feature_announcements;
         if (current_feature_export !== undefined) updates.current_feature_export = !!current_feature_export;
@@ -436,6 +442,8 @@ exports.upgradePlan = async (req, res) => {
             current_feature_attendance: newPlan.feature_attendance,
             current_feature_auto_attendance: newPlan.feature_auto_attendance,
             current_feature_fees: newPlan.feature_fees,
+            current_feature_finance: newPlan.feature_finance,
+            current_feature_salary: newPlan.feature_salary,
             current_feature_reports: newPlan.feature_reports,
             current_feature_announcements: newPlan.feature_announcements,
             current_feature_export: newPlan.feature_export,

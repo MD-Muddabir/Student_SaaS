@@ -128,7 +128,7 @@ exports.getAllAdmins = async (req, res) => {
                 institute_id,
                 role: { [Op.in]: ['admin', 'manager'] }
             },
-            attributes: ['id', 'name', 'email', 'phone', 'status', 'created_at', 'role', 'permissions']
+            attributes: ['id', 'name', 'email', 'phone', 'status', 'created_at', 'role', 'permissions', 'manager_type', 'manager_type_label']
         });
 
         res.status(200).json({
@@ -139,6 +139,16 @@ exports.getAllAdmins = async (req, res) => {
         console.error("Get admins error:", error);
         res.status(500).json({ success: false, message: error.message });
     }
+};
+
+// Manager type labels — used when creating a manager
+const MANAGER_TYPE_LABELS = {
+    fees:     'Fees Manager',
+    data:     'Data Manager',
+    academic: 'Academic Manager',
+    ops:      'Operations Manager',
+    hr:       'HR Manager',
+    custom:   'Custom Manager',
 };
 
 exports.createAdmin = async (req, res) => {
@@ -177,6 +187,10 @@ exports.createAdmin = async (req, res) => {
 
         // 3. Create Admin/Manager (second admins are created as managers)
         const hashedPassword = await hashPassword(password);
+        const rawType = req.body.manager_type || 'custom';
+        const validTypes = ['fees', 'data', 'academic', 'ops', 'hr', 'custom'];
+        const managerType = validTypes.includes(rawType) ? rawType : 'custom';
+
         const newAdmin = await User.create({
             institute_id,
             role: 'manager',
@@ -185,7 +199,9 @@ exports.createAdmin = async (req, res) => {
             phone,
             password_hash: hashedPassword,
             status: 'active',
-            permissions: req.body.permissions || null
+            permissions: req.body.permissions || null,
+            manager_type: managerType,
+            manager_type_label: MANAGER_TYPE_LABELS[managerType] || 'Custom Manager',
         });
 
         res.status(201).json({

@@ -239,8 +239,8 @@ export default function FacultyAssignments() {
                 </div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
                     {view !== 'list' && (
-                        <button className="animated-btn secondary" onClick={() => { setView('list'); setSelected(null); fetchAll(); }}>
-                            <span className="icon icon-back">←</span> Back
+                        <button className="animated-btn secondary btn btn-secondary" onClick={() => { setView('list'); setSelected(null); fetchAll(); }}>
+                            <span className="icon icon-back">←</span> <b> Back to List </b>
                         </button>
                     )}
                     {view === 'list' && (
@@ -249,7 +249,7 @@ export default function FacultyAssignments() {
                         </button>
                     )}
                     <button className="animated-btn secondary btn btn-secondary" onClick={() => window.location.href = "/faculty/dashboard"}>
-                        <span className="icon icon-back">←</span> Back to Dashboard
+                        <span className="icon icon-back">←</span> <b> Back to Dashboard </b>
                     </button>
                 </div>
             </div>
@@ -301,6 +301,13 @@ export default function FacultyAssignments() {
                                                 📚 {asg.Class?.name} &nbsp;|&nbsp; 📖 {asg.Subject?.name}
                                                 &nbsp;|&nbsp; 🎯 {asg.max_marks} marks
                                             </p>
+                                            {asg.reference_file_url && (
+                                                <div style={{ marginTop: 8 }}>
+                                                    <a href={resolveFileUrl(asg.reference_file_url)} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, background: '#eff6ff', border: '1px solid #bfdbfe', padding: '4px 8px', borderRadius: 6, fontWeight: 600 }}>
+                                                        📎 View Reference File
+                                                    </a>
+                                                </div>
+                                            )}
                                         </div>
                                         <CountdownBadge dueDate={asg.due_date} />
                                     </div>
@@ -452,6 +459,11 @@ export default function FacultyAssignments() {
                             <h2>{selected.title}</h2>
                             <p className="fa-asg-meta">📚 {selected.Class?.name} | 📖 {selected.Subject?.name} | 🎯 {selected.max_marks} marks</p>
                             <p className="fa-asg-meta">Due: {new Date(selected.due_date).toLocaleString()}</p>
+                            {selected.reference_file_url && (
+                                <a href={resolveFileUrl(selected.reference_file_url)} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, background: '#eff6ff', border: '1px solid #bfdbfe', padding: '4px 10px', borderRadius: 6, fontWeight: 600, marginTop: 8 }}>
+                                    📎 View Reference File
+                                </a>
+                            )}
                         </div>
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                             <StatusBadge status={selected.status} />

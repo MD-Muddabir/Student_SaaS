@@ -12,4 +12,14 @@ router.get(
     ctrl.getManagerDashboardStats
 );
 
+// Manager Finance Dashboard — LIMITED data only (no revenue/P&L/salary totals)
+// Only managers with 'finance' permission in their permissions array can access this.
+// Backend enforces the restriction — frontend hiding alone is not sufficient.
+router.get(
+    "/finance-dashboard",
+    verifyToken,
+    allowRoles("admin", "manager"),
+    ctrl.getManagerFinanceDashboard
+);
+
 module.exports = router;
