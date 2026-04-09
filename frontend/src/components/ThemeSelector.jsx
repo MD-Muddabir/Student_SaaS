@@ -1,8 +1,7 @@
 /**
  * ThemeSelector — Unified Theme Picker
  * 4 options: ☀️ Light (Simple), 🌙 Dark (Simple), ✨ Light Pro, 🔮 Dark Pro
- * Props:
- *   loginMode — only show Light / Dark (no Pro options, always keeps pro style)
+ *   loginMode — (Deprecated) Previously used to limit options. Now behaves universally.
  */
 
 import { useState, useRef, useEffect, useContext } from "react";
@@ -26,14 +25,10 @@ function ThemeSelector({ loginMode = false }) {
     const active = THEMES.find(t => t.id === activeId) || THEMES[0];
 
     // Options visible in dropdown
-    const visibleThemes = loginMode ? THEMES.filter(t => t.style === "simple") : THEMES;
+    const visibleThemes = THEMES;
 
     const selectTheme = (theme) => {
-        if (loginMode) {
-            setTheme(theme.isDark, "pro");
-        } else {
-            setTheme(theme.isDark, theme.style);
-        }
+        setTheme(theme.isDark, theme.style);
         setOpen(false);
     };
 
@@ -61,7 +56,7 @@ function ThemeSelector({ loginMode = false }) {
             >
                 <span className="theme-selector__icon">{active.icon}</span>
                 <span className="theme-selector__label">
-                    {loginMode ? (isDark ? "Dark" : "Light") : active.label}
+                    {active.label}
                 </span>
                 <span className="theme-selector__arrow">▼</span>
             </button>

@@ -65,18 +65,21 @@ api.interceptors.response.use(
     (error) => {
         const { response } = error;
 
-        // 🌐 Network error
+        // 🌐 Network error (Server Unreachable)
         if (!response) {
             console.error("🚫 Network error:", error.message);
-            // Check for toast availability if imported, or dispatch an event that NetworkStatus can listen to.
-            // Using standard alert is ok, but we can emit a custom event to show beautiful popup.
             window.dispatchEvent(new Event('offline_api_error'));
-            alert("Network error. Please check your connection.");
             return Promise.reject(error);
         }
 
         const status = response.status;
         const data = response.data;
+
+        // 🛑 Backend/Database Down (5xx Errors)
+        if (status >= 500) {
+            console.error(`🛑 Server Error ${status}:`, data);
+            window.dispatchEvent(new Event('offline_api_error'));
+        }
 
         try {
             // 💳 Payment Required
@@ -89,9 +92,11 @@ api.interceptors.response.use(
                 window.location.href = "/renew-plan";
             }
 
-            // ⚠️ Suspended Account
-            if (status === 403 && data?.message?.includes("suspended")) {
-                alert("⚠️ Your account has been suspended. Please contact support.");
+            // ⚠️ Suspended Institute Account
+            if (status === 403 && data?.code === "INSTITUTE_SUSPENDED") {
+                sessionStorage.clear();
+                window.location.href = "/suspended";
+                return Promise.reject(error);
             }
 
             // 🚫 Account Blocked

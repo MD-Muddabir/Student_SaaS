@@ -40,6 +40,58 @@ function StatCard({ icon, label, value, color, sub }) {
     );
 }
 
+function SkeletonLoader() {
+    return (
+        <div className="dashboard-container" style={{ animation: 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+            <div className="dashboard-header" style={{ border: 'none', paddingBottom: 0 }}>
+                <div>
+                    <div style={{ height: '36px', width: '300px', backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '8px', marginBottom: '10px' }}></div>
+                    <div style={{ height: '16px', width: '400px', backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '4px' }}></div>
+                </div>
+            </div>
+
+            <div className="fa-stats-row" style={{ marginTop: '24px' }}>
+                {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="fa-stat-card" style={{ height: '110px', backgroundColor: 'var(--card-bg, #ffffff)', borderColor: 'var(--border-color, #e5e7eb)', borderTopWidth: '4px', borderTopStyle: 'solid' }}>
+                        <div style={{ height: '28px', width: '50%', backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '6px', marginTop: '12px' }}></div>
+                        <div style={{ height: '16px', width: '70%', backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '4px', marginTop: '16px' }}></div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="card" style={{ marginTop: '24px' }}>
+                <div style={{ padding: '20px', display: 'flex', gap: '15px' }}>
+                    <div style={{ height: '40px', flex: 2, backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '8px' }}></div>
+                    <div style={{ height: '40px', flex: 1, backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '8px' }}></div>
+                    <div style={{ height: '40px', flex: 1, backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '8px' }}></div>
+                </div>
+                <div className="table-container">
+                    <table className="table">
+                        <tbody>
+                            {[1, 2, 3, 4, 5, 6].map(i => (
+                                <tr key={i}>
+                                    <td style={{ padding: '16px' }}><div style={{ height: '20px', width: '80%', backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '4px' }}></div></td>
+                                    <td><div style={{ height: '20px', width: '60%', backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '4px' }}></div></td>
+                                    <td><div style={{ height: '20px', width: '50%', backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '4px' }}></div></td>
+                                    <td><div style={{ height: '20px', width: '70%', backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '4px' }}></div></td>
+                                    <td><div style={{ height: '30px', width: '90px', backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '15px' }}></div></td>
+                                    <td><div style={{ height: '32px', width: '120px', backgroundColor: 'var(--border-color, #e5e7eb)', borderRadius: '6px' }}></div></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <style>{`
+                @keyframes pulse-glow {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.4; }
+                }
+            `}</style>
+        </div>
+    );
+}
+
 export default function AdminAssignments() {
     const [view, setView] = useState('list');   // list | detail | overdue | pending
     const [assignments, setAssignments] = useState([]);
@@ -138,20 +190,30 @@ export default function AdminAssignments() {
         } catch (e) { flash(e.response?.data?.message || 'Failed', 'error'); }
     };
 
+    const handleDeleteAssignment = async (id) => {
+        if (!window.confirm('Delete this assignment permanently? This will remove all student submissions. This action cannot be undone.')) return;
+        try {
+            await api.delete(`/assignments/${id}`);
+            flash('Assignment deleted successfully.');
+            if (selected && selected.id === id) {
+                setView('list');
+                setSelected(null);
+            }
+            fetchData();
+        } catch (e) { flash(e.response?.data?.message || 'Delete failed', 'error'); }
+    };
+
     const filteredList = assignments.filter(a => {
+        if (filters.status !== 'all' && a.status !== filters.status) return false;
+        if (filters.class_id && a.class_id?.toString() !== filters.class_id && a.Class?.id?.toString() !== filters.class_id) return false;
+        if (filters.faculty_id && a.faculty_id?.toString() !== filters.faculty_id && a.faculty?.id?.toString() !== filters.faculty_id) return false;
         if (!filters.q) return true;
         const q = filters.q.toLowerCase();
         return a.title?.toLowerCase().includes(q) || a.Class?.name?.toLowerCase().includes(q) || a.Subject?.name?.toLowerCase().includes(q) || a.faculty?.name?.toLowerCase().includes(q);
     });
 
     if (loading) {
-        return (
-            <div className="dashboard-container">
-                <div style={{ textAlign: 'center', padding: '4rem' }}>
-                    <div className="fa-spinner" /><p style={{ marginTop: 12, color: '#6b7280' }}>Loading...</p>
-                </div>
-            </div>
-        );
+        return <SkeletonLoader />;
     }
 
     return (
@@ -272,6 +334,9 @@ export default function AdminAssignments() {
                                                             Close
                                                         </button>
                                                     )}
+                                                    <button className="btn btn-sm btn-danger" onClick={() => handleDeleteAssignment(asg.id)}>
+                                                        Delete
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -293,13 +358,21 @@ export default function AdminAssignments() {
                             <p className="fa-asg-meta">📚 {selected.Class?.name} | 📖 {selected.Subject?.name} | 👨‍🏫 {selected.faculty?.name}</p>
                             <p className="fa-asg-meta">Due: {new Date(selected.due_date).toLocaleString()} | 🎯 {selected.max_marks} marks</p>
                         </div>
-                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                             <Badge status={selected.status} />
+                            {selected.reference_file_url && (
+                                <a href={resolveFileUrl(selected.reference_file_url)} target="_blank" rel="noreferrer" className="btn btn-sm" style={{ backgroundColor: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    📎 View Reference File
+                                </a>
+                            )}
                             {selected.status === 'published' && (
                                 <button className="btn btn-sm btn-warning" onClick={() => handleCloseAssignment(selected.id)}>
                                     🔒 Close Assignment
                                 </button>
                             )}
+                            <button className="btn btn-sm btn-danger" onClick={() => handleDeleteAssignment(selected.id)}>
+                                🗑️ Delete
+                            </button>
                         </div>
                     </div>
 

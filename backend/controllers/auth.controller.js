@@ -10,6 +10,37 @@ const { Op } = require("sequelize");
 // ─── Legacy in-memory cache (kept for backward compat with /send-otp) ───────
 const otpCache = new Map();
 
+// ─── OTP Test Mode helper ────────────────────────────────────────────────────
+// Returns true when OTP_TEST_MODE env var is 'true' (case-insensitive)
+const isTestMode = () => (process.env.OTP_TEST_MODE || "").toLowerCase() === "true";
+
+/**
+ * GET /api/auth/otp-mode
+ * Public endpoint — returns current OTP mode so the register page
+ * can display a banner and auto-fill the test OTP.
+ */
+exports.getOtpMode = (req, res) => {
+    res.json({ success: true, testMode: isTestMode() });
+};
+
+/**
+ * PUT /api/superadmin/otp-mode  (called from superadmin controller via this helper)
+ * Sets OTP_TEST_MODE at runtime (process.env, survives until server restart).
+ * For permanent change, edit backend/.env
+ */
+exports.setOtpMode = (req, res) => {
+    const { testMode } = req.body;
+    if (typeof testMode !== "boolean") {
+        return res.status(400).json({ success: false, message: "testMode must be a boolean" });
+    }
+    process.env.OTP_TEST_MODE = testMode ? "true" : "false";
+    res.json({
+        success: true,
+        message: `OTP mode switched to ${testMode ? "TEST (no emails)" : "REAL (emails sent)"}`,
+        testMode
+    });
+};
+
 
 /**
  * Register a new institute
@@ -335,27 +366,32 @@ exports.registerInit = async (req, res) => {
         const otp = generateOtp();
         await saveOtp(email.trim().toLowerCase(), otp, "registration");
 
+        // Allow frontend to explicitly request test mode via UI toggle
+        const effectiveTestMode = req.body.testMode !== undefined ? req.body.testMode : isTestMode();
+
+        // ── Test Mode: skip email, return OTP directly ─────────────────────────
+        if (effectiveTestMode) {
+            console.log(`🧪 [TEST MODE] Registration OTP for ${email}: ${otp}`);
+            return res.status(200).json({
+                success: true,
+                message: "✅ Test Mode: OTP generated instantly (no email sent).",
+                testMode: true,
+                testOtp: otp
+            });
+        }
+
+        // ── Real Mode: send via email ──────────────────────────────────────────
         try {
             await emailService.sendOtpEmail(email.trim().toLowerCase(), otp, "registration");
         } catch (mailErr) {
             console.error("Email send failed:", mailErr.message);
-            // In dev: fallback — return OTP in response
-            const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
-            if (isDev) {
-                return res.status(200).json({
-                    success: true,
-                    message: "OTP generated (email service not configured).",
-                    devOtp: otp
-                });
-            }
             return res.status(500).json({ success: false, message: "Email service unavailable. Please try again later." });
         }
 
-        const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
         res.status(200).json({
             success: true,
             message: "OTP sent to your email. Please verify to complete registration.",
-            devOtp: isDev ? otp : undefined
+            testMode: false
         });
     } catch (error) {
         console.error("registerInit error:", error);
@@ -450,23 +486,26 @@ exports.forgotPassword = async (req, res) => {
         const otp = generateOtp();
         await saveOtp(email.trim().toLowerCase(), otp, "password_reset");
 
+        // ── Test Mode ──────────────────────────────────────────────────────────
+        if (isTestMode()) {
+            console.log(`🧪 [TEST MODE] Password reset OTP for ${email}: ${otp}`);
+            return res.status(200).json({
+                success: true,
+                message: GENERIC,
+                testMode: true,
+                testOtp: otp
+            });
+        }
+
+        // ── Real Mode ──────────────────────────────────────────────────────────
         try {
             await emailService.sendOtpEmail(email.trim().toLowerCase(), otp, "password_reset");
         } catch (mailErr) {
             console.error("Forgot-password email send failed:", mailErr.message);
-            const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
-            if (isDev) {
-                return res.status(200).json({ success: true, message: GENERIC, devOtp: otp });
-            }
             return res.status(500).json({ success: false, message: "Email service unavailable. Please try again later." });
         }
 
-        const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
-        res.status(200).json({
-            success: true,
-            message: GENERIC,
-            devOtp: isDev ? otp : undefined
-        });
+        res.status(200).json({ success: true, message: GENERIC, testMode: false });
     } catch (error) {
         console.error("forgotPassword error:", error);
         res.status(500).json({ success: false, message: error.message || "Failed to process request." });
@@ -552,30 +591,36 @@ exports.resendOtp = async (req, res) => {
         // Store cumulative resend count
         await newRecord.update({ resend_count: newResendCount });
 
+        // Allow frontend explicit test mode toggle
+        const effectiveTestMode = req.body.testMode !== undefined ? req.body.testMode : isTestMode();
+
+        // ── Test Mode ──────────────────────────────────────────────────────────
+        if (effectiveTestMode) {
+            console.log(`🧪 [TEST MODE] Resend OTP (${type}) for ${email}: ${otp}`);
+            return res.status(200).json({
+                success: true,
+                message: `✅ Test Mode: New OTP generated instantly. Resends used: ${newResendCount}/${maxResend}`,
+                testMode: true,
+                testOtp: otp,
+                resendCount: newResendCount,
+                maxResend
+            });
+        }
+
+        // ── Real Mode ──────────────────────────────────────────────────────────
         try {
             await emailService.sendOtpEmail(email.trim().toLowerCase(), otp, type);
         } catch (mailErr) {
             console.error("Resend OTP email failed:", mailErr.message);
-            const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
-            if (isDev) {
-                return res.status(200).json({
-                    success: true,
-                    message: `New OTP generated (email not configured). Resends used: ${newResendCount}/${maxResend}`,
-                    devOtp: otp,
-                    resendCount: newResendCount,
-                    maxResend
-                });
-            }
             return res.status(500).json({ success: false, message: "Email service unavailable." });
         }
 
-        const isDev = !process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com";
         res.status(200).json({
             success: true,
             message: "New OTP sent to your email.",
+            testMode: false,
             resendCount: newResendCount,
-            maxResend,
-            devOtp: isDev ? otp : undefined
+            maxResend
         });
     } catch (error) {
         console.error("resendOtp error:", error);

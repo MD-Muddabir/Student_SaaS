@@ -12,6 +12,10 @@ function AdminManageFacultyAttendance() {
     const [loading, setLoading] = useState(false);
     const [dashboardStats, setDashboardStats] = useState(null);
 
+    // Phase 3: Sunday detection
+    const [sundayPopup, setSundayPopup] = useState(false);
+    const [sundayMarkingHoliday, setSundayMarkingHoliday] = useState(false);
+
     useEffect(() => {
         fetchDashboardStats();
     }, []);
@@ -21,6 +25,18 @@ function AdminManageFacultyAttendance() {
             fetchFacultyAttendance();
         } else {
             setFacultyList([]);
+        }
+    }, [selectedDate]);
+
+    // Detect Sunday on date change
+    useEffect(() => {
+        if (selectedDate) {
+            const d = new Date(selectedDate + 'T00:00:00');
+            if (d.getDay() === 0) { // 0 = Sunday
+                setSundayPopup(true);
+            } else {
+                setSundayPopup(false);
+            }
         }
     }, [selectedDate]);
 
@@ -150,6 +166,46 @@ function AdminManageFacultyAttendance() {
             };
         });
         setAttendanceData(newData);
+    };
+
+    const markSundayAsHoliday = async () => {
+        if (!selectedDate) {
+            setSundayPopup(false);
+            return;
+        }
+        setSundayMarkingHoliday(true);
+        try {
+            // Fetch current list of faculty for date
+            const resp = await api.get(`/faculty-attendance/date/${selectedDate}`);
+            const allFaculty = resp.data.data || [];
+            
+            if (allFaculty.length === 0) {
+                setSundayPopup(false);
+                setSundayMarkingHoliday(false);
+                alert("No faculty found for the selected date.");
+                return;
+            }
+
+            const attendance_payload = allFaculty.map(f => ({
+                faculty_id: f.faculty_id,
+                status: 'holiday',
+                remarks: 'Sunday Holiday'
+            }));
+
+            await api.post('/faculty-attendance/manual', {
+                date: selectedDate,
+                attendance_data: attendance_payload
+            });
+            
+            setSundayPopup(false);
+            alert(`✅ All ${allFaculty.length} faculty marked as Holiday for Sunday ${selectedDate}`);
+            fetchFacultyAttendance();
+            fetchDashboardStats();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error marking holiday');
+        } finally {
+            setSundayMarkingHoliday(false);
+        }
     };
 
     const pendingFaculty = facultyList.filter(f => !f.attendance);
@@ -391,6 +447,51 @@ function AdminManageFacultyAttendance() {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            )}
+
+            {/* ═══ Phase 3: SUNDAY DETECTION POPUP ═══ */}
+            {sundayPopup && (
+                <div className="modal-overlay" style={{ zIndex: 2000 }}>
+                    <div className="modal" style={{ maxWidth: "480px", textAlign: "center" }}>
+                        <div style={{ padding: "2rem" }}>
+                            <div style={{ fontSize: "3.5rem", marginBottom: "1rem" }}>📅</div>
+                            <h2 style={{ marginBottom: "0.5rem", color: "var(--text-primary)" }}>Sunday Detected!</h2>
+                            <p style={{ color: "var(--text-secondary)", marginBottom: "0.25rem" }}>
+                                <strong>{new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong>
+                            </p>
+                            <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", fontSize: "0.9rem" }}>
+                                Is this a holiday or a working day?
+                            </p>
+                            <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+                                <button
+                                    onClick={markSundayAsHoliday}
+                                    disabled={sundayMarkingHoliday}
+                                    style={{
+                                        padding: "0.75rem 1.75rem", borderRadius: "10px", border: "none",
+                                        background: "linear-gradient(135deg,#3b82f6,#1d4ed8)",
+                                        color: "#fff", fontWeight: "700", fontSize: "1rem", cursor: "pointer",
+                                        boxShadow: "0 4px 12px rgba(59,130,246,0.4)"
+                                    }}
+                                >
+                                    {sundayMarkingHoliday ? "Marking..." : "🏖️ Holiday"}
+                                </button>
+                                <button
+                                    onClick={() => setSundayPopup(false)}
+                                    style={{
+                                        padding: "0.75rem 1.75rem", borderRadius: "10px", border: "2px solid var(--border-color)",
+                                        background: "var(--card-bg)", color: "var(--text-primary)",
+                                        fontWeight: "700", fontSize: "1rem", cursor: "pointer"
+                                    }}
+                                >
+                                    🏫 Working Day
+                                </button>
+                            </div>
+                            <p style={{ marginTop: "1.25rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                                Choosing "Holiday" will auto-mark all faculty members as Holiday.
+                            </p>
+                        </div>
                     </div>
                 </div>
             )}

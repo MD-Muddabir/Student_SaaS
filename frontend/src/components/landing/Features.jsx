@@ -38,7 +38,7 @@ export default function Features() {
   const hasMore = filtered.length > INITIAL_COUNT;
 
   return (
-    <section className='lp-section' id='features' style={{ background: 'white' }}>
+    <section className='lp-section' id='features' style={{ background: 'var(--lp-surface)' }}>
       <div className='lp-section-header reveal'>
         <span className='lp-eyebrow'>Why Choose Us</span>
         <h2 className='lp-h2'>Everything You Need to Run Your Institute</h2>

@@ -213,7 +213,6 @@ function PayFees() {
                                 <th>Due Date</th>
                                 <th>Amount</th>
                                 <th>Status</th>
-                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -251,18 +250,6 @@ function PayFees() {
                                                 <span className={`badge ${isPaidOff ? 'badge-success' : paidAmount > 0 ? 'badge-warning' : 'badge-secondary'}`}>
                                                     {isPaidOff ? 'Paid' : paidAmount > 0 ? 'Partial' : 'Assigned'}
                                                 </span>
-                                            </td>
-                                            <td>
-                                                {isPaidOff ? (
-                                                    <span style={{ color: "green", fontWeight: "bold" }}>✓ Fully Paid</span>
-                                                ) : (
-                                                    <button
-                                                        onClick={() => handlePayClick(fee)}
-                                                        className="btn btn-sm btn-primary"
-                                                    >
-                                                        Pay Now
-                                                    </button>
-                                                )}
                                             </td>
                                         </tr>
                                     );

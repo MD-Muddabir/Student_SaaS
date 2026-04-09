@@ -7,7 +7,7 @@ export default function FAQ() {
   const [openId, setOpenId] = useState(null);
 
   return (
-    <section className='lp-section' id='faq' style={{ background: '#F8FAFC' }}>
+    <section className='lp-section' id='faq' style={{ background: 'var(--lp-surface)' }}>
       <div className='lp-section-header reveal'>
         <span className='lp-eyebrow'>Got Questions?</span>
         <h2 className='lp-h2'>Frequently Asked Questions</h2>

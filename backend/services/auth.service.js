@@ -189,7 +189,7 @@ exports.changePassword = async (userId, oldPassword, newPassword) => {
 
 exports.getProfile = async (userId) => {
     const user = await User.findByPk(userId, {
-        attributes: ['id', 'name', 'email', 'role', 'institute_id', 'permissions'],
+        attributes: ['id', 'name', 'email', 'role', 'institute_id', 'permissions', 'theme_dark', 'theme_style'],
         include: [{
             model: Institute,
             include: [{ model: Plan }] // Include Plan details
@@ -227,6 +227,8 @@ exports.updateProfile = async (userId, data) => {
         email: user.email,
         role: user.role,
         institute_id: user.institute_id,
-        permissions: user.permissions || []
+        permissions: user.permissions || [],
+        theme_dark: user.theme_dark ?? false,
+        theme_style: user.theme_style ?? "simple",
     };
 };

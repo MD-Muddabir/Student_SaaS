@@ -5,6 +5,10 @@ const verifyToken = require("../middlewares/auth.middleware");
 const allowRoles = require("../middlewares/role.middleware");
 
 const controller = require("../controllers/superadmin.controller");
+const authController = require("../controllers/auth.controller");
+
+// ── OTP Mode Toggle (Superadmin only) ───────────────────────────────────────
+router.put("/otp-mode", verifyToken, allowRoles("super_admin"), authController.setOtpMode);
 
 router.get(
     "/dashboard",
@@ -62,6 +66,20 @@ router.delete(
     verifyToken,
     allowRoles("super_admin"),
     controller.deleteInstitute
+);
+
+router.put(
+    "/institutes/:id/suspend",
+    verifyToken,
+    allowRoles("super_admin"),
+    controller.suspendInstitute
+);
+
+router.put(
+    "/institutes/:id/restore",
+    verifyToken,
+    allowRoles("super_admin"),
+    controller.restoreInstitute
 );
 
 // Phase 4: Institute Discounts

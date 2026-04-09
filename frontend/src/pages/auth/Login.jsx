@@ -28,11 +28,6 @@ function Login() {
   const [errors, setErrors] = useState({});
   const [showPass, setShowPass] = useState(false);
 
-  // Force pro theme for auth pages (Default to light mode for Phase 2)
-  useEffect(() => {
-    setTheme(false, "pro");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Redirect if already logged in
   useEffect(() => {

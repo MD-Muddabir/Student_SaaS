@@ -148,3 +148,176 @@ select.auth-input {
     appearance: auto;
     cursor: pointer;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   OTP MODE — Test / Real Mode UI Components
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Top-of-page pulsing test mode banner ── */
+.otp-test-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 99999;
+    background: linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%);
+    box-shadow: 0 2px 16px rgba(16, 185, 129, 0.4);
+    animation: testBannerSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes testBannerSlideIn {
+    from { transform: translateY(-100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.otp-test-banner__inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.875rem;
+    color: #d1fae5;
+}
+
+.otp-test-banner__icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    animation: testIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes testIconPulse {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.2); }
+}
+
+.otp-test-banner__inner strong {
+    color: #ffffff;
+}
+
+.otp-test-banner__badge {
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+/* ── Mode pill badges on the form card header ── */
+.otp-mode-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 0.75rem;
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    animation: pillFadeIn 0.3s ease both;
+}
+
+@keyframes pillFadeIn {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.otp-mode-pill--test {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #10b981;
+}
+
+html.theme-pro .otp-mode-pill--test {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+    color: #6ee7b7;
+}
+
+.otp-mode-pill--real {
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: #6366f1;
+}
+
+html.theme-pro .otp-mode-pill--real {
+    background: rgba(129, 140, 248, 0.15);
+    border-color: rgba(129, 140, 248, 0.4);
+    color: #a5b4fc;
+}
+
+/* ── Test OTP Card (shown on OTP screen in test mode) ── */
+.otp-test-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.15) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 1rem;
+    text-align: center;
+    animation: testCardIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+html.theme-pro .otp-test-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.2) 100%);
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+@keyframes testCardIn {
+    from { opacity: 0; transform: scale(0.9) translateY(-8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.otp-test-card__label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #059669;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+html.theme-pro .otp-test-card__label {
+    color: #6ee7b7;
+}
+
+.otp-test-card__code {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 8px;
+    color: #065f46;
+    font-family: "Courier New", Courier, monospace;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: inline-block;
+    margin: 4px 0;
+}
+
+html.theme-pro .otp-test-card__code {
+    color: #a7f3d0;
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.otp-test-card__note {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+/* ── Submit button — Test mode variant (green tint) ── */
+.auth-submit--test {
+    background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%) !important;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35) !important;
+}
+
+.auth-submit--test:hover:not(:disabled) {
+    background: linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%) !important;
+    box-shadow: 0 6px 28px rgba(16, 185, 129, 0.5) !important;
+    transform: translateY(-1px);
+}

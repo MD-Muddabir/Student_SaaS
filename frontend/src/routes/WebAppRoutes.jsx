@@ -18,6 +18,7 @@ const InstitutePage = lazy(() => import("../pages/public/InstitutePage"));
 const Login = lazy(() => import("../pages/auth/Login"));
 const Register = lazy(() => import("../pages/public/RegisterPage"));
 const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
+const SuspendedPage = lazy(() => import("../pages/public/SuspendedPage"));
 
 const SuperAdminDashboard = lazy(() => import("../pages/superadmin/Dashboard"));
 const Institutes = lazy(() => import("../pages/superadmin/Institutes"));
@@ -109,6 +110,7 @@ export default function WebAppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/suspended" element={<SuspendedPage />} />
         <Route path="/i/:slug" element={<InstitutePage />} />
 
         <Route

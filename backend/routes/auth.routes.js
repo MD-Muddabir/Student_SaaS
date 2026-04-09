@@ -18,6 +18,9 @@ router.post("/register",           authController.register);
 router.post("/register-institute", authController.registerInstitute);
 router.post("/send-otp",           authController.sendOtp);
 
+// ── Public: OTP Mode status (no auth required) ───────────────────────────────
+router.get("/otp-mode", authController.getOtpMode);
+
 // ── Auth ─────────────────────────────────────────────────────────────────────
 router.post("/login",            authController.login);
 router.post("/logout",           authController.logout);

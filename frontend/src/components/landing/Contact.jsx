@@ -44,7 +44,7 @@ export default function Contact() {
   };
 
   return (
-    <section className='lp-section' id='contact' style={{ background: 'white' }}>
+    <section className='lp-section' id='contact' style={{ background: 'var(--lp-surface)' }}>
       <div className='lp-section-header reveal'>
         <span className='lp-eyebrow'>Get In Touch</span>
         <h2 className='lp-h2'>Ready to Transform Your Institute?</h2>

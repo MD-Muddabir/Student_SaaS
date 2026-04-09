@@ -346,35 +346,152 @@ exports.updateInstituteStatus = async (req, res) => {
 exports.deleteInstitute = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // ── Step 1: Verify institute exists ──────────────────────────
         const institute = await Institute.findByPk(id);
-        if (!institute) return res.status(404).json({ error: "Institute not found" });
-
-        const studentsInInstitute = await Student.findAll({ attributes: ["id"], where: { institute_id: id } });
-        const studentIds = studentsInInstitute.map(s => s.id);
-
-        const { StudentClass } = require("../models");
-        if (studentIds.length > 0) {
-            await StudentClass.destroy({ where: { student_id: studentIds } });
+        if (!institute) {
+            return res.status(404).json({
+                success: false,
+                message: 'Institute not found'
+            });
         }
 
-        await User.destroy({ where: { institute_id: id } });
-        await Class.destroy({ where: { institute_id: id } });
-        await Student.destroy({ where: { institute_id: id } });
-        await Faculty.destroy({ where: { institute_id: id } });
-        await Subject.destroy({ where: { institute_id: id } });
-        await Attendance.destroy({ where: { institute_id: id } });
-        await FeesStructure.destroy({ where: { institute_id: id } });
-        await Payment.destroy({ where: { institute_id: id } });
-        await Announcement.destroy({ where: { institute_id: id } });
-        await Exam.destroy({ where: { institute_id: id } });
-        await Mark.destroy({ where: { institute_id: id } });
-        await Subscription.destroy({ where: { institute_id: id } });
-        await ClassSession.destroy({ where: { institute_id: id } });
+        // ── Step 2: Block deletion if active subscription with balance ─
+        const activeSubscription = await Subscription.findOne({
+            where: {
+                institute_id: id,
+                payment_status: 'paid',
+                end_date: { [Op.gte]: new Date() }  // not expired
+            }
+        });
 
+        // NOTE: Super admin can override this by passing force=true in body
+        if (activeSubscription && req.body.force !== true) {
+            return res.status(409).json({
+                success: false,
+                message: 'Institute has an active paid subscription. Pass force:true to confirm deletion.',
+                data: {
+                    subscription_end: activeSubscription.end_date,
+                    amount_paid: activeSubscription.amount_paid
+                }
+            });
+        }
+
+        // ── Step 3: Collect summary before delete (for audit log) ─────
+        const [studentCount, facultyCount] = await Promise.all([
+            Student.count({ where: { institute_id: id } }),
+            Faculty.count({ where: { institute_id: id } })
+        ]);
+
+        // ── Step 4: Log the deletion before data is gone ─────────────
+        console.log(`[SUPER ADMIN DELETE] Institute: ${institute.name} (ID: ${id})`, {
+            deleted_by: req.user.id,
+            deleted_at: new Date().toISOString(),
+            student_count: studentCount,
+            faculty_count: facultyCount,
+            institute_email: institute.email,
+        });
+
+        // ── Step 5: Delete institute — PostgreSQL CASCADE handles rest ─
+        // Because all FK constraints have ON DELETE CASCADE in Neon,
+        // this single destroy() deletes ALL related tables automatically.
         await institute.destroy();
-        res.json({ message: "Institute deleted successfully" });
+
+        // ── Step 6: Return success with summary ──────────────────────
+        res.status(200).json({
+            success: true,
+            message: `Institute '${institute.name}' and all related data deleted successfully.`,
+            data: {
+                deleted_institute: institute.name,
+                students_deleted: studentCount,
+                faculty_deleted: facultyCount
+            }
+        });
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('[DELETE INSTITUTE ERROR]', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete institute: ' + error.message
+        });
+    }
+};
+
+// ─────────────────────────────────────────────────────────────
+// PHASE 3: SUSPEND / RESTORE INSTITUTE
+// ─────────────────────────────────────────────────────────────
+exports.suspendInstitute = async (req, res) => {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    try {
+        const institute = await Institute.findByPk(id);
+        if (!institute) {
+            return res.status(404).json({ success: false, message: 'Institute not found' });
+        }
+
+        if (institute.status === 'suspended') {
+            return res.status(409).json({
+                success: false,
+                message: 'Institute is already suspended'
+            });
+        }
+
+        // Update institute status to suspended
+        await institute.update({ status: 'suspended' });
+
+        // Clear cache so it takes effect instantly
+        const { clearInstituteCache } = require("../middlewares/auth.middleware");
+        if (typeof clearInstituteCache === "function") clearInstituteCache(id);
+
+        // Log the action
+        console.log(`[SUSPEND] Institute: ${institute.name} (ID: ${id})`, {
+            suspended_by: req.user.id,
+            suspended_at: new Date().toISOString(),
+            reason: reason || 'No reason provided'
+        });
+
+        res.status(200).json({
+            success: true,
+            message: `Institute '${institute.name}' suspended successfully.`,
+            data: { id: institute.id, name: institute.name, status: 'suspended' }
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.restoreInstitute = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const institute = await Institute.findByPk(id);
+        if (!institute) {
+            return res.status(404).json({ success: false, message: 'Institute not found' });
+        }
+
+        if (institute.status !== 'suspended') {
+            return res.status(409).json({
+                success: false,
+                message: 'Institute is not suspended'
+            });
+        }
+
+        await institute.update({ status: 'active' });
+
+        // Clear cache so it takes effect instantly
+        const { clearInstituteCache } = require("../middlewares/auth.middleware");
+        if (typeof clearInstituteCache === "function") clearInstituteCache(id);
+
+        res.status(200).json({
+            success: true,
+            message: `Institute '${institute.name}' restored successfully.`,
+            data: { id: institute.id, name: institute.name, status: 'active' }
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 

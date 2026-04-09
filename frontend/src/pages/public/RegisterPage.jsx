@@ -2,6 +2,7 @@
  * Register Page — Premium Design
  * OTP System: DB-backed via /register-init + /verify-registration
  * Features: 6-box OTP input, 10-min countdown, resend limit (3x)
+ * Test Mode: When OTP_TEST_MODE=true on server, OTP is auto-filled & no email sent
  */
 
 import { useState, useEffect, useRef, useContext } from "react";
@@ -23,6 +24,9 @@ function RegisterPage() {
     const [errors, setErrors]               = useState({});
     const [showOtpScreen, setShowOtpScreen] = useState(false);
 
+    // ── Test Mode state ───────────────────────────────────────────────────
+    // Declared further below
+
     // OTP state
     const [otpDigits, setOtpDigits]         = useState(["", "", "", "", "", ""]);
     const [otpLoading, setOtpLoading]       = useState(false);
@@ -32,7 +36,7 @@ function RegisterPage() {
     const [resendCount, setResendCount]     = useState(0);
     const [resendMax]                       = useState(3);
     const [otpError, setOtpError]           = useState("");
-    const [devOtp, setDevOtp]               = useState("");
+    const [testOtp, setTestOtp]             = useState("");      // only in test mode
     const otpRefs = useRef([]);
 
     const [formData, setFormData] = useState({
@@ -43,9 +47,10 @@ function RegisterPage() {
 
     useEffect(() => {
         fetchPlans();
+        fetchOtpMode();
         const savedPlan = localStorage.getItem("selectedPlan");
         if (savedPlan) setFormData(prev => ({ ...prev, planId: savedPlan }));
-        setTheme(isDark, "pro");
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -70,6 +75,25 @@ function RegisterPage() {
             const res = await api.get("/plans");
             setPlans(res.data.data.filter(p => p.status === "active"));
         } catch (e) { console.error("Plans fetch error:", e); }
+    };
+
+    const [otpTestMode, setOtpTestMode]     = useState(true); // Default to true based on user preference or backend
+    const [modeChecked, setModeChecked]     = useState(false);
+
+    // Fetch OTP mode from server (initial state)
+    const fetchOtpMode = async () => {
+        try {
+            const res = await api.get("/auth/otp-mode");
+            setOtpTestMode(res.data.testMode === true);
+        } catch (e) {
+            console.warn("Could not fetch OTP mode:", e.message);
+        } finally {
+            setModeChecked(true);
+        }
+    };
+
+    const toggleMode = () => {
+        setOtpTestMode(prev => !prev);
     };
 
     const validateForm = () => {
@@ -111,7 +135,7 @@ function RegisterPage() {
     // ── Step 1: Submit form → POST /register-init ──────────────────────────
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         const scrollToError = () => {
             setTimeout(() => {
                 const firstErrorElement = document.querySelector(".auth-input--error");
@@ -126,7 +150,7 @@ function RegisterPage() {
             scrollToError();
             return;
         }
-        
+
         setLoading(true);
         try {
             const res = await api.post("/auth/register-init", {
@@ -134,17 +158,26 @@ function RegisterPage() {
                 email:    formData.email.trim().toLowerCase(),
                 phone:    formData.phone.replace(/\s/g, ""),
                 password: formData.password,
-                plan_id:  formData.planId
+                plan_id:  formData.planId,
+                testMode: otpTestMode  // Pass the selected mode to backend
             });
             if (res.data.success) {
+                // Keep the mode we explicitly sent unless server overrides it
+                const serverTestMode = res.data.testMode !== undefined ? res.data.testMode : otpTestMode;
+                setOtpTestMode(serverTestMode);
+
                 setShowOtpScreen(true);
                 setResendCount(0);
                 setOtpDigits(["", "", "", "", "", ""]);
                 setOtpError("");
                 startTimer();
-                if (res.data.devOtp) {
-                    setDevOtp(res.data.devOtp);
-                    setOtpDigits(res.data.devOtp.split(""));
+
+                if (serverTestMode && res.data.testOtp) {
+                    // Auto-fill OTP in test mode
+                    setTestOtp(res.data.testOtp);
+                    setOtpDigits(res.data.testOtp.split(""));
+                } else {
+                    setTestOtp("");
                 }
                 setTimeout(() => otpRefs.current[0]?.focus(), 100);
             }
@@ -245,17 +278,21 @@ function RegisterPage() {
         try {
             const res = await api.post("/auth/resend-otp", {
                 email: formData.email.trim().toLowerCase(),
-                type:  "registration"
+                type:  "registration",
+                testMode: otpTestMode
             });
             if (res.data.success) {
                 setResendCount(res.data.resendCount ?? resendCount + 1);
                 startTimer();
                 setOtpDigits(["", "", "", "", "", ""]);
-                if (res.data.devOtp) {
-                    setDevOtp(res.data.devOtp);
-                    setOtpDigits(res.data.devOtp.split(""));
-                    alert(`[DEV] New OTP: ${res.data.devOtp}`);
+
+                if (res.data.testMode && res.data.testOtp) {
+                    // Test mode: auto-fill new OTP
+                    setTestOtp(res.data.testOtp);
+                    setOtpDigits(res.data.testOtp.split(""));
+                    // No alert needed — OTP is visible right there in the boxes
                 } else {
+                    setTestOtp("");
                     alert("A new OTP has been sent to your email.");
                 }
                 setTimeout(() => otpRefs.current[0]?.focus(), 100);
@@ -277,25 +314,50 @@ function RegisterPage() {
             <div className="auth-orb auth-orb--3" />
             <div className="auth-theme-controls"><ThemeSelector loginMode /></div>
 
+            {/* ── Live Test Mode Banner (top of page, visible always when test mode active) ── */}
+            {otpTestMode && modeChecked && (
+                <div className="otp-test-banner">
+                    <div className="otp-test-banner__inner">
+                        <span className="otp-test-banner__icon">🧪</span>
+                        <div>
+                            <strong>Test Mode Active</strong>
+                            <span> — OTP is auto-filled instantly. No real emails are sent.</span>
+                        </div>
+                        <span className="otp-test-banner__badge">TEST</span>
+                    </div>
+                </div>
+            )}
+
             {showOtpScreen ? (
                 /* ── OTP Verification Screen ── */
                 <div className="auth-container" style={{ maxWidth: "480px" }}>
                     <div className="auth-card">
                         <div className="auth-header">
-                            <div className="auth-logo">✉️</div>
-                            <h1 className="auth-title">Verify Your Email</h1>
+                            <div className="auth-logo">
+                                {otpTestMode ? "🧪" : "✉️"}
+                            </div>
+                            <h1 className="auth-title">
+                                {otpTestMode ? "Test Mode — Instant OTP" : "Verify Your Email"}
+                            </h1>
                             <p className="auth-subtitle">
-                                We sent a 6-digit code to <strong>{formData.email}</strong>
+                                {otpTestMode
+                                    ? <>OTP is <strong>auto-filled</strong> below. Just click Verify.</>
+                                    : <>We sent a 6-digit code to <strong>{formData.email}</strong></>
+                                }
                             </p>
-                            <p style={{ color: "var(--text-muted,#6B7280)", fontSize: "0.85rem", marginTop: "0.25rem" }}>
-                                Check your inbox and spam folder
-                            </p>
+                            {!otpTestMode && (
+                                <p style={{ color: "var(--text-muted,#6B7280)", fontSize: "0.85rem", marginTop: "0.25rem" }}>
+                                    Check your inbox and spam folder
+                                </p>
+                            )}
                         </div>
 
-                        {devOtp && (
-                            <div style={{ background: "#FFF7ED", border: "1px solid #F59E0B", borderRadius: "8px", padding: "10px 14px", marginBottom: "1rem", fontSize: "0.85rem", color: "#92400E" }}>
-                                🛠️ <strong>Dev Mode OTP:</strong>{" "}
-                                <span style={{ fontFamily: "monospace", fontSize: "1.1rem", letterSpacing: "3px" }}>{devOtp}</span>
+                        {/* Test Mode OTP preview card */}
+                        {otpTestMode && testOtp && (
+                            <div className="otp-test-card">
+                                <div className="otp-test-card__label">🔑 Generated OTP</div>
+                                <div className="otp-test-card__code">{testOtp}</div>
+                                <div className="otp-test-card__note">Auto-filled in boxes below</div>
                             </div>
                         )}
 
@@ -316,11 +378,17 @@ function RegisterPage() {
                                         style={{
                                             width: "52px", height: "60px", textAlign: "center",
                                             fontSize: "1.6rem", fontWeight: "700",
-                                            border: `2px solid ${d ? "var(--pro-accent,#818cf8)" : "var(--pro-glass-border,rgba(255,255,255,0.15))"}`,
+                                            border: `2px solid ${d
+                                                ? otpTestMode
+                                                    ? "rgba(16, 185, 129, 0.8)"          // green in test mode
+                                                    : "var(--pro-accent,#818cf8)"         // purple in real mode
+                                                : "var(--pro-glass-border,rgba(255,255,255,0.15))"}`,
                                             borderRadius: "10px",
-                                            background: "var(--pro-glass-bg,rgba(255,255,255,0.05))",
+                                            background: d && otpTestMode
+                                                ? "rgba(16, 185, 129, 0.08)"
+                                                : "var(--pro-glass-bg,rgba(255,255,255,0.05))",
                                             color: "var(--text-primary,#1f2937)",
-                                            outline: "none", transition: "border-color 0.2s", cursor: "text"
+                                            outline: "none", transition: "border-color 0.2s, background 0.2s", cursor: "text"
                                         }}
                                     />
                                 ))}
@@ -333,19 +401,27 @@ function RegisterPage() {
                                 </div>
                             )}
 
-                            <div style={{ textAlign: "center", marginBottom: "1.25rem", fontSize: "0.9rem", color: timer <= 60 ? "#EF4444" : "var(--text-muted,#6B7280)" }}>
-                                {timer > 0
-                                    ? <>⏱ Code expires in <strong>{formatTime(timer)}</strong></>
-                                    : <span style={{ color: "#EF4444" }}>⚠️ OTP expired — please resend</span>
-                                }
-                            </div>
+                            {/* Timer — hidden in test mode (no expiry concern is shown) */}
+                            {!otpTestMode && (
+                                <div style={{ textAlign: "center", marginBottom: "1.25rem", fontSize: "0.9rem", color: timer <= 60 ? "#EF4444" : "var(--text-muted,#6B7280)" }}>
+                                    {timer > 0
+                                        ? <>⏱ Code expires in <strong>{formatTime(timer)}</strong></>
+                                        : <span style={{ color: "#EF4444" }}>⚠️ OTP expired — please resend</span>
+                                    }
+                                </div>
+                            )}
 
                             <button
                                 type="submit"
-                                className={`auth-submit${otpLoading ? " auth-submit--loading" : ""}`}
+                                className={`auth-submit${otpLoading ? " auth-submit--loading" : ""}${otpTestMode ? " auth-submit--test" : ""}`}
                                 disabled={otpLoading || otpDigits.join("").length !== 6}
                             >
-                                {otpLoading ? <><span className="auth-spinner" /> Verifying...</> : <>✅ Verify &amp; Create Account</>}
+                                {otpLoading
+                                    ? <><span className="auth-spinner" /> Verifying...</>
+                                    : otpTestMode
+                                        ? <>🧪 Verify & Create Account (Test Mode)</>
+                                        : <>✅ Verify &amp; Create Account</>
+                                }
                             </button>
 
                             <div style={{ marginTop: "1rem", textAlign: "center" }}>
@@ -353,21 +429,26 @@ function RegisterPage() {
                                     <button
                                         type="button"
                                         onClick={handleResend}
-                                        disabled={resendLoading || otpLoading || timer > 540}
+                                        disabled={resendLoading || otpLoading || (!otpTestMode && timer > 540)}
                                         style={{
                                             background: "none", border: "none",
-                                            color: "var(--pro-accent,#818cf8)",
-                                            cursor: (resendLoading || timer > 540) ? "not-allowed" : "pointer",
+                                            color: otpTestMode ? "rgba(16,185,129,0.9)" : "var(--pro-accent,#818cf8)",
+                                            cursor: (resendLoading || (!otpTestMode && timer > 540)) ? "not-allowed" : "pointer",
                                             textDecoration: "underline", fontSize: "0.9rem", padding: "0.5rem",
-                                            opacity: (resendLoading || timer > 540) ? 0.5 : 1
+                                            opacity: (resendLoading || (!otpTestMode && timer > 540)) ? 0.5 : 1
                                         }}
                                     >
-                                        {resendLoading ? "Sending..." : `Resend OTP (${resendMax - resendCount} left)`}
+                                        {resendLoading
+                                            ? "Generating..."
+                                            : otpTestMode
+                                                ? `↻ Generate New OTP (${resendMax - resendCount} left)`
+                                                : `Resend OTP (${resendMax - resendCount} left)`
+                                        }
                                     </button>
                                 ) : (
                                     <p style={{ color: "#EF4444", fontSize: "0.85rem" }}>
                                         Resend limit reached. Please{" "}
-                                        <button type="button" onClick={() => { setShowOtpScreen(false); setDevOtp(""); }}
+                                        <button type="button" onClick={() => { setShowOtpScreen(false); setTestOtp(""); }}
                                             style={{ background: "none", border: "none", color: "inherit", textDecoration: "underline", cursor: "pointer", padding: 0 }}>
                                             go back
                                         </button>{" "}and try again.
@@ -380,7 +461,7 @@ function RegisterPage() {
 
                             <div style={{ textAlign: "center", marginTop: "1rem" }}>
                                 <button type="button"
-                                    onClick={() => { setShowOtpScreen(false); setDevOtp(""); setTimerActive(false); }}
+                                    onClick={() => { setShowOtpScreen(false); setTestOtp(""); setTimerActive(false); }}
                                     style={{ background: "none", border: "none", color: "var(--text-muted,#6B7280)", cursor: "pointer", fontSize: "0.85rem", textDecoration: "underline" }}>
                                     ← Back to registration form
                                 </button>
@@ -396,6 +477,76 @@ function RegisterPage() {
                             <div className="auth-logo">🏫</div>
                             <h1 className="auth-title">Register Your Institute</h1>
                             <p className="auth-subtitle">Join thousands of institutes. Start free, scale as you grow.</p>
+
+                            {/* Slide Button Toggle */}
+                            {modeChecked && (
+                                <div style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    gap: "12px",
+                                    marginTop: "1.5rem",
+                                    background: "var(--pro-glass-bg, rgba(255, 255, 255, 0.05))",
+                                    border: "1px solid var(--pro-glass-border, rgba(255, 255, 255, 0.1))",
+                                    padding: "12px 20px",
+                                    borderRadius: "12px",
+                                    maxWidth: "300px",
+                                    margin: "1.5rem auto 0 auto"
+                                }}>
+                                    <span style={{ 
+                                        fontSize: "0.85rem", 
+                                        fontWeight: !otpTestMode ? "700" : "500",
+                                        color: !otpTestMode ? "var(--pro-accent, #818cf8)" : "var(--text-muted, #6b7280)",
+                                        transition: "all 0.3s ease"
+                                    }}>
+                                        Real Mode
+                                    </span>
+                                    
+                                    <button
+                                        type="button"
+                                        onClick={toggleMode}
+                                        style={{
+                                            position: "relative",
+                                            width: "60px",
+                                            height: "32px",
+                                            borderRadius: "30px",
+                                            background: otpTestMode ? "linear-gradient(135deg, #059669, #10b981)" : "var(--pro-border)",
+                                            border: "none",
+                                            cursor: "pointer",
+                                            transition: "background 0.3s ease",
+                                            padding: 0,
+                                            boxShadow: otpTestMode ? "0 0 10px rgba(16, 185, 129, 0.3)" : "none"
+                                        }}
+                                    >
+                                        <div style={{
+                                            position: "absolute",
+                                            top: "3px",
+                                            left: otpTestMode ? "calc(100% - 29px)" : "3px",
+                                            width: "26px",
+                                            height: "26px",
+                                            borderRadius: "50%",
+                                            background: "#fff",
+                                            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                                            transition: "left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            fontSize: "12px"
+                                        }}>
+                                            {otpTestMode ? "🧪" : "📧"}
+                                        </div>
+                                    </button>
+
+                                    <span style={{ 
+                                        fontSize: "0.85rem", 
+                                        fontWeight: otpTestMode ? "700" : "500",
+                                        color: otpTestMode ? "#10b981" : "var(--text-muted, #6b7280)",
+                                        transition: "all 0.3s ease"
+                                    }}>
+                                        Test Mode
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
                         <form onSubmit={handleSubmit} className="auth-form reg-form" noValidate>
@@ -502,9 +653,15 @@ function RegisterPage() {
                                 {errors.agreedToTerms && <span className="reg-error">{errors.agreedToTerms}</span>}
                             </div>
 
-                            <button type="submit" className={`auth-submit${loading ? " auth-submit--loading" : ""}`}
+                            <button type="submit"
+                                className={`auth-submit${loading ? " auth-submit--loading" : ""}${otpTestMode ? " auth-submit--test" : ""}`}
                                 disabled={loading} style={{ marginTop: "0.5rem" }}>
-                                {loading ? <><span className="auth-spinner" /> Sending OTP...</> : <><span>🚀</span> Create Account &amp; Continue</>}
+                                {loading
+                                    ? <><span className="auth-spinner" />{otpTestMode ? " Generating OTP..." : " Sending OTP..."}</>
+                                    : otpTestMode
+                                        ? <><span>🧪</span> Create Account &amp; Continue (Test)</>
+                                        : <><span>🚀</span> Create Account &amp; Continue</>
+                                }
                             </button>
                         </form>
 

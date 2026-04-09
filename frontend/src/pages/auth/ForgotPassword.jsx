@@ -37,10 +37,6 @@ function ForgotPassword() {
     const [resendLoading, setResendLoading] = useState(false);
     const otpRefs = useRef([]);
 
-    useEffect(() => {
-        setTheme(isDark, "pro");
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     // Countdown
     useEffect(() => {

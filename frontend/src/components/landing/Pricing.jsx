@@ -205,7 +205,7 @@ export default function Pricing() {
   };
 
   return (
-    <section className='lp-section' id='pricing' style={{ background: '#F8FAFC' }}>
+    <section className='lp-section' id='pricing' style={{ background: 'var(--lp-surface)' }}>
       <div className='lp-section-header reveal'>
         <span className='lp-eyebrow'>Transparent Pricing</span>
         <h2 className='lp-h2'>Choose the Perfect Plan for Your Institute</h2>

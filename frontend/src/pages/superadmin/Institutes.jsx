@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 import api from "../../services/api";
 import BackButton from "../../components/common/BackButton";
 import ThemeSelector from "../../components/ThemeSelector";
+import DeleteInstituteModal from "../../components/superadmin/DeleteInstituteModal";
+import SuspendInstituteModal from "../../components/superadmin/SuspendInstituteModal";
 import "../admin/Dashboard.css";
 
 function Institutes() {
@@ -16,6 +18,11 @@ function Institutes() {
     const [statusFilter, setStatusFilter] = useState("all");
     const [showModal, setShowModal] = useState(false);
     const [selectedInstitute, setSelectedInstitute] = useState(null);
+
+    // Modal States
+    const [deleteModal, setDeleteModal] = useState(null);
+    const [suspendModal, setSuspendModal] = useState(null);
+    const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
         fetchInstitutes();
@@ -36,37 +43,42 @@ function Institutes() {
         }
     };
 
-    const handleSuspend = async (id) => {
-        if (!window.confirm("Are you sure you want to suspend this institute?")) return;
-
+    const handleDeleteConfirm = async (force) => {
+        setActionLoading(true);
         try {
-            await api.patch(`/institutes/${id}/status`, { status: "suspended" });
-            alert("Institute suspended successfully");
-            fetchInstitutes();
-        } catch (error) {
-            alert("Error suspending institute: " + error.response?.data?.message);
+            const res = await api.delete(`/superadmin/institutes/${deleteModal.id}`, {
+                data: { force } // axios requires data property for DELETE body
+            });
+            if (res.data.success) {
+                alert(res.data.message);
+                setDeleteModal(null);
+                fetchInstitutes();
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || 'Delete failed');
+        } finally {
+            setActionLoading(false);
         }
     };
 
-    const handleActivate = async (id) => {
-        try {
-            await api.patch(`/institutes/${id}/status`, { status: "active" });
-            alert("Institute activated successfully");
-            fetchInstitutes();
-        } catch (error) {
-            alert("Error activating institute: " + error.response?.data?.message);
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (!window.confirm("⚠️ WARNING: This will delete the institute and ALL its data (students, faculty, etc.). Are you sure?")) return;
+    const handleSuspendConfirm = async (reason) => {
+        setActionLoading(true);
+        const isSuspended = suspendModal.status === 'suspended';
+        const endpoint = isSuspended
+            ? `/superadmin/institutes/${suspendModal.id}/restore`
+            : `/superadmin/institutes/${suspendModal.id}/suspend`;
 
         try {
-            await api.delete(`/institutes/${id}`);
-            alert("Institute deleted successfully");
-            fetchInstitutes();
-        } catch (error) {
-            alert("Error deleting institute: " + error.response?.data?.message);
+            const res = await api.put(endpoint, { reason });
+            if (res.data.success) {
+                alert(res.data.message);
+                setSuspendModal(null);
+                fetchInstitutes();
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || 'Action failed');
+        } finally {
+            setActionLoading(false);
         }
     };
 
@@ -203,28 +215,26 @@ function Institutes() {
                                                 <button
                                                     className="btn btn-sm btn-primary"
                                                     onClick={() => handleViewDetails(institute)}
+                                                    style={{ padding: '6px 14px', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}
                                                 >
                                                     View
                                                 </button>
-                                                {institute.status === 'active' ? (
-                                                    <button
-                                                        className="btn btn-sm btn-warning"
-                                                        onClick={() => handleSuspend(institute.id)}
-                                                    >
-                                                        Suspend
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        className="btn btn-sm btn-success"
-                                                        onClick={() => handleActivate(institute.id)}
-                                                    >
-                                                        Activate
-                                                    </button>
-                                                )}
+                                                
                                                 <button
-                                                    className="btn btn-sm btn-danger"
-                                                    onClick={() => handleDelete(institute.id)}
-                                                >
+                                                    onClick={() => setSuspendModal(institute)}
+                                                    style={{
+                                                        background: institute.status === 'suspended' ? '#16A34A' : '#D97706',
+                                                        color: '#fff', padding: '6px 14px',
+                                                        border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13
+                                                    }}>
+                                                    {institute.status === 'suspended' ? 'Restore' : 'Suspend'}
+                                                </button>
+
+                                                <button onClick={() => setDeleteModal(institute)}
+                                                    style={{
+                                                        background: '#DC2626', color: '#fff', padding: '6px 14px',
+                                                        border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13
+                                                    }}>
                                                     Delete
                                                 </button>
                                             </div>
@@ -290,6 +300,25 @@ function Institutes() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Modals */}
+            {deleteModal && (
+                <DeleteInstituteModal
+                    institute={deleteModal}
+                    onConfirm={handleDeleteConfirm}
+                    onCancel={() => setDeleteModal(null)}
+                    loading={actionLoading}
+                />
+            )}
+
+            {suspendModal && (
+                <SuspendInstituteModal
+                    institute={suspendModal}
+                    onConfirm={handleSuspendConfirm}
+                    onCancel={() => setSuspendModal(null)}
+                    loading={actionLoading}
+                />
             )}
         </div>
     );

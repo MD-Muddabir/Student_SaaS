@@ -1,13 +1,10 @@
-/**
- * NetworkStatus - Beautiful offline indicator
- */
-
 import { useState, useEffect } from "react";
 import "./NetworkStatus.css";
 
 const NetworkStatus = () => {
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [showBackOnline, setShowBackOnline] = useState(false);
+    const [serverDown, setServerDown] = useState(false);
 
     useEffect(() => {
         const handleOnline = () => {
@@ -21,14 +18,44 @@ const NetworkStatus = () => {
             setShowBackOnline(false);
         };
 
+        const handleServerDown = () => {
+            setServerDown(true);
+        };
+
         window.addEventListener("online", handleOnline);
         window.addEventListener("offline", handleOffline);
+        window.addEventListener("offline_api_error", handleServerDown);
 
         return () => {
             window.removeEventListener("online", handleOnline);
             window.removeEventListener("offline", handleOffline);
+            window.removeEventListener("offline_api_error", handleServerDown);
         };
     }, []);
+
+    if (serverDown) {
+        return (
+            <div className="server-down-overlay">
+                <div className="server-down-card">
+                    <div className="server-down-icon-wrapper">
+                        <div className="server-down-icon">🔌</div>
+                        <div className="pulsing-ring"></div>
+                    </div>
+                    <h2 className="server-down-title">Platform Unreachable</h2>
+                    <p className="server-down-desc">
+                        We are currently unable to connect to the backend database servers. Our systems might be under maintenance or experiencing high traffic. Please try again in a few minutes.
+                    </p>
+                    <button className="server-retry-btn" onClick={() => window.location.reload()}>
+                        Retry Connection 🔄
+                    </button>
+                    <div className="server-status-bar">
+                        <span className="server-dot"></span>
+                        System Network Status: <span style={{color: '#ff4d4f', fontWeight: 'bold', marginLeft: '4px'}}>Offline</span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (isOnline && !showBackOnline) return null;
 
@@ -56,3 +83,4 @@ const NetworkStatus = () => {
 };
 
 export default NetworkStatus;
+

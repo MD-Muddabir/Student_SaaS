@@ -1,5 +1,21 @@
 const jwt = require("jsonwebtoken");
-const { User } = require("../models");
+const { User, Institute } = require("../models");
+
+// Cache institute status in memory for 60 seconds to avoid hitting DB on every API request
+const statusCache = new Map();
+
+const getInstituteStatus = async (instituteId) => {
+  const cached = statusCache.get(instituteId);
+  if (cached && Date.now() - cached.time < 60000) return cached.status;
+
+  const inst = await Institute.findByPk(instituteId, { attributes: ['status'] });
+  const status = inst ? inst.status : null;
+  statusCache.set(instituteId, { status, time: Date.now() });
+  return status;
+};
+
+// Export clear function so controllers can instantly invalidate the cache when status changes
+const clearInstituteCache = (instituteId) => statusCache.delete(instituteId);
 
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -39,6 +55,28 @@ const verifyToken = async (req, res, next) => {
       }
     }
 
+    // ── Check if institute is suspended ─────────────────────────────────────
+    if (req.user.institute_id && req.user.role !== 'super_admin') {
+      const instituteStatus = await getInstituteStatus(req.user.institute_id);
+
+      if (!instituteStatus) {
+        return res.status(401).json({
+          success: false,
+          error: "Institute not found",
+          message: 'Institute not found. Please contact support.'
+        });
+      }
+
+      if (instituteStatus === 'suspended') {
+        return res.status(403).json({
+          success: false,
+          code: 'INSTITUTE_SUSPENDED',
+          error: 'Institute Suspended',
+          message: 'Your institute account has been suspended. Please contact support.'
+        });
+      }
+    }
+
     next();
   } catch (error) {
     res.status(401).json({ error: "Invalid token" });
@@ -46,3 +84,4 @@ const verifyToken = async (req, res, next) => {
 };
 
 module.exports = verifyToken;
+module.exports.clearInstituteCache = clearInstituteCache;
