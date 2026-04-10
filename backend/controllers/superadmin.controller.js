@@ -1,8 +1,19 @@
 const {
+    sequelize,
     Institute, Subscription, Plan, Student, Faculty, User,
     Class, Subject, Attendance, FeesStructure, Payment, Announcement,
     Exam, Mark, ClassSession, Expense, Assignment, StudentParent,
-    InstituteDiscount
+    InstituteDiscount,
+    // All models needed for cascade delete
+    StudentSubject, StudentClass, StudentFee, StudentFeePayment,
+    FeeDiscountLog, FacultyAttendance, FacultySalary,
+    Timetable, TimetableSlot, Note, NoteDownload,
+    ChatRoom, ChatMessage, ChatParticipant,
+    BiometricDevice, BiometricEnrollment, BiometricPunch, BiometricSettings,
+    AssignmentSubmission, AssignmentSubmissionHistory, AssignmentSetting,
+    RazorpayOrder, RazorpayPayment, Invoice,
+    InstitutePublicProfile, InstituteGalleryPhoto, InstituteReview,
+    PublicEnquiry, TransportFee
 } = require("../models");
 const { Op, fn, col, literal } = require("sequelize");
 
@@ -341,78 +352,236 @@ exports.updateInstituteStatus = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// EXISTING: deleteInstitute
+// deleteInstitute — Full Transactional Cascade Delete
+// Manually deletes all child records in correct FK order.
+// Does NOT rely on DB-level CASCADE (which is not guaranteed in Sequelize).
 // ─────────────────────────────────────────────────────────────
 exports.deleteInstitute = async (req, res) => {
-    try {
-        const { id } = req.params;
+    const { id } = req.params;
 
-        // ── Step 1: Verify institute exists ──────────────────────────
-        const institute = await Institute.findByPk(id);
-        if (!institute) {
-            return res.status(404).json({
-                success: false,
-                message: 'Institute not found'
-            });
+    // ── Step 1: Verify institute exists ──────────────────────────────
+    const institute = await Institute.findByPk(id);
+    if (!institute) {
+        return res.status(404).json({ success: false, message: 'Institute not found' });
+    }
+
+    // ── Step 2: Active subscription guard ────────────────────────────
+    const activeSubscription = await Subscription.findOne({
+        where: {
+            institute_id: id,
+            payment_status: 'paid',
+            end_date: { [Op.gte]: new Date() }
         }
+    });
 
-        // ── Step 2: Block deletion if active subscription with balance ─
-        const activeSubscription = await Subscription.findOne({
-            where: {
-                institute_id: id,
-                payment_status: 'paid',
-                end_date: { [Op.gte]: new Date() }  // not expired
+    if (activeSubscription && req.body.force !== true) {
+        return res.status(409).json({
+            success: false,
+            message: 'Institute has an active paid subscription. Check "Force Delete" to confirm.',
+            data: {
+                subscription_end: activeSubscription.end_date,
+                amount_paid: activeSubscription.amount_paid
+            }
+        });
+    }
+
+    // ── Step 3: Collect summary stats before deletion ─────────────────
+    const [studentCount, facultyCount, classCount] = await Promise.all([
+        Student.count({ where: { institute_id: id } }),
+        Faculty.count({ where: { institute_id: id } }),
+        Class.count({ where: { institute_id: id } })
+    ]);
+
+    console.log(`[SUPER ADMIN DELETE] Starting cascade delete for Institute: ${institute.name} (ID: ${id})`, {
+        deleted_by: req.user.id,
+        deleted_at: new Date().toISOString(),
+        student_count: studentCount,
+        faculty_count: facultyCount,
+        institute_email: institute.email,
+    });
+
+    // ── Step 4: Run full cascade delete inside a transaction ──────────
+    // Order matters: Delete leaf nodes first, then parent nodes.
+    const t = await sequelize.transaction();
+    try {
+
+        // ── Tier 1: Deep leaf nodes (no children) ────────────────────
+        // Assignment submission history (child of AssignmentSubmission)
+        await AssignmentSubmissionHistory.destroy({
+            where: {},
+            include: [{ model: AssignmentSubmission, where: { institute_id: id }, required: true }],
+            transaction: t
+        }).catch(async () => {
+            // Fallback: find submission IDs first, then delete history
+            const submissions = await AssignmentSubmission.findAll({
+                where: { institute_id: id },
+                attributes: ['id'],
+                transaction: t
+            });
+            const submissionIds = submissions.map(s => s.id);
+            if (submissionIds.length > 0) {
+                await AssignmentSubmissionHistory.destroy({
+                    where: { submission_id: { [Op.in]: submissionIds } },
+                    transaction: t
+                });
             }
         });
 
-        // NOTE: Super admin can override this by passing force=true in body
-        if (activeSubscription && req.body.force !== true) {
-            return res.status(409).json({
-                success: false,
-                message: 'Institute has an active paid subscription. Pass force:true to confirm deletion.',
-                data: {
-                    subscription_end: activeSubscription.end_date,
-                    amount_paid: activeSubscription.amount_paid
-                }
-            });
-        }
-
-        // ── Step 3: Collect summary before delete (for audit log) ─────
-        const [studentCount, facultyCount] = await Promise.all([
-            Student.count({ where: { institute_id: id } }),
-            Faculty.count({ where: { institute_id: id } })
-        ]);
-
-        // ── Step 4: Log the deletion before data is gone ─────────────
-        console.log(`[SUPER ADMIN DELETE] Institute: ${institute.name} (ID: ${id})`, {
-            deleted_by: req.user.id,
-            deleted_at: new Date().toISOString(),
-            student_count: studentCount,
-            faculty_count: facultyCount,
-            institute_email: institute.email,
+        // Note downloads (child of Note)
+        await NoteDownload.destroy({
+            where: {},
+            include: [{ model: Note, where: { institute_id: id }, required: true }],
+            transaction: t
+        }).catch(async () => {
+            const notes = await Note.findAll({ where: { institute_id: id }, attributes: ['id'], transaction: t });
+            const noteIds = notes.map(n => n.id);
+            if (noteIds.length > 0) {
+                await NoteDownload.destroy({ where: { note_id: { [Op.in]: noteIds } }, transaction: t });
+            }
         });
 
-        // ── Step 5: Delete institute — PostgreSQL CASCADE handles rest ─
-        // Because all FK constraints have ON DELETE CASCADE in Neon,
-        // this single destroy() deletes ALL related tables automatically.
-        await institute.destroy();
+        // Invoice (child of RazorpayPayment)
+        await Invoice.destroy({
+            where: { institute_id: id },
+            transaction: t
+        });
 
-        // ── Step 6: Return success with summary ──────────────────────
+        // Fee Discount Logs (child of StudentFee)
+        await FeeDiscountLog.destroy({
+            where: { institute_id: id },
+            transaction: t
+        });
+
+        // Biometric Punches & Enrollments (children of BiometricDevice)
+        const devices = await BiometricDevice.findAll({
+            where: { institute_id: id },
+            attributes: ['id'],
+            transaction: t
+        });
+        const deviceIds = devices.map(d => d.id);
+        if (deviceIds.length > 0) {
+            await BiometricPunch.destroy({ where: { device_id: { [Op.in]: deviceIds } }, transaction: t });
+            await BiometricEnrollment.destroy({ where: { device_id: { [Op.in]: deviceIds } }, transaction: t });
+        }
+
+        // Chat Messages & Participants (children of ChatRoom)
+        const rooms = await ChatRoom.findAll({
+            where: { institute_id: id },
+            attributes: ['id'],
+            transaction: t
+        });
+        const roomIds = rooms.map(r => r.id);
+        if (roomIds.length > 0) {
+            await ChatMessage.destroy({ where: { room_id: { [Op.in]: roomIds } }, transaction: t });
+            await ChatParticipant.destroy({ where: { room_id: { [Op.in]: roomIds } }, transaction: t });
+        }
+
+        // Assignment Submissions (child of Assignment)
+        await AssignmentSubmission.destroy({ where: { institute_id: id }, transaction: t });
+
+        // Marks (child of Exam/Student)
+        await Mark.destroy({ where: { institute_id: id }, transaction: t });
+
+        // ── Tier 2: Direct institute children with sub-children ───────
+        await StudentFeePayment.destroy({ where: { institute_id: id }, transaction: t });
+        await StudentFee.destroy({ where: { institute_id: id }, transaction: t });
+        await Payment.destroy({ where: { institute_id: id }, transaction: t });
+        await Attendance.destroy({ where: { institute_id: id }, transaction: t });
+        await FacultyAttendance.destroy({ where: { institute_id: id }, transaction: t });
+        await FacultySalary.destroy({ where: { institute_id: id }, transaction: t });
+        await ClassSession.destroy({ where: { institute_id: id }, transaction: t });
+        await Timetable.destroy({ where: { institute_id: id }, transaction: t });
+        await TimetableSlot.destroy({ where: { institute_id: id }, transaction: t });
+        await Exam.destroy({ where: { institute_id: id }, transaction: t });
+        await AssignmentSetting.destroy({ where: { institute_id: id }, transaction: t });
+        await Assignment.destroy({ where: { institute_id: id }, transaction: t });
+        await Note.destroy({ where: { institute_id: id }, transaction: t });
+        await ChatRoom.destroy({ where: { institute_id: id }, transaction: t });
+        await BiometricDevice.destroy({ where: { institute_id: id }, transaction: t });
+        await BiometricSettings.destroy({ where: { institute_id: id }, transaction: t });
+        await Announcement.destroy({ where: { institute_id: id }, transaction: t });
+        await Expense.destroy({ where: { institute_id: id }, transaction: t });
+        await TransportFee.destroy({ where: { institute_id: id }, transaction: t });
+        await RazorpayPayment.destroy({ where: { institute_id: id }, transaction: t });
+        await RazorpayOrder.destroy({ where: { institute_id: id }, transaction: t });
+
+        // ── Tier 3: Junction tables & direct student/faculty relations ─
+        // StudentClass and StudentSubject have institute_id — use it directly
+        await StudentClass.destroy({ where: { institute_id: id }, transaction: t });
+        await StudentSubject.destroy({ where: { institute_id: id }, transaction: t });
+
+        // StudentParent uses student_id — resolve via students list
+        const students = await Student.findAll({
+            where: { institute_id: id },
+            attributes: ['id'],
+            transaction: t
+        });
+        const studentIds = students.map(s => s.id);
+        if (studentIds.length > 0) {
+            await StudentParent.destroy({ where: { student_id: { [Op.in]: studentIds } }, transaction: t });
+        }
+
+        // FeesStructure (parent of Payment/StudentFee — already deleted above)
+        await FeesStructure.destroy({ where: { institute_id: id }, transaction: t });
+
+        // Subjects (parent of Attendance, Exams, etc. — already deleted)
+        await Subject.destroy({ where: { institute_id: id }, transaction: t });
+
+        // ── Tier 4: Students & Faculty ────────────────────────────────
+        await Student.destroy({ where: { institute_id: id }, transaction: t });
+        await Faculty.destroy({ where: { institute_id: id }, transaction: t });
+
+        // ── Tier 5: Classes ───────────────────────────────────────────
+        await Class.destroy({ where: { institute_id: id }, transaction: t });
+
+        // ── Tier 6: Users (admin, managers, parents for this institute) ─
+        // Note: parent users (role = 'parent') linked via StudentParent
+        // are NOT deleted to preserve their accounts (they may be linked elsewhere).
+        // Only users directly belonging to this institute (admin, manager, faculty, student) are removed.
+        await User.destroy({
+            where: {
+                institute_id: id,
+                role: { [Op.in]: ['admin', 'manager', 'faculty', 'student'] }
+            },
+            transaction: t
+        });
+
+        // ── Tier 7: Public page & institute-level data ────────────────
+        await InstitutePublicProfile.destroy({ where: { institute_id: id }, transaction: t });
+        await InstituteGalleryPhoto.destroy({ where: { institute_id: id }, transaction: t });
+        await InstituteReview.destroy({ where: { institute_id: id }, transaction: t });
+        await PublicEnquiry.destroy({ where: { institute_id: id }, transaction: t });
+        await InstituteDiscount.destroy({ where: { institute_id: id }, transaction: t });
+
+        // ── Tier 8: Subscriptions ─────────────────────────────────────
+        await Subscription.destroy({ where: { institute_id: id }, transaction: t });
+
+        // ── Tier 9: Finally delete the Institute record ───────────────
+        await institute.destroy({ transaction: t });
+
+        // ── Commit ────────────────────────────────────────────────────
+        await t.commit();
+
+        console.log(`[SUPER ADMIN DELETE] ✅ Institute '${institute.name}' (ID: ${id}) fully deleted.`);
+
         res.status(200).json({
             success: true,
-            message: `Institute '${institute.name}' and all related data deleted successfully.`,
+            message: `Institute '${institute.name}' and all associated data have been permanently deleted.`,
             data: {
                 deleted_institute: institute.name,
                 students_deleted: studentCount,
-                faculty_deleted: facultyCount
+                faculty_deleted: facultyCount,
+                classes_deleted: classCount
             }
         });
 
     } catch (error) {
-        console.error('[DELETE INSTITUTE ERROR]', error);
+        await t.rollback();
+        console.error('[DELETE INSTITUTE ERROR] Transaction rolled back:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to delete institute: ' + error.message
+            message: 'Failed to delete institute. All changes have been rolled back.',
+            error: error.message
         });
     }
 };

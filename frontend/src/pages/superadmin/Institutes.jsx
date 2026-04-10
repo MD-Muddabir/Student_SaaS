@@ -50,12 +50,24 @@ function Institutes() {
                 data: { force } // axios requires data property for DELETE body
             });
             if (res.data.success) {
-                alert(res.data.message);
+                const { students_deleted, faculty_deleted, classes_deleted } = res.data.data || {};
+                const summary = [
+                    students_deleted != null ? `${students_deleted} students` : null,
+                    faculty_deleted != null ? `${faculty_deleted} faculty` : null,
+                    classes_deleted != null ? `${classes_deleted} classes` : null,
+                ].filter(Boolean).join(', ');
+                alert(`✅ ${res.data.message}${summary ? `\n\nDeleted: ${summary}` : ''}`);
                 setDeleteModal(null);
                 fetchInstitutes();
             }
         } catch (err) {
-            alert(err.response?.data?.message || 'Delete failed');
+            const errData = err.response?.data;
+            if (err.response?.status === 409) {
+                // Active subscription guard triggered — user needs to use Force Delete
+                alert(`⚠️ ${errData?.message || 'This institute has an active subscription.'}\n\nTo proceed, check "Force Delete" in the confirmation dialog.`);
+            } else {
+                alert(`❌ Delete failed: ${errData?.message || err.message || 'Unknown error'}`);
+            }
         } finally {
             setActionLoading(false);
         }
