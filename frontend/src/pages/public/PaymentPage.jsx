@@ -1,20 +1,18 @@
 /**
- * Payment / Checkout Page
- * Handles new subscriptions and renewals
- * Simulates payment flow if Razorpay keys are missing
+ * Payment / Checkout Page — Premium Redesign
+ * Handles new subscriptions and renewals with a beautiful UI
  */
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { useRazorpayPayment } from "../../hooks/useRazorpayPayment";
-import "./PublicPages.css";
+import "./PaymentPage.css";
 
 function PaymentPage() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    // Get plan details from URL or local state
     const [planId, setPlanId] = useState(searchParams.get("plan_id"));
     const [plan, setPlan] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -22,39 +20,29 @@ function PaymentPage() {
     const [billingCycle, setBillingCycle] = useState("monthly");
     const [hasUsedTrial, setHasUsedTrial] = useState(false);
     const [isTestMode, setIsTestMode] = useState(true);
+    const [instituteName, setInstituteName] = useState("");
 
     useEffect(() => {
-        // If logged in, fetch current pending plan or plan from URL
         fetchPlanDetails();
     }, [planId]);
 
     const fetchPlanDetails = async () => {
         try {
-            // First check if user is logged in
-            // If so, we might get plan from their pending subscription
-            // For now, let's just fetch the plan from IDs
             if (!planId) {
-                // Try fetching user profile to see if they have a pending plan
                 try {
                     const profile = await api.get("/auth/profile");
-
                     if (profile.data.user && profile.data.user.Institute) {
                         const institute = profile.data.user.Institute;
-
+                        setInstituteName(institute.name || "");
                         if (institute.plan_id) {
-                            // If we have a plan ID, use it!
-                            // Also if we have Plan details directly, we can skip one API call, but let's stick to the flow
                             setPlanId(institute.plan_id);
                             setHasUsedTrial(institute.has_used_trial || false);
-
-                            // If plan is already in the include, use it
                             if (institute.Plan) {
                                 setPlan(institute.Plan);
                                 setLoading(false);
-                                return; // Skip the rest
+                                return;
                             }
                         } else {
-                            // No plan associated, go to pricing
                             navigate("/pricing");
                             return;
                         }
@@ -67,21 +55,17 @@ function PaymentPage() {
                     return;
                 }
             } else {
-                // If they provided planId in URL, fetch their profile just to get hasUsedTrial
                 try {
                     const profile = await api.get("/auth/profile");
                     if (profile.data.user && profile.data.user.Institute) {
                         setHasUsedTrial(profile.data.user.Institute.has_used_trial || false);
+                        setInstituteName(profile.data.user.Institute.name || "");
                     }
-                } catch (e) {
-                    // ignore if not logged in (handled by registration)
-                }
+                } catch (e) { /* ignore */ }
             }
 
-            // If we still don't have a plan set (because we only had ID), fetch from list
             const response = await api.get("/plans");
             const currentPlanId = planId || (plan ? plan.id : null);
-
             if (currentPlanId) {
                 const selectedPlan = response.data.data.find(p => p.id === parseInt(currentPlanId));
                 if (selectedPlan) {
@@ -105,14 +89,12 @@ function PaymentPage() {
     const handlePayment = async () => {
         setProcessing(true);
         try {
-            // Initiate Payment (Backend decides if it's a free trial based on `!institute.has_used_trial`)
             const initResponse = await api.post("/payment/initiate", {
                 planId: plan.id,
                 billingCycle,
                 testMode: isTestMode
             });
 
-            // If backend handles free trial via initiate, it might just return success immediately without key
             if (initResponse.data.trial_activated) {
                 alert("Free Trial Activated Successfully! Redirecting to Dashboard...");
                 window.location.href = "/admin/dashboard";
@@ -122,8 +104,9 @@ function PaymentPage() {
             const { order, key, institute_name } = initResponse.data;
 
             if (key === "rzp_test_mock") {
-                // Mock verification flow
-                const confirmMock = window.confirm(`Mock Payment Gateway\n\nPay ₹${order.amount / 100} for ${plan.name}?\n\nClick OK to succeed, Cancel to fail.`);
+                const confirmMock = window.confirm(
+                    `Mock Payment Gateway\n\nPay ₹${order.amount / 100} for ${plan.name}?\n\nClick OK to succeed, Cancel to fail.`
+                );
                 if (confirmMock) {
                     try {
                         const verifyRes = await api.post("/payment/verify", {
@@ -143,19 +126,18 @@ function PaymentPage() {
                 }
                 setProcessing(false);
             } else {
-                // 2. Initialize Razorpay Checkout
-                setProcessing(false); // Let the hook manage loading state
+                setProcessing(false);
                 initializePayment({
                     orderConfig: {
-                        key: key,
+                        key,
                         amount: order.amount,
                         currency: order.currency,
                         order_id: order.id,
                     },
                     userConfig: {
-                        institute_name: institute_name || "EduManage SaaS",
+                        institute_name: institute_name || instituteName || "EduManage SaaS",
                         description: `Subscription for ${plan.name}`,
-                        name: "Institute Admin", // Could get from profile
+                        name: "Institute Admin",
                         email: "admin@example.com",
                         contact: ""
                     },
@@ -168,7 +150,6 @@ function PaymentPage() {
                                 planId: plan.id,
                                 billingCycle
                             });
-
                             if (verifyRes.data.success) {
                                 alert("Payment Successful! Redirecting to Dashboard...");
                                 window.location.href = "/admin/dashboard";
@@ -189,104 +170,269 @@ function PaymentPage() {
         }
     };
 
-    if (loading) return <div className="loading-state">Loading...</div>;
+    const isFree = plan?.is_free_trial && !hasUsedTrial;
+
+    const price = isFree ? 0
+        : billingCycle === "yearly"
+            ? Math.round((plan?.price || 0) * 12 * 0.8)
+            : (plan?.price || 0);
+
+    const monthlyEquiv = isFree ? 0
+        : billingCycle === "yearly"
+            ? Math.round((plan?.price || 0) * 0.8)
+            : (plan?.price || 0);
+
+    const savings = !isFree && billingCycle === "yearly"
+        ? Math.round((plan?.price || 0) * 12 * 0.2)
+        : 0;
+
+    if (loading) {
+        return (
+            <div className="checkout-loading-screen">
+                <div className="checkout-spinner" />
+                <p>Loading your plan...</p>
+            </div>
+        );
+    }
+
     if (!plan) return null;
 
-    const price = billingCycle === 'yearly'
-        ? Math.round(plan.price * 12 * 0.8)
-        : plan.price;
-
     return (
-        <div className="payment-page">
-            <div className="container-small">
-                <div className="payment-card">
-                    <div className="payment-header">
-                        <h2>{(plan.is_free_trial && !hasUsedTrial) ? "Start Your Free Trial" : "Complete Your Subscription"}</h2>
-                        <p>{(plan.is_free_trial && !hasUsedTrial) ? `Activate secure trial for ${plan.name}` : `Secure payment for ${plan.name}`}</p>
+        <div className="checkout-page">
+            {/* Animated background */}
+            <div className="checkout-bg">
+                <div className="checkout-bg-circle c1" />
+                <div className="checkout-bg-circle c2" />
+                <div className="checkout-bg-circle c3" />
+            </div>
+
+            <div className="checkout-wrapper">
+                {/* LEFT PANEL — Plan Summary */}
+                <div className="checkout-panel checkout-left">
+                    {/* Logo + Brand */}
+                    <div className="checkout-brand">
+                        <span className="checkout-brand-icon">🎓</span>
+                        <span className="checkout-brand-name">EduManage</span>
                     </div>
 
-                    {!(plan.is_free_trial && !hasUsedTrial) && (
-                        <div className="billing-cycle-selector">
-                            <label className={billingCycle === 'monthly' ? 'active' : ''}>
-                                <input
-                                    type="radio"
-                                    name="billing"
-                                    value="monthly"
-                                    checked={billingCycle === 'monthly'}
-                                    onChange={() => setBillingCycle('monthly')}
-                                />
-                                Monthly (₹{plan.price}/mo)
-                            </label>
-                            <label className={billingCycle === 'yearly' ? 'active' : ''}>
-                                <input
-                                    type="radio"
-                                    name="billing"
-                                    value="yearly"
-                                    checked={billingCycle === 'yearly'}
-                                    onChange={() => setBillingCycle('yearly')}
-                                />
-                                Yearly (Save 20%)
-                            </label>
+                    {/* Plan Badge */}
+                    <div className="checkout-plan-badge">
+                        {isFree ? "🎁 Free Trial" : "⭐ " + plan.name}
+                    </div>
+
+                    <h1 className="checkout-left-title">
+                        {isFree ? "Start Your Free Trial" : "Complete Your Subscription"}
+                    </h1>
+                    <p className="checkout-left-sub">
+                        {isFree
+                            ? `Activate your free trial for ${plan.name} — no credit card required`
+                            : instituteName
+                                ? `Secure payment for ${instituteName}`
+                                : `Secure payment for ${plan.name}`}
+                    </p>
+
+                    {/* Billing Cycle Selector */}
+                    {!isFree && (
+                        <div className="checkout-billing-toggle">
+                            <button
+                                className={`checkout-billing-btn ${billingCycle === "monthly" ? "active" : ""}`}
+                                onClick={() => setBillingCycle("monthly")}
+                            >
+                                Monthly
+                            </button>
+                            <button
+                                className={`checkout-billing-btn ${billingCycle === "yearly" ? "active" : ""}`}
+                                onClick={() => setBillingCycle("yearly")}
+                            >
+                                Yearly
+                                <span className="checkout-save-chip">Save 20%</span>
+                            </button>
                         </div>
                     )}
 
-                    <div className="order-summary">
-                        <div className="summary-row">
-                            <span>Plan</span>
-                            <span>{plan.name}</span>
+                    {/* Price Display */}
+                    <div className="checkout-price-block">
+                        <div className="checkout-price-main">
+                            <span className="checkout-currency">₹</span>
+                            <span className="checkout-amount">
+                                {isFree ? "0" : price.toLocaleString("en-IN")}
+                            </span>
+                            {!isFree && (
+                                <span className="checkout-period">
+                                    /{billingCycle === "yearly" ? "year" : "mo"}
+                                </span>
+                            )}
                         </div>
-                        {!(plan.is_free_trial && !hasUsedTrial) && (
-                            <div className="summary-row">
-                                <span>Billing Cycle</span>
-                                <span>{billingCycle === 'yearly' ? 'Yearly' : 'Monthly'}</span>
+                        {!isFree && billingCycle === "yearly" && (
+                            <div className="checkout-price-sub">
+                                ₹{monthlyEquiv.toLocaleString("en-IN")}/mo · You save ₹{savings.toLocaleString("en-IN")}/year
                             </div>
                         )}
-                        <div className="summary-row total">
-                            <span>Total Amount</span>
-                            <span>{(plan.is_free_trial && !hasUsedTrial) ? '₹0' : `₹${price}`}</span>
+                        {isFree && (
+                            <div className="checkout-price-sub">No credit card required</div>
+                        )}
+                    </div>
+
+                    {/* Features / What's included */}
+                    <div className="checkout-includes">
+                        <p className="checkout-includes-title">What's included:</p>
+                        <ul className="checkout-features-list">
+                            {[
+                                plan.max_students && `Up to ${plan.max_students} students`,
+                                plan.max_faculty && `Up to ${plan.max_faculty} faculty members`,
+                                plan.max_classes && `Up to ${plan.max_classes} classes`,
+                                plan.feature_attendance && "Attendance management",
+                                plan.feature_fees && "Fees & payment tracking",
+                                plan.feature_finance && "Finance dashboard",
+                                plan.feature_timetable && "Timetable management",
+                                plan.feature_reports && plan.feature_reports !== "none" && "Reports & analytics",
+                                plan.feature_announcements && "Announcements",
+                                plan.feature_public_page && "Public institute page",
+                            ].filter(Boolean).map((feature, i) => (
+                                <li key={i} className="checkout-feature-item">
+                                    <span className="checkout-check">✓</span>
+                                    {feature}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* Trust signals */}
+                    <div className="checkout-trust">
+                        <div className="checkout-trust-item">
+                            <span>🔒</span> SSL Encrypted
+                        </div>
+                        <div className="checkout-trust-item">
+                            <span>↩️</span> Cancel anytime
+                        </div>
+                        <div className="checkout-trust-item">
+                            <span>⚡</span> Instant activation
+                        </div>
+                    </div>
+                </div>
+
+                {/* RIGHT PANEL — Payment Form */}
+                <div className="checkout-panel checkout-right">
+                    {/* Back to pricing */}
+                    <button className="checkout-back-btn" onClick={() => navigate("/pricing")}>
+                        ← Back to plans
+                    </button>
+
+                    {/* Order Summary Card */}
+                    <div className="checkout-summary-card">
+                        <h3 className="checkout-summary-title">Order Summary</h3>
+
+                        <div className="checkout-summary-rows">
+                            <div className="checkout-summary-row">
+                                <span className="checkout-row-label">Plan</span>
+                                <span className="checkout-row-value">{plan.name}</span>
+                            </div>
+                            {!isFree && (
+                                <div className="checkout-summary-row">
+                                    <span className="checkout-row-label">Billing cycle</span>
+                                    <span className="checkout-row-value">
+                                        {billingCycle === "yearly" ? "Annual" : "Monthly"}
+                                    </span>
+                                </div>
+                            )}
+                            {!isFree && billingCycle === "yearly" && savings > 0 && (
+                                <div className="checkout-summary-row discount-row">
+                                    <span className="checkout-row-label">Annual discount (20%)</span>
+                                    <span className="checkout-row-value discount-value">-₹{savings.toLocaleString("en-IN")}</span>
+                                </div>
+                            )}
+                            <div className="checkout-summary-divider" />
+                            <div className="checkout-summary-row total-row">
+                                <span className="checkout-row-label">Total due today</span>
+                                <span className="checkout-row-value total-value">
+                                    {isFree ? "Free" : `₹${price.toLocaleString("en-IN")}`}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    {!(plan.is_free_trial && !hasUsedTrial) && (
-                        <div className="payment-mode-toggle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
-                            <span style={{ fontWeight: isTestMode ? '600' : '400', color: isTestMode ? 'var(--primary-color, #3f51b5)' : '#666' }}>Test Mode</span>
-                            <label style={{ position: 'relative', display: 'inline-block', width: '50px', height: '26px' }}>
-                                <input 
-                                    type="checkbox" 
-                                    checked={!isTestMode} 
-                                    onChange={(e) => setIsTestMode(!e.target.checked)} 
-                                    style={{ opacity: 0, width: 0, height: 0, margin: 0, padding: 0 }}
-                                />
-                                <span style={{
-                                    position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
-                                    backgroundColor: isTestMode ? '#ccc' : 'var(--primary-color, #3f51b5)', transition: '.3s', borderRadius: '34px'
-                                }}>
-                                    <span style={{
-                                        position: 'absolute', height: '20px', width: '20px', left: '3px', bottom: '3px',
-                                        backgroundColor: 'white', transition: '.3s', borderRadius: '50%',
-                                        transform: isTestMode ? 'translateX(0)' : 'translateX(24px)',
-                                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                                    }}></span>
+                    {/* Test Mode / Real Mode Toggle */}
+                    {!isFree && (
+                        <div className="checkout-mode-section">
+                            <div className="checkout-mode-toggle">
+                                <span className={`checkout-mode-label ${isTestMode ? "active" : ""}`}>
+                                    🧪 Test Mode
                                 </span>
-                            </label>
-                            <span style={{ fontWeight: !isTestMode ? '600' : '400', color: !isTestMode ? 'var(--primary-color, #3f51b5)' : '#666' }}>Real Mode</span>
+                                <label className="checkout-toggle-switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={!isTestMode}
+                                        onChange={(e) => setIsTestMode(!e.target.checked)}
+                                    />
+                                    <span className="checkout-toggle-slider" />
+                                </label>
+                                <span className={`checkout-mode-label ${!isTestMode ? "active" : ""}`}>
+                                    💳 Real Mode
+                                </span>
+                            </div>
+                            {isTestMode && (
+                                <p className="checkout-mode-hint">
+                                    Test mode: No real charges. Use test card numbers.
+                                </p>
+                            )}
                         </div>
                     )}
 
+                    {/* Pay Button */}
                     <button
-                        className="btn-primary-large btn-block"
+                        id="checkout-pay-btn"
+                        className={`checkout-pay-btn ${processing || isPaymentLoading ? "loading" : ""}`}
                         onClick={handlePayment}
                         disabled={processing || isPaymentLoading}
                     >
-                        {processing || isPaymentLoading ? "Processing..." : ((plan.is_free_trial && !hasUsedTrial) ? "Start Free Trial" : `Pay ₹${price}`)}
+                        {processing || isPaymentLoading ? (
+                            <span className="checkout-btn-loading">
+                                <span className="checkout-btn-spinner" />
+                                Processing...
+                            </span>
+                        ) : (
+                            <span className="checkout-btn-text">
+                                {isFree
+                                    ? "🚀 Start Free Trial"
+                                    : `🔒 Pay ₹${price.toLocaleString("en-IN")}`}
+                            </span>
+                        )}
                     </button>
 
-                    {!(plan.is_free_trial && !hasUsedTrial) && (
-                        <div className="secure-badge" style={{ marginTop: '16px', textAlign: 'center', fontSize: '13px', color: '#666', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                            Secured by Razorpay ({isTestMode ? 'Test Mode' : 'Live Mode'})
+                    {/* Security badge */}
+                    <div className="checkout-security-row">
+                        <div className="checkout-security-badge">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                            Secured by Razorpay
+                            {!isFree && (
+                                <span className={`checkout-mode-pill ${isTestMode ? "test" : "live"}`}>
+                                    {isTestMode ? "Test" : "Live"}
+                                </span>
+                            )}
                         </div>
-                    )}
+                        <div className="checkout-accepted-cards">
+                            <span title="Visa">💳</span>
+                            <span title="UPI">📱</span>
+                            <span title="Net Banking">🏦</span>
+                        </div>
+                    </div>
+
+                    {/* Guarantee */}
+                    <div className="checkout-guarantee">
+                        <div className="checkout-guarantee-icon">🛡️</div>
+                        <div>
+                            <strong>100% Secure & Encrypted</strong>
+                            <p>Your payment info is protected by bank-grade 256-bit SSL encryption.</p>
+                        </div>
+                    </div>
+
+                    {/* Need help */}
+                    <div className="checkout-help">
+                        Questions? <a href="/contact" className="checkout-help-link">Contact our team →</a>
+                    </div>
                 </div>
             </div>
         </div>
