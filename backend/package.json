@@ -15,7 +15,7 @@
     "@upstash/redis": "^1.37.0",
     "axios": "^1.14.0",
     "bcrypt": "^6.0.0",
-    "cloudinary": "^1.41.3",
+    "cloudinary": "^2.9.0",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",

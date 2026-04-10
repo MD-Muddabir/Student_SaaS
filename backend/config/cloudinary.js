@@ -9,7 +9,7 @@
  *   CLOUDINARY_API_SECRET
  */
 
-const cloudinary = require("cloudinary").v2;
+const { v2: cloudinary } = require("cloudinary");
 
 const cloudName  = process.env.CLOUDINARY_CLOUD_NAME;
 const apiKey     = process.env.CLOUDINARY_API_KEY;
